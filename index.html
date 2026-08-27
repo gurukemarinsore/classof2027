@@ -614,7 +614,7 @@
     .loading-screen {
       position: fixed;
       inset: 0;
-      z-index: 100;
+      z-index: 1100;
       display: grid;
       place-items: center;
       background: color-mix(in srgb, var(--bg) 86%, transparent);
@@ -668,16 +668,18 @@
     .modal {
       position: fixed;
       inset: 0;
-      z-index: 80;
+      z-index: 1000;
       display: grid;
       place-items: center;
       padding: 20px;
-      background: rgba(5, 15, 30, .42);
-      backdrop-filter: blur(8px);
+      background: rgba(70, 95, 125, .14);
+      backdrop-filter: blur(12px) saturate(1.04);
+      -webkit-backdrop-filter: blur(12px) saturate(1.04);
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
       transition: .2s ease;
+      isolation: isolate;
     }
 
     .modal.open {
@@ -1913,22 +1915,36 @@
     .dialog-overlay {
       position: fixed;
       inset: 0;
-      z-index: 110;
+      z-index: 1000;
       display: grid;
       place-items: center;
       padding: 18px;
-      background: rgba(5,15,30,.44);
-      backdrop-filter: blur(8px);
+
+      /* Revisi 014:
+         Backdrop harus lembut, transparan, dan blur.
+         Tidak boleh tampak hitam pekat. */
+      background: rgba(70, 95, 125, .14);
+      backdrop-filter: blur(12px) saturate(1.04);
+      -webkit-backdrop-filter: blur(12px) saturate(1.04);
+
+      isolation: isolate;
+      overflow: auto;
+      overscroll-behavior: contain;
     }
 
     .dialog-card {
+      position: relative;
+      z-index: 1;
+
       width: min(520px, 100%);
       max-height: min(760px, calc(100vh - 36px));
       overflow: auto;
       border: 1px solid var(--border);
       border-radius: 22px;
       background: var(--surface);
-      box-shadow: 0 26px 80px rgba(0,0,0,.2);
+      box-shadow:
+        0 28px 84px rgba(25, 45, 70, .18),
+        0 2px 10px rgba(25, 45, 70, .07);
       padding: 20px;
     }
 
@@ -3143,7 +3159,7 @@
     .fullscreen-doc-preview {
       position: fixed;
       inset: 0;
-      z-index: 180;
+      z-index: 1200;
       display: flex;
       flex-direction: column;
       background: var(--bg);
@@ -6108,109 +6124,6 @@
     }
 
 
-    /* ============================================================
-       2H-1 Revisi 008 — Info bubble lokal
-       ============================================================ */
-    .inline-info-wrap {
-      position: relative;
-      min-width: 0;
-      width: fit-content;
-      max-width: 100%;
-      z-index: 1;
-    }
-
-    /* Hanya info yang sedang terbuka yang dinaikkan di atas isi card.
-       Tetap jauh di bawah app-header (z-index 120). */
-    .inline-info-wrap.open {
-      z-index: 24;
-    }
-
-    .inline-info-title-row {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      min-width: 0;
-    }
-
-    .inline-info-title-row h4 {
-      margin: 0;
-    }
-
-    .inline-info-btn {
-      width: 27px;
-      height: 27px;
-      flex: 0 0 27px;
-      padding: 0;
-      display: grid;
-      place-items: center;
-      border: 1px solid var(--border);
-      border-radius: 50%;
-      background: var(--primary-soft);
-      color: var(--primary);
-      cursor: pointer;
-      font-size: .8rem;
-    }
-
-    .inline-info-btn:hover,
-    .inline-info-wrap.open .inline-info-btn {
-      border-color:
-        color-mix(
-          in srgb,
-          var(--primary) 35%,
-          var(--border)
-        );
-      background:
-        color-mix(
-          in srgb,
-          var(--primary) 13%,
-          var(--surface)
-        );
-    }
-
-    .inline-info-popover {
-      position: absolute;
-      top: calc(100% + 8px);
-      left: 0;
-      z-index: 25;
-      display: none;
-      width: max-content;
-      max-width: min(390px, calc(100vw - 34px));
-      padding: 10px 12px;
-      border: 1px solid var(--border);
-      border-radius: 11px;
-      background: var(--surface);
-      color: var(--text);
-      box-shadow: 0 12px 28px rgba(20, 40, 70, .14);
-      font-size: .63rem;
-      font-weight: 520;
-      line-height: 1.5;
-      white-space: normal;
-      text-align: left;
-    }
-
-    .inline-info-popover::before {
-      content: "";
-      position: absolute;
-      left: 14px;
-      top: -6px;
-      width: 10px;
-      height: 10px;
-      border-left: 1px solid var(--border);
-      border-top: 1px solid var(--border);
-      background: var(--surface);
-      transform: rotate(45deg);
-    }
-
-    .inline-info-wrap.open
-    .inline-info-popover {
-      display: block;
-    }
-
-    @media (max-width: 620px) {
-      .inline-info-popover {
-        max-width: min(330px, calc(100vw - 26px));
-      }
-    }
 
 
     /* ============================================================
@@ -6620,6 +6533,63 @@
     .bulk-grid-loading-card
     > span:last-child:not(.mini-spinner) {
       display: none;
+    }
+
+
+    body.dialog-open {
+      overflow: hidden !important;
+    }
+
+    /* Modal chrome global: tidak boleh pernah berada di bawah
+       sidebar/header/table sticky. */
+    #appDialogOverlay,
+    .modal.open,
+    .fullscreen-doc-preview {
+      isolation: isolate;
+    }
+
+
+    /* ============================================================
+       2H-1 Revisi 014 — Final modal/layer audit
+       ============================================================ */
+
+    /* Sidebar/header tidak boleh pernah mengalahkan modal. */
+    .app-sidebar,
+    .app-header,
+    .app-mobile-nav,
+    .toast {
+      --modal-safe-layer: 1;
+    }
+
+    #appDialogOverlay {
+      z-index: 1000 !important;
+    }
+
+    #appDialogOverlay > .dialog-card {
+      z-index: 1 !important;
+    }
+
+    /* Backdrop light/blur, bukan hitam pekat. */
+    html[data-theme="dark"] .dialog-overlay,
+    html[data-theme="dark"] .modal {
+      background: rgba(30, 42, 58, .18);
+    }
+
+    /* Spreadsheet:
+       selected cell tidak menampilkan caret,
+       quick entry dan explicit edit tetap memakai input yang sama. */
+    .bulk-student-cell.active:not(.editing)
+    .bulk-student-input,
+    .mass-grade-cell.active:not(.editing)
+    .mass-grade-input {
+      caret-color: transparent;
+    }
+
+    .bulk-student-cell.editing
+    .bulk-student-input,
+    .mass-grade-cell.editing
+    .mass-grade-input {
+      caret-color: auto;
     }
 
   </style>
@@ -7118,64 +7088,6 @@
     const $ = (selector) => document.querySelector(selector);
     const $$ = (selector) => [...document.querySelectorAll(selector)];
 
-    function closeInlineInfoPopovers(except = null) {
-      $$('[data-inline-info-wrap].open').forEach(wrap => {
-        if (wrap === except) return;
-
-        wrap.classList.remove('open');
-
-        const button =
-          wrap.querySelector(
-            '[data-inline-info-btn]'
-          );
-
-        button?.setAttribute(
-          'aria-expanded',
-          'false'
-        );
-      });
-    }
-
-    document.addEventListener('click', event => {
-      const button =
-        event.target.closest(
-          '[data-inline-info-btn]'
-        );
-
-      if (button) {
-        const wrap =
-          button.closest(
-            '[data-inline-info-wrap]'
-          );
-
-        if (!wrap) return;
-
-        const willOpen =
-          !wrap.classList.contains('open');
-
-        closeInlineInfoPopovers(wrap);
-
-        wrap.classList.toggle(
-          'open',
-          willOpen
-        );
-
-        button.setAttribute(
-          'aria-expanded',
-          willOpen ? 'true' : 'false'
-        );
-
-        return;
-      }
-
-      if (
-        !event.target.closest(
-          '[data-inline-info-wrap]'
-        )
-      ) {
-        closeInlineInfoPopovers();
-      }
-    });
 
 
 
@@ -7882,35 +7794,6 @@
       return 'Akses mengikuti role akun.';
     }
 
-    function inlineInfoTitleHtml(
-      title,
-      description,
-      extraClass = ''
-    ) {
-      return `
-        <div class="inline-info-wrap ${escapeHtml(extraClass)}"
-          data-inline-info-wrap>
-          <div class="inline-info-title-row">
-            <h4>${escapeHtml(title)}</h4>
-
-            <button class="inline-info-btn"
-              type="button"
-              data-inline-info-btn
-              aria-expanded="false"
-              aria-label="Informasi ${escapeHtml(title)}"
-              title="Informasi">
-              <i class="ti ti-info-circle"></i>
-            </button>
-          </div>
-
-          <div class="inline-info-popover"
-            data-inline-info-popover
-            role="status">
-            ${escapeHtml(description)}
-          </div>
-        </div>
-      `;
-    }
 
 
     function moduleTitle(section) {
@@ -7957,10 +7840,7 @@
       $('#appContent').innerHTML = `
         <section class="app-card">
           <div class="app-card-head">
-            ${inlineInfoTitleHtml(
-              'Data Murid Kelas IX',
-              modulePermissionText('students')
-            )}
+            <h4>Data Murid Kelas IX</h4>
           </div>
 
           <div class="students-toolbar">
@@ -8349,6 +8229,7 @@
       `;
 
       document.body.appendChild(overlay);
+      document.body.classList.add('dialog-open');
 
       // Sejalan dengan modal login: klik area blur tidak menutup dialog.
       overlay.addEventListener('click', event => {
@@ -8366,7 +8247,13 @@
     function closeAppDialog() {
       const old = $('#appDialogOverlay');
       if (old) old.remove();
-      document.removeEventListener('keydown', appDialogEscapeHandler);
+
+      document.body.classList.remove('dialog-open');
+
+      document.removeEventListener(
+        'keydown',
+        appDialogEscapeHandler
+      );
     }
 
     function openStudentFormDialog(student = null) {
@@ -9038,7 +8925,10 @@
         bulkStudentSheet.editing = {
           row: point.row,
           col: point.col,
-          startValue: input.value
+          startValue: input.value,
+          mode: options.mode === 'entry'
+            ? 'entry'
+            : 'edit'
         };
       }
 
@@ -9051,6 +8941,18 @@
       };
 
       renderBulkStudentSelection();
+
+      if (
+        bulkStudentSheet.editing &&
+        isBulkStudentEditing(
+          point.row,
+          point.col
+        ) &&
+        options.mode === 'edit'
+      ) {
+        bulkStudentSheet.editing.mode =
+          'edit';
+      }
 
       input.readOnly = false;
       cell?.classList.add('editing');
@@ -9466,11 +9368,25 @@
           col
         );
 
+      const editMode =
+        editing
+          ? bulkStudentSheet.editing?.mode
+          : null;
+
       if (editing) {
         if (event.key === 'Escape') {
           event.preventDefault();
           exitBulkStudentEdit(true);
           input.focus();
+          return;
+        }
+
+        if (event.key === 'F2') {
+          event.preventDefault();
+
+          bulkStudentSheet.editing.mode =
+            'edit';
+
           return;
         }
 
@@ -9504,8 +9420,40 @@
           return;
         }
 
-        // Dalam mode edit: Arrow, Home, End, Backspace, Delete,
-        // Ctrl+C/X/V, dan selection teks diserahkan ke input native.
+        // Excel-like quick entry:
+        // setelah mengetik nilai baru, Arrow menyelesaikan input
+        // lalu langsung pindah cell.
+        if (
+          editMode === 'entry' &&
+          [
+            'ArrowLeft',
+            'ArrowRight',
+            'ArrowUp',
+            'ArrowDown'
+          ].includes(event.key)
+        ) {
+          event.preventDefault();
+
+          let rowDelta = 0;
+          let colDelta = 0;
+
+          if (event.key === 'ArrowLeft') colDelta = -1;
+          if (event.key === 'ArrowRight') colDelta = 1;
+          if (event.key === 'ArrowUp') rowDelta = -1;
+          if (event.key === 'ArrowDown') rowDelta = 1;
+
+          exitBulkStudentEdit(false);
+
+          setBulkStudentSelection(
+            row + rowDelta,
+            col + colDelta
+          );
+          return;
+        }
+
+        // Explicit edit mode (double click / F2):
+        // Arrow, Home, End, Backspace, Delete, selection teks,
+        // copy/paste semuanya tetap native di dalam input.
         return;
       }
 
@@ -9516,6 +9464,7 @@
           row,
           col,
           {
+            mode: 'edit',
             selectAll: false,
             caretEnd: true
           }
@@ -9523,6 +9472,8 @@
         return;
       }
 
+      // Mengetik langsung pada selected cell = quick entry.
+      // Isi lama langsung diganti karakter pertama.
       if (
         isSpreadsheetPrintableKey(
           event
@@ -9534,6 +9485,7 @@
           row,
           col,
           {
+            mode: 'entry',
             replaceWith:
               event.key,
             selectAll: false,
@@ -9961,6 +9913,7 @@
               row,
               col,
               {
+                mode: 'edit',
                 selectAll: false,
                 caretEnd: false
               }
@@ -10021,6 +9974,7 @@
               row,
               col,
               {
+                mode: 'edit',
                 selectAll: false,
                 caretEnd: false
               }
@@ -10087,28 +10041,7 @@
       });
     }
 
-    function bulkStudentHelpPopover(title) {
-      return `
-        <div class="bulk-editor-title" data-inline-info-wrap>
-          <h3>${escapeHtml(title)}</h3>
 
-          <button class="inline-info-btn"
-            type="button"
-            data-inline-info-btn
-            aria-expanded="false"
-            aria-label="Petunjuk spreadsheet"
-            title="Petunjuk">
-            <i class="ti ti-info-circle"></i>
-          </button>
-
-          <div class="inline-info-popover bulk-editor-help-popover"
-            data-inline-info-popover>
-            No. tetap 1–40. NIS, NISN, dan Nama Lengkap dapat diketik,
-            diblok, dihapus, atau dipaste langsung dari Excel/Google Sheets.
-          </div>
-        </div>
-      `;
-    }
 
     function openBulkStudentDialogShell({
       mode,
@@ -10131,7 +10064,7 @@
       const overlay = appendDialog(`
         <div class="dialog-head bulk-editor-head">
           <div>
-            ${bulkStudentHelpPopover(title)}
+            <h3>${escapeHtml(title)}</h3>
           </div>
 
           <button class="dialog-close"
@@ -10216,7 +10149,6 @@
         dragging: false,
         editing: null,
         loading: loading,
-        editing: null,
         originalRows: Array.from({ length: 40 }, (_, index) => {
           const row = rows[index];
           return row
@@ -10368,8 +10300,6 @@
       }
 
       if (loading) {
-        closeInlineInfoPopovers();
-
         getBulkStudentCells().forEach(
           cell => {
             cell.classList.remove(
@@ -10657,11 +10587,9 @@
         <section class="grades-page">
           <article class="app-card grades-control-card">
             <div class="grades-toolbar">
-              ${inlineInfoTitleHtml(
-                'Nilai Semester 1–6',
-                modulePermissionText('grades'),
-                'grade-title-inline'
-              )}
+              <div class="grade-title-inline">
+                <h4>Nilai Semester 1–6</h4>
+              </div>
 
               ${
                 isWali
@@ -12541,7 +12469,10 @@
         massGradeSheet.editing = {
           row: point.row,
           col: point.col,
-          startValue: input.value
+          startValue: input.value,
+          mode: options.mode === 'entry'
+            ? 'entry'
+            : 'edit'
         };
       }
 
@@ -12554,6 +12485,18 @@
       };
 
       renderMassGradeSelection();
+
+      if (
+        massGradeSheet.editing &&
+        isMassGradeEditing(
+          point.row,
+          point.col
+        ) &&
+        options.mode === 'edit'
+      ) {
+        massGradeSheet.editing.mode =
+          'edit';
+      }
 
       input.readOnly = false;
       cell?.classList.add(
@@ -13103,11 +13046,25 @@
           col
         );
 
+      const editMode =
+        editing
+          ? massGradeSheet.editing?.mode
+          : null;
+
       if (editing) {
         if (event.key === 'Escape') {
           event.preventDefault();
           exitMassGradeEdit(true);
           input.focus();
+          return;
+        }
+
+        if (event.key === 'F2') {
+          event.preventDefault();
+
+          massGradeSheet.editing.mode =
+            'edit';
+
           return;
         }
 
@@ -13141,7 +13098,36 @@
           return;
         }
 
-        // Dalam mode edit, tombol edit teks bekerja native.
+        if (
+          editMode === 'entry' &&
+          [
+            'ArrowLeft',
+            'ArrowRight',
+            'ArrowUp',
+            'ArrowDown'
+          ].includes(event.key)
+        ) {
+          event.preventDefault();
+
+          let rowDelta = 0;
+          let colDelta = 0;
+
+          if (event.key === 'ArrowLeft') colDelta = -1;
+          if (event.key === 'ArrowRight') colDelta = 1;
+          if (event.key === 'ArrowUp') rowDelta = -1;
+          if (event.key === 'ArrowDown') rowDelta = 1;
+
+          exitMassGradeEdit(false);
+
+          setMassGradeSelection(
+            row + rowDelta,
+            col + colDelta
+          );
+          return;
+        }
+
+        // Double click/F2 = explicit text edit.
+        // Arrow tidak boleh pindah cell.
         return;
       }
 
@@ -13149,15 +13135,14 @@
         event.ctrlKey ||
         event.metaKey;
 
-      if (ctrl) {
-        if (
-          ['c', 'x', 'v'].includes(
-            String(event.key)
-              .toLowerCase()
-          )
-        ) {
-          return;
-        }
+      if (
+        ctrl &&
+        ['c', 'x', 'v'].includes(
+          String(event.key)
+            .toLowerCase()
+        )
+      ) {
+        return;
       }
 
       if (event.key === 'F2') {
@@ -13167,6 +13152,7 @@
           row,
           col,
           {
+            mode: 'edit',
             selectAll: false,
             caretEnd: true
           }
@@ -13185,6 +13171,7 @@
           row,
           col,
           {
+            mode: 'entry',
             replaceWith:
               event.key,
             selectAll: false,
@@ -13207,7 +13194,6 @@
         event.key === 'ArrowDown'
       ) {
         event.preventDefault();
-
         moveMassGradeFocus(
           1,
           0,
@@ -13223,7 +13209,6 @@
         event.key === 'ArrowUp'
       ) {
         event.preventDefault();
-
         moveMassGradeFocus(
           -1,
           0,
@@ -13239,7 +13224,6 @@
         event.key === 'ArrowRight'
       ) {
         event.preventDefault();
-
         moveMassGradeFocus(
           0,
           1,
@@ -13255,7 +13239,6 @@
         event.key === 'ArrowLeft'
       ) {
         event.preventDefault();
-
         moveMassGradeFocus(
           0,
           -1,
@@ -13269,7 +13252,6 @@
 
       if (event.key === 'Enter') {
         event.preventDefault();
-
         moveMassGradeFocus(
           event.shiftKey
             ? -1
@@ -13281,7 +13263,6 @@
 
       if (event.key === 'Tab') {
         event.preventDefault();
-
         moveMassGradeFocus(
           0,
           event.shiftKey
@@ -13328,6 +13309,7 @@
               row,
               col,
               {
+                mode: 'edit',
                 selectAll: false,
                 caretEnd: false
               }
@@ -13393,6 +13375,7 @@
               row,
               col,
               {
+                mode: 'edit',
                 selectAll: false,
                 caretEnd: false
               }
@@ -13847,10 +13830,7 @@
         <section class="documents-page">
           <article class="app-card">
             <div class="app-card-head">
-              ${inlineInfoTitleHtml(
-                'Dokumen Murid',
-                modulePermissionText('documents')
-              )}
+              <h4>Dokumen Murid</h4>
             </div>
 
             <div class="documents-toolbar">
@@ -15470,10 +15450,7 @@
         <section class="accounts-page">
           <article class="app-card accounts-head-card">
             <div class="accounts-title-block">
-              ${inlineInfoTitleHtml(
-                'Manajemen Akun',
-                'Kelola akun Super Admin, Wali Kelas, dan Admin TU. Perubahan keamanan pada akun yang sedang login dapat mencabut session.'
-              )}
+              <h4>Manajemen Akun</h4>
             </div>
 
             <div class="account-capacity">
@@ -16557,10 +16534,7 @@
         <section class="settings-page">
           <article class="app-card settings-intro">
             <div>
-              ${inlineInfoTitleHtml(
-                'Pengaturan Super Admin',
-                'Atur semester Landing Page, kunci input nilai, dan font global aplikasi. Pengaturan berlaku terpusat tanpa menghapus data yang sudah tersimpan.'
-              )}
+              <h4>Pengaturan Super Admin</h4>
             </div>
 
             <div class="settings-safe-badge">
