@@ -962,7 +962,7 @@
       display: flex;
       flex-direction: column;
       gap: 18px;
-      z-index: 35;
+      z-index: 130;
     }
 
     .app-brand {
@@ -1126,6 +1126,8 @@
     }
 
     .app-main {
+      position: relative;
+      isolation: isolate;
       min-width: 0;
       min-height: 100vh;
       padding-bottom: 30px;
@@ -1134,7 +1136,7 @@
     .app-header {
       position: sticky;
       top: 0;
-      z-index: 30;
+      z-index: 120;
       min-height: 72px;
       padding: 12px 22px;
       display: flex;
@@ -1142,8 +1144,13 @@
       justify-content: space-between;
       gap: 16px;
       border-bottom: 1px solid var(--border);
-      background: color-mix(in srgb, var(--bg) 84%, transparent);
-      backdrop-filter: blur(18px);
+
+      /* Revisi 012:
+         Header harus menutup konten yang discroll di bawahnya.
+         Tidak memakai background transparan agar judul card tidak
+         terlihat menembus/bertabrakan dengan header. */
+      background: var(--bg);
+      backdrop-filter: none;
     }
 
     .app-header-title {
@@ -1211,6 +1218,8 @@
     }
 
     .app-content {
+      position: relative;
+      z-index: 1;
       width: min(1280px, calc(100% - 36px));
       margin: 0 auto;
       padding: 22px 0;
@@ -1518,7 +1527,7 @@
 
       .mobile-app-nav {
         position: fixed;
-        z-index: 45;
+        z-index: 130;
         left: 9px;
         right: 9px;
         bottom: 8px;
@@ -6107,7 +6116,13 @@
       min-width: 0;
       width: fit-content;
       max-width: 100%;
-      z-index: 30;
+      z-index: 1;
+    }
+
+    /* Hanya info yang sedang terbuka yang dinaikkan di atas isi card.
+       Tetap jauh di bawah app-header (z-index 120). */
+    .inline-info-wrap.open {
+      z-index: 24;
     }
 
     .inline-info-title-row {
@@ -6156,7 +6171,7 @@
       position: absolute;
       top: calc(100% + 8px);
       left: 0;
-      z-index: 100;
+      z-index: 25;
       display: none;
       width: max-content;
       max-width: min(390px, calc(100vw - 34px));
@@ -6503,6 +6518,46 @@
       align-self: center;
     }
 
+
+    /* ============================================================
+       2H-1 Revisi 012 — Hierarki layer/scroll global
+       ============================================================ */
+
+    /* Semua card/modul tetap berada pada layer konten biasa. */
+    .app-card,
+    .students-page,
+    .grades-page,
+    .documents-page,
+    .accounts-page,
+    .settings-page {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header tabel hanya perlu menang terhadap cell tabelnya sendiri,
+       tidak terhadap header aplikasi. */
+    .students-table th,
+    .accounts-table th,
+    .grades-table th {
+      isolation: isolate;
+    }
+
+    /* Saat bubble tertutup, judul + tombol info tidak membuat
+       stacking context tinggi. */
+    [data-inline-info-wrap]:not(.open) {
+      z-index: 1;
+    }
+
+    /* Bubble aktif tetap di atas isi modul, namun di bawah chrome app. */
+    [data-inline-info-wrap].open {
+      z-index: 24;
+    }
+
+    [data-inline-info-wrap].open
+    .inline-info-popover {
+      z-index: 25;
+    }
+
   </style>
 </head>
 <body>
@@ -6791,7 +6846,7 @@
 
         <div class="sidebar-footer">
           <button class="logout-side" id="logoutSideBtn" type="button">
-            <i class="ti ti-logout-2"></i>
+            <i class="ti ti-logout"></i>
             Keluar
           </button>
           <small>Dikembangkan oleh gurukemarinsore</small>
@@ -6820,7 +6875,7 @@
             </div>
 
             <button class="icon-btn" id="logoutHeaderBtn" type="button" aria-label="Keluar">
-              <i class="ti ti-logout-2"></i>
+              <i class="ti ti-logout"></i>
             </button>
           </div>
         </header>
