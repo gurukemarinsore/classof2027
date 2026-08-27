@@ -6558,6 +6558,70 @@
       z-index: 25;
     }
 
+
+    /* ============================================================
+       2H-1 Revisi 013 — Natural spreadsheet editing
+       ============================================================ */
+
+    .bulk-student-input[readonly],
+    .mass-grade-input[readonly] {
+      cursor: cell;
+      caret-color: transparent;
+    }
+
+    .bulk-student-cell.editing,
+    .mass-grade-cell.editing {
+      z-index: 6;
+      box-shadow:
+        inset 0 0 0 2px
+        var(--primary);
+    }
+
+    .bulk-student-cell.editing
+    .bulk-student-input,
+    .mass-grade-cell.editing
+    .mass-grade-input {
+      cursor: text;
+      caret-color: auto;
+      user-select: text;
+    }
+
+    /* Data Murid: kolom angka ringkas dan konsisten. */
+    .students-table-compact
+    .student-no-col,
+    .students-table-compact
+    .student-average-col {
+      text-align: center !important;
+      vertical-align: middle;
+    }
+
+    /* Audit konsistensi No. pada seluruh spreadsheet/tabel nilai. */
+    .grades-table .sticky-no,
+    .mass-grade-table .mass-col-no,
+    .bulk-student-table .bulk-student-no {
+      text-align: center !important;
+    }
+
+    /* Loading Edit Massal dibuat lebih ringkas:
+       hanya spinner + "Memuat data murid…" */
+    .bulk-grid-loading-card {
+      width: fit-content;
+      min-width: 210px;
+      max-width: calc(100% - 28px);
+      grid-template-columns: auto auto;
+      gap: 9px;
+      justify-content: center;
+    }
+
+    .bulk-grid-loading-card > strong {
+      white-space: nowrap;
+    }
+
+    .bulk-grid-loading-card
+    > span:last-child:not(.mini-spinner) {
+      display: none;
+    }
+
   </style>
 </head>
 <body>
@@ -8138,18 +8202,18 @@
           <table class="students-table students-table-compact">
             <thead>
               <tr>
-                <th style="width:52px">No</th>
+                <th class="student-no-col" style="width:52px">No</th>
                 <th>Nama Lengkap</th>
                 <th style="width:135px">Dokumen</th>
                 <th style="width:155px">Nilai</th>
-                <th style="width:100px">Rata-rata</th>
+                <th class="student-average-col" style="width:100px">Rata-rata</th>
                 ${canEdit ? '<th style="width:104px;text-align:right">Aksi</th>' : ''}
               </tr>
             </thead>
             <tbody>
               ${rows.map((student, index) => `
                 <tr>
-                  <td>${((state.students.page - 1) * state.students.limit) + index + 1}</td>
+                  <td class="student-no-col">${((state.students.page - 1) * state.students.limit) + index + 1}</td>
                   <td class="student-name-cell">
                     <strong>${escapeHtml(student.namaLengkap)}</strong>
                     <span>${escapeHtml(student.kelas)} · NIS ${escapeHtml(student.nis || '—')} · NISN ${escapeHtml(student.nisn)}</span>
@@ -8166,7 +8230,7 @@
                       ${escapeHtml(studentMetricText(student.nilai, 'nilai'))}
                     </span>
                   </td>
-                  <td>${formatAverage2(student.rataRata)}</td>
+                  <td class="student-average-col">${formatAverage2(student.rataRata)}</td>
                   ${canEdit ? `
                     <td>
                       <div class="row-actions">
@@ -8628,7 +8692,7 @@
               <div class="bulk-grid-loading-card">
                 <span class="mini-spinner"></span>
                 <strong>Memuat data murid…</strong>
-                <span>Cell akan aktif setelah seluruh data kelas selesai dimuat.</span>
+                
               </div>
             </div>
           ` : ''}
@@ -8676,6 +8740,7 @@
                             data-bulk-col="${colIndex}"
                             data-original="${escapeHtml(value)}"
                             ${locked ? 'disabled' : ''}
+                            ${locked ? '' : 'readonly'}
                             aria-label="${column.label} baris ${rowIndex + 1}">
                         </td>
                       `;
@@ -8807,6 +8872,16 @@
 
       const point = clampBulkStudentPoint(row, col);
 
+      if (
+        bulkStudentSheet.editing &&
+        (
+          bulkStudentSheet.editing.row !== point.row ||
+          bulkStudentSheet.editing.col !== point.col
+        )
+      ) {
+        exitBulkStudentEdit(false);
+      }
+
       if (!options.extend) {
         bulkStudentSheet.anchor = { ...point };
       }
@@ -8816,10 +8891,18 @@
 
       if (options.focusInput !== false) {
         const input = findBulkStudentInput(point.row, point.col);
-        input?.focus();
 
-        if (options.selectText !== false) {
-          input?.select();
+        if (input) {
+          input.readOnly = true;
+          input.focus();
+
+          if (options.selectText === true) {
+            input.select();
+          } else {
+            try {
+              input.setSelectionRange(0, 0);
+            } catch (_) {}
+          }
         }
 
         requestAnimationFrame(() => {
@@ -8829,6 +8912,16 @@
         });
       }
     }
+
+    function isSpreadsheetPrintableKey(event) {
+      return (
+        !event.ctrlKey &&
+        !event.metaKey &&
+        !event.altKey &&
+        String(event.key || '').length === 1
+      );
+    }
+
 
     function normalizeBulkStudentValue(value) {
       return String(value ?? '').trim();
@@ -8886,6 +8979,176 @@
       if (!allFilled) return 'incomplete';
       return 'new';
     }
+
+    function isBulkStudentEditing(row, col) {
+      return (
+        bulkStudentSheet?.editing?.row === Number(row) &&
+        bulkStudentSheet?.editing?.col === Number(col)
+      );
+    }
+
+    function enterBulkStudentEdit(
+      row,
+      col,
+      options = {}
+    ) {
+      if (
+        !bulkStudentSheet ||
+        bulkStudentSheet.loading
+      ) {
+        return;
+      }
+
+      const point =
+        clampBulkStudentPoint(row, col);
+
+      if (
+        bulkStudentSheet.editing &&
+        !isBulkStudentEditing(
+          point.row,
+          point.col
+        )
+      ) {
+        exitBulkStudentEdit(false);
+      }
+
+      const input =
+        findBulkStudentInput(
+          point.row,
+          point.col
+        );
+
+      const cell =
+        findBulkStudentCell(
+          point.row,
+          point.col
+        );
+
+      if (!input || input.disabled) {
+        return;
+      }
+
+      if (
+        !bulkStudentSheet.editing ||
+        !isBulkStudentEditing(
+          point.row,
+          point.col
+        )
+      ) {
+        bulkStudentSheet.editing = {
+          row: point.row,
+          col: point.col,
+          startValue: input.value
+        };
+      }
+
+      bulkStudentSheet.anchor = {
+        ...point
+      };
+
+      bulkStudentSheet.focus = {
+        ...point
+      };
+
+      renderBulkStudentSelection();
+
+      input.readOnly = false;
+      cell?.classList.add('editing');
+
+      if (
+        Object.prototype.hasOwnProperty.call(
+          options,
+          'replaceWith'
+        )
+      ) {
+        input.value =
+          String(options.replaceWith);
+
+        input.dispatchEvent(
+          new Event(
+            'input',
+            { bubbles: true }
+          )
+        );
+      }
+
+      input.focus();
+
+      if (options.selectAll === true) {
+        input.select();
+      } else if (
+        options.caretEnd !== false
+      ) {
+        try {
+          const end =
+            input.value.length;
+          input.setSelectionRange(
+            end,
+            end
+          );
+        } catch (_) {}
+      }
+
+      requestAnimationFrame(() => {
+        ensureBulkStudentCellVisible(
+          cell
+        );
+      });
+    }
+
+    function exitBulkStudentEdit(
+      cancel = false
+    ) {
+      if (
+        !bulkStudentSheet?.editing
+      ) {
+        return;
+      }
+
+      const edit =
+        bulkStudentSheet.editing;
+
+      const input =
+        findBulkStudentInput(
+          edit.row,
+          edit.col
+        );
+
+      const cell =
+        findBulkStudentCell(
+          edit.row,
+          edit.col
+        );
+
+      if (
+        cancel &&
+        input
+      ) {
+        input.value =
+          edit.startValue;
+
+        input.dispatchEvent(
+          new Event(
+            'input',
+            { bubbles: true }
+          )
+        );
+      }
+
+      if (input) {
+        input.readOnly = true;
+      }
+
+      cell?.classList.remove(
+        'editing'
+      );
+
+      bulkStudentSheet.editing =
+        null;
+
+      renderBulkStudentSelection();
+    }
+
 
     function clearBulkStudentServerFlags() {
       getBulkStudentInputs().forEach(input => {
@@ -9188,7 +9451,102 @@
     function handleBulkStudentKeyboard(event) {
       if (!bulkStudentSheet) return;
 
-      if (event.key === 'Delete' || event.key === 'Backspace') {
+      const input =
+        event.currentTarget;
+
+      const row =
+        Number(input.dataset.bulkRow);
+
+      const col =
+        Number(input.dataset.bulkCol);
+
+      const editing =
+        isBulkStudentEditing(
+          row,
+          col
+        );
+
+      if (editing) {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          exitBulkStudentEdit(true);
+          input.focus();
+          return;
+        }
+
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          exitBulkStudentEdit(false);
+
+          setBulkStudentSelection(
+            row + (
+              event.shiftKey
+                ? -1
+                : 1
+            ),
+            col
+          );
+          return;
+        }
+
+        if (event.key === 'Tab') {
+          event.preventDefault();
+          exitBulkStudentEdit(false);
+
+          setBulkStudentSelection(
+            row,
+            col + (
+              event.shiftKey
+                ? -1
+                : 1
+            )
+          );
+          return;
+        }
+
+        // Dalam mode edit: Arrow, Home, End, Backspace, Delete,
+        // Ctrl+C/X/V, dan selection teks diserahkan ke input native.
+        return;
+      }
+
+      if (event.key === 'F2') {
+        event.preventDefault();
+
+        enterBulkStudentEdit(
+          row,
+          col,
+          {
+            selectAll: false,
+            caretEnd: true
+          }
+        );
+        return;
+      }
+
+      if (
+        isSpreadsheetPrintableKey(
+          event
+        )
+      ) {
+        event.preventDefault();
+
+        enterBulkStudentEdit(
+          row,
+          col,
+          {
+            replaceWith:
+              event.key,
+            selectAll: false,
+            caretEnd: true
+          }
+        );
+        return;
+      }
+
+      if (
+        event.key === 'Delete' ||
+        event.key === 'Backspace'
+      ) {
         event.preventDefault();
         clearBulkStudentSelection();
         return;
@@ -9197,16 +9555,30 @@
       let rowDelta = 0;
       let colDelta = 0;
 
-      if (event.key === 'Enter' || event.key === 'ArrowDown') {
+      if (
+        event.key === 'Enter' ||
+        event.key === 'ArrowDown'
+      ) {
         rowDelta = 1;
-      } else if (event.key === 'ArrowUp') {
+      } else if (
+        event.key === 'ArrowUp'
+      ) {
         rowDelta = -1;
-      } else if (event.key === 'ArrowRight') {
+      } else if (
+        event.key === 'ArrowRight'
+      ) {
         colDelta = 1;
-      } else if (event.key === 'ArrowLeft') {
+      } else if (
+        event.key === 'ArrowLeft'
+      ) {
         colDelta = -1;
-      } else if (event.key === 'Tab') {
-        colDelta = event.shiftKey ? -1 : 1;
+      } else if (
+        event.key === 'Tab'
+      ) {
+        colDelta =
+          event.shiftKey
+            ? -1
+            : 1;
       } else {
         return;
       }
@@ -9214,10 +9586,14 @@
       event.preventDefault();
 
       setBulkStudentSelection(
-        bulkStudentSheet.focus.row + rowDelta,
-        bulkStudentSheet.focus.col + colDelta,
+        bulkStudentSheet.focus.row +
+          rowDelta,
+        bulkStudentSheet.focus.col +
+          colDelta,
         {
-          extend: event.shiftKey && event.key !== 'Tab'
+          extend:
+            event.shiftKey &&
+            event.key !== 'Tab'
         }
       );
     }
@@ -9562,20 +9938,68 @@
 
         cell.addEventListener('mousedown', event => {
           if (event.button !== 0) return;
-          event.preventDefault();
 
-          if (!event.shiftKey) {
-            bulkStudentSheet.anchor = { row, col };
+          // Jika cell sedang dalam mode edit, biarkan browser
+          // menaruh caret/selection teks secara native.
+          if (
+            isBulkStudentEditing(
+              row,
+              col
+            )
+          ) {
+            return;
           }
 
-          bulkStudentSheet.focus = { row, col };
+          // Klik kedua (double click): aktifkan edit SEBELUM
+          // default mousedown, sehingga caret dapat ditempatkan
+          // pada posisi karakter yang diklik.
+          if (
+            event.detail >= 2 &&
+            input
+          ) {
+            enterBulkStudentEdit(
+              row,
+              col,
+              {
+                selectAll: false,
+                caretEnd: false
+              }
+            );
+            return;
+          }
+
+          event.preventDefault();
+
+          if (
+            bulkStudentSheet.editing
+          ) {
+            exitBulkStudentEdit(false);
+          }
+
+          if (!event.shiftKey) {
+            bulkStudentSheet.anchor = {
+              row,
+              col
+            };
+          }
+
+          bulkStudentSheet.focus = {
+            row,
+            col
+          };
+
           bulkStudentSheet.dragging = true;
           renderBulkStudentSelection();
-          input?.focus();
-          input?.select();
+
+          if (input) {
+            input.readOnly = true;
+            input.focus();
+          }
 
           requestAnimationFrame(() => {
-            ensureBulkStudentCellVisible(cell);
+            ensureBulkStudentCellVisible(
+              cell
+            );
           });
         });
 
@@ -9590,10 +10014,33 @@
           });
         });
 
+        cell.addEventListener(
+          'dblclick',
+          () => {
+            enterBulkStudentEdit(
+              row,
+              col,
+              {
+                selectAll: false,
+                caretEnd: false
+              }
+            );
+          }
+        );
+
         input?.addEventListener('focus', () => {
           if (!bulkStudentSheet) return;
-          bulkStudentSheet.anchor = { row, col };
-          bulkStudentSheet.focus = { row, col };
+
+          bulkStudentSheet.anchor = {
+            row,
+            col
+          };
+
+          bulkStudentSheet.focus = {
+            row,
+            col
+          };
+
           renderBulkStudentSelection();
         });
 
@@ -9609,14 +10056,18 @@
       document.addEventListener('mouseup', endBulkStudentDrag);
 
       grid.addEventListener('copy', event => {
+        if (bulkStudentSheet?.editing) return;
         handleBulkStudentCopy(event, false);
       });
 
       grid.addEventListener('cut', event => {
+        if (bulkStudentSheet?.editing) return;
         handleBulkStudentCopy(event, true);
       });
 
       grid.addEventListener('paste', event => {
+        if (bulkStudentSheet?.editing) return;
+
         const text = event.clipboardData?.getData('text/plain') || '';
         if (!text) return;
 
@@ -9632,7 +10083,7 @@
       renderBulkStudentSummary();
 
       requestAnimationFrame(() => {
-        setBulkStudentSelection(0, 0, { selectText: true });
+        setBulkStudentSelection(0, 0, { selectText: false });
       });
     }
 
@@ -9763,7 +10214,9 @@
         anchor: { row: 0, col: 0 },
         focus: { row: 0, col: 0 },
         dragging: false,
+        editing: null,
         loading: loading,
+        editing: null,
         originalRows: Array.from({ length: 40 }, (_, index) => {
           const row = rows[index];
           return row
@@ -9849,6 +10302,9 @@
         input => {
           input.disabled =
             loading === true;
+
+          input.readOnly =
+            loading !== true;
         }
       );
 
@@ -9888,7 +10344,7 @@
             <div class="bulk-grid-loading-card">
               <span class="mini-spinner"></span>
               <strong>Memuat data murid…</strong>
-              <span>Cell akan aktif setelah seluruh data kelas selesai dimuat.</span>
+              
             </div>
           `;
 
@@ -11758,6 +12214,7 @@
                           data-mass-row="${rowIndex}"
                           data-mass-col="${colIndex}"
                           data-original="${escapeHtml(shown)}"
+                          readonly
                           aria-label="${escapeHtml(subject)} untuk ${escapeHtml(student.namaLengkap)}">
                       </td>
                     `;
@@ -11954,40 +12411,250 @@
     ) {
       if (!massGradeSheet) return;
 
-      const point = clampMassGradePoint(row, col);
+      const point =
+        clampMassGradePoint(
+          row,
+          col
+        );
 
-      if (!options.extend) {
-        massGradeSheet.anchor = { ...point };
+      if (
+        massGradeSheet.editing &&
+        (
+          massGradeSheet.editing.row !== point.row ||
+          massGradeSheet.editing.col !== point.col
+        )
+      ) {
+        exitMassGradeEdit(false);
       }
 
-      massGradeSheet.focus = { ...point };
+      if (!options.extend) {
+        massGradeSheet.anchor = {
+          ...point
+        };
+      }
+
+      massGradeSheet.focus = {
+        ...point
+      };
+
       renderMassGradeSelection();
 
-      if (options.focusInput !== false) {
-        const input = findMassGradeInput(point.row, point.col);
+      if (
+        options.focusInput !== false
+      ) {
+        const input =
+          findMassGradeInput(
+            point.row,
+            point.col
+          );
 
         if (input) {
+          input.readOnly = true;
+
           input.focus({
-            preventScroll: options.preventScroll === true
+            preventScroll:
+              options.preventScroll === true
           });
 
-          if (options.selectText !== false) {
+          if (
+            options.selectText === true
+          ) {
             input.select();
+          } else {
+            try {
+              input.setSelectionRange(
+                0,
+                0
+              );
+            } catch (_) {}
           }
 
-          if (options.scroll !== false) {
-            requestAnimationFrame(() => {
-              ensureMassGradeCellVisible(
-                findMassGradeCell(
-                  point.row,
-                  point.col
-                )
-              );
-            });
+          if (
+            options.scroll !== false
+          ) {
+            requestAnimationFrame(
+              () => {
+                ensureMassGradeCellVisible(
+                  findMassGradeCell(
+                    point.row,
+                    point.col
+                  )
+                );
+              }
+            );
           }
         }
       }
     }
+
+    function isMassGradeEditing(row, col) {
+      return (
+        massGradeSheet?.editing?.row === Number(row) &&
+        massGradeSheet?.editing?.col === Number(col)
+      );
+    }
+
+    function enterMassGradeEdit(
+      row,
+      col,
+      options = {}
+    ) {
+      if (!massGradeSheet) return;
+
+      const point =
+        clampMassGradePoint(
+          row,
+          col
+        );
+
+      if (
+        massGradeSheet.editing &&
+        !isMassGradeEditing(
+          point.row,
+          point.col
+        )
+      ) {
+        exitMassGradeEdit(false);
+      }
+
+      const input =
+        findMassGradeInput(
+          point.row,
+          point.col
+        );
+
+      const cell =
+        findMassGradeCell(
+          point.row,
+          point.col
+        );
+
+      if (!input) return;
+
+      if (
+        !massGradeSheet.editing ||
+        !isMassGradeEditing(
+          point.row,
+          point.col
+        )
+      ) {
+        massGradeSheet.editing = {
+          row: point.row,
+          col: point.col,
+          startValue: input.value
+        };
+      }
+
+      massGradeSheet.anchor = {
+        ...point
+      };
+
+      massGradeSheet.focus = {
+        ...point
+      };
+
+      renderMassGradeSelection();
+
+      input.readOnly = false;
+      cell?.classList.add(
+        'editing'
+      );
+
+      if (
+        Object.prototype.hasOwnProperty.call(
+          options,
+          'replaceWith'
+        )
+      ) {
+        input.value =
+          String(options.replaceWith);
+
+        input.dispatchEvent(
+          new Event(
+            'input',
+            { bubbles: true }
+          )
+        );
+      }
+
+      input.focus();
+
+      if (options.selectAll === true) {
+        input.select();
+      } else if (
+        options.caretEnd !== false
+      ) {
+        try {
+          const end =
+            input.value.length;
+
+          input.setSelectionRange(
+            end,
+            end
+          );
+        } catch (_) {}
+      }
+
+      requestAnimationFrame(() => {
+        ensureMassGradeCellVisible(
+          cell
+        );
+      });
+    }
+
+    function exitMassGradeEdit(
+      cancel = false
+    ) {
+      if (
+        !massGradeSheet?.editing
+      ) {
+        return;
+      }
+
+      const edit =
+        massGradeSheet.editing;
+
+      const input =
+        findMassGradeInput(
+          edit.row,
+          edit.col
+        );
+
+      const cell =
+        findMassGradeCell(
+          edit.row,
+          edit.col
+        );
+
+      if (
+        cancel &&
+        input
+      ) {
+        input.value =
+          edit.startValue;
+
+        input.dispatchEvent(
+          new Event(
+            'input',
+            { bubbles: true }
+          )
+        );
+      }
+
+      if (input) {
+        input.readOnly = true;
+      }
+
+      cell?.classList.remove(
+        'editing'
+      );
+
+      massGradeSheet.editing =
+        null;
+
+      renderMassGradeSelection();
+    }
+
 
     function massGradeEffectiveRowValues(rowIndex) {
       const student =
@@ -12409,7 +13076,7 @@
         current.col + colDelta,
         {
           extend: options.extend === true,
-          selectText: options.selectText !== false
+          selectText: options.selectText === true
         }
       );
     }
@@ -12417,17 +13084,114 @@
     function handleMassGradeKeyboard(event) {
       if (!massGradeSheet) return;
 
-      const ctrl = event.ctrlKey || event.metaKey;
+      const input =
+        event.currentTarget;
+
+      const row =
+        Number(
+          input.dataset.massRow
+        );
+
+      const col =
+        Number(
+          input.dataset.massCol
+        );
+
+      const editing =
+        isMassGradeEditing(
+          row,
+          col
+        );
+
+      if (editing) {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          exitMassGradeEdit(true);
+          input.focus();
+          return;
+        }
+
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          exitMassGradeEdit(false);
+
+          setMassGradeSelection(
+            row + (
+              event.shiftKey
+                ? -1
+                : 1
+            ),
+            col
+          );
+          return;
+        }
+
+        if (event.key === 'Tab') {
+          event.preventDefault();
+          exitMassGradeEdit(false);
+
+          setMassGradeSelection(
+            row,
+            col + (
+              event.shiftKey
+                ? -1
+                : 1
+            )
+          );
+          return;
+        }
+
+        // Dalam mode edit, tombol edit teks bekerja native.
+        return;
+      }
+
+      const ctrl =
+        event.ctrlKey ||
+        event.metaKey;
 
       if (ctrl) {
-        // copy/cut/paste ditangani event copy/cut/paste native.
         if (
           ['c', 'x', 'v'].includes(
-            String(event.key).toLowerCase()
+            String(event.key)
+              .toLowerCase()
           )
         ) {
           return;
         }
+      }
+
+      if (event.key === 'F2') {
+        event.preventDefault();
+
+        enterMassGradeEdit(
+          row,
+          col,
+          {
+            selectAll: false,
+            caretEnd: true
+          }
+        );
+        return;
+      }
+
+      if (
+        isSpreadsheetPrintableKey(
+          event
+        )
+      ) {
+        event.preventDefault();
+
+        enterMassGradeEdit(
+          row,
+          col,
+          {
+            replaceWith:
+              event.key,
+            selectAll: false,
+            caretEnd: true
+          }
+        );
+        return;
       }
 
       if (
@@ -12439,42 +13203,77 @@
         return;
       }
 
-      if (event.key === 'ArrowDown') {
+      if (
+        event.key === 'ArrowDown'
+      ) {
         event.preventDefault();
-        moveMassGradeFocus(1, 0, {
-          extend: event.shiftKey
-        });
+
+        moveMassGradeFocus(
+          1,
+          0,
+          {
+            extend:
+              event.shiftKey
+          }
+        );
         return;
       }
 
-      if (event.key === 'ArrowUp') {
+      if (
+        event.key === 'ArrowUp'
+      ) {
         event.preventDefault();
-        moveMassGradeFocus(-1, 0, {
-          extend: event.shiftKey
-        });
+
+        moveMassGradeFocus(
+          -1,
+          0,
+          {
+            extend:
+              event.shiftKey
+          }
+        );
         return;
       }
 
-      if (event.key === 'ArrowRight') {
+      if (
+        event.key === 'ArrowRight'
+      ) {
         event.preventDefault();
-        moveMassGradeFocus(0, 1, {
-          extend: event.shiftKey
-        });
+
+        moveMassGradeFocus(
+          0,
+          1,
+          {
+            extend:
+              event.shiftKey
+          }
+        );
         return;
       }
 
-      if (event.key === 'ArrowLeft') {
+      if (
+        event.key === 'ArrowLeft'
+      ) {
         event.preventDefault();
-        moveMassGradeFocus(0, -1, {
-          extend: event.shiftKey
-        });
+
+        moveMassGradeFocus(
+          0,
+          -1,
+          {
+            extend:
+              event.shiftKey
+          }
+        );
         return;
       }
 
       if (event.key === 'Enter') {
         event.preventDefault();
+
         moveMassGradeFocus(
-          event.shiftKey ? -1 : 1,
+          event.shiftKey
+            ? -1
+            : 1,
           0
         );
         return;
@@ -12482,9 +13281,12 @@
 
       if (event.key === 'Tab') {
         event.preventDefault();
+
         moveMassGradeFocus(
           0,
-          event.shiftKey ? -1 : 1
+          event.shiftKey
+            ? -1
+            : 1
         );
       }
     }
@@ -12509,24 +13311,67 @@
         cell.addEventListener('mousedown', event => {
           if (event.button !== 0) return;
 
-          event.preventDefault();
-
-          const extend = event.shiftKey === true;
-
-          if (!extend) {
-            massGradeSheet.anchor = { row, col };
+          if (
+            isMassGradeEditing(
+              row,
+              col
+            )
+          ) {
+            return;
           }
 
-          massGradeSheet.focus = { row, col };
-          massGradeSheet.dragging = true;
+          if (
+            event.detail >= 2 &&
+            input
+          ) {
+            enterMassGradeEdit(
+              row,
+              col,
+              {
+                selectAll: false,
+                caretEnd: false
+              }
+            );
+            return;
+          }
+
+          event.preventDefault();
+
+          if (
+            massGradeSheet.editing
+          ) {
+            exitMassGradeEdit(false);
+          }
+
+          const extend =
+            event.shiftKey === true;
+
+          if (!extend) {
+            massGradeSheet.anchor = {
+              row,
+              col
+            };
+          }
+
+          massGradeSheet.focus = {
+            row,
+            col
+          };
+
+          massGradeSheet.dragging =
+            true;
 
           renderMassGradeSelection();
 
-          input?.focus();
-          input?.select();
+          if (input) {
+            input.readOnly = true;
+            input.focus();
+          }
 
           requestAnimationFrame(() => {
-            ensureMassGradeCellVisible(cell);
+            ensureMassGradeCellVisible(
+              cell
+            );
           });
         });
 
@@ -12541,13 +13386,19 @@
           });
         });
 
-        cell.addEventListener('dblclick', event => {
-          event.preventDefault();
-
-          setMassGradeSelection(row, col, {
-            selectText: true
-          });
-        });
+        cell.addEventListener(
+          'dblclick',
+          () => {
+            enterMassGradeEdit(
+              row,
+              col,
+              {
+                selectAll: false,
+                caretEnd: false
+              }
+            );
+          }
+        );
 
         input?.addEventListener('focus', () => {
           if (!massGradeSheet) return;
@@ -12587,16 +13438,21 @@
       );
 
       grid.addEventListener('copy', event => {
+        if (massGradeSheet?.editing) return;
         handleMassGradeCopy(event, false);
       });
 
       grid.addEventListener('cut', event => {
+        if (massGradeSheet?.editing) return;
         handleMassGradeCopy(event, true);
       });
 
       grid.addEventListener(
         'paste',
-        handleMassGradePaste
+        event => {
+          if (massGradeSheet?.editing) return;
+          handleMassGradePaste(event);
+        }
       );
 
       renderMassGradeSelection();
@@ -12604,7 +13460,7 @@
 
       requestAnimationFrame(() => {
         setMassGradeSelection(0, 0, {
-          selectText: true,
+          selectText: false,
           scroll: false
         });
       });
