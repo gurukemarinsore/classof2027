@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#ffffff" />
-  <title>SMP Negeri 3 Jayapura — Sistem Pendataan Terpadu Murid & Nilai · Frontend 2H-1 Revisi 010</title>
+  <link rel="icon" type="image/svg+xml" href="logo.svg" />
+  <title>Data Siswa Kelas 9 2026-2027</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -6392,6 +6393,116 @@
       }
     }
 
+
+    /* ============================================================
+       2H-1 Revisi 011 — Logo sekolah transparan
+       ============================================================ */
+    .brand-school-logo {
+      width: 46px;
+      height: 46px;
+      flex: 0 0 46px;
+      display: block;
+      object-fit: contain;
+      object-position: center;
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    .app-brand-school-logo {
+      width: 46px;
+      height: 46px;
+      flex: 0 0 46px;
+      display: block;
+      object-fit: contain;
+      object-position: center;
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    @media (max-width: 620px) {
+      .brand-school-logo {
+        width: 42px;
+        height: 42px;
+        flex-basis: 42px;
+      }
+    }
+
+
+    /* ============================================================
+       2H-1 Revisi 011 — Lock Edit Massal saat loading
+       ============================================================ */
+    .bulk-student-grid-wrap {
+      position: relative;
+    }
+
+    .bulk-student-grid-wrap.is-loading {
+      cursor: wait;
+      overflow: hidden;
+    }
+
+    .bulk-student-grid-wrap.is-loading
+    .bulk-student-table {
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .bulk-student-grid-wrap.is-loading
+    .bulk-student-input {
+      cursor: wait;
+    }
+
+    .bulk-grid-loading-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 40;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background:
+        color-mix(
+          in srgb,
+          var(--surface) 91%,
+          transparent
+        );
+      cursor: wait;
+    }
+
+    .bulk-grid-loading-card {
+      width: min(290px, calc(100% - 28px));
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+      box-shadow: 0 10px 28px rgba(20, 40, 70, .10);
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 4px 9px;
+      align-items: center;
+      color: var(--text);
+    }
+
+    .bulk-grid-loading-card > strong {
+      font-size: .69rem;
+      line-height: 1.35;
+    }
+
+    .bulk-grid-loading-card > span:last-child {
+      grid-column: 2;
+      color: var(--muted);
+      font-size: .58rem;
+      line-height: 1.4;
+    }
+
+    .bulk-grid-loading-card
+    .mini-spinner {
+      grid-row: 1 / span 2;
+      align-self: center;
+    }
+
   </style>
 </head>
 <body>
@@ -6408,7 +6519,10 @@
     <div class="app-shell">
       <div class="topbar-inner">
         <div class="brand">
-          <div class="brand-mark"><i class="ti ti-school"></i></div>
+          <img
+            class="brand-school-logo"
+            src="https://i.imgur.com/uJw5HNF.png"
+            alt="Logo SMP Negeri 3 Jayapura">
           <div class="brand-text">
             <strong>SMP NEGERI 3 JAYAPURA</strong>
             <span>Sistem Pendataan Terpadu Murid & Nilai</span>
@@ -6652,7 +6766,10 @@
     <div class="app-layout">
       <aside class="app-sidebar">
         <div class="app-brand">
-          <div class="app-brand-mark"><i class="ti ti-school"></i></div>
+          <img
+            class="app-brand-school-logo"
+            src="https://i.imgur.com/uJw5HNF.png"
+            alt="Logo SMP Negeri 3 Jayapura">
           <div>
             <strong>SMP NEGERI 3 JAYAPURA</strong>
             <span>Data Kelas IX</span>
@@ -8436,14 +8553,30 @@
       ];
     }
 
-    function buildBulkStudentGridHtml(rows = []) {
+    function buildBulkStudentGridHtml(
+      rows = [],
+      locked = false
+    ) {
       const columns = bulkStudentColumns();
 
       return `
-        <div class="bulk-student-grid-wrap"
+        <div class="bulk-student-grid-wrap ${locked ? 'is-loading' : ''}"
           id="bulkStudentGridWrap"
-          tabindex="0"
+          tabindex="${locked ? '-1' : '0'}"
+          aria-busy="${locked ? 'true' : 'false'}"
           aria-label="Spreadsheet data murid">
+
+          ${locked ? `
+            <div class="bulk-grid-loading-overlay"
+              id="bulkGridLoadingOverlay"
+              aria-live="polite">
+              <div class="bulk-grid-loading-card">
+                <span class="mini-spinner"></span>
+                <strong>Memuat data murid…</strong>
+                <span>Cell akan aktif setelah seluruh data kelas selesai dimuat.</span>
+              </div>
+            </div>
+          ` : ''}
           <table class="bulk-student-table">
             <thead>
               <tr>
@@ -8487,6 +8620,7 @@
                             data-bulk-row="${rowIndex}"
                             data-bulk-col="${colIndex}"
                             data-original="${escapeHtml(value)}"
+                            ${locked ? 'disabled' : ''}
                             aria-label="${column.label} baris ${rowIndex + 1}">
                         </td>
                       `;
@@ -9357,7 +9491,14 @@
 
     function bindBulkStudentSpreadsheet() {
       const grid = $('#bulkStudentGridWrap');
-      if (!grid || !bulkStudentSheet) return;
+
+      if (
+        !grid ||
+        !bulkStudentSheet ||
+        bulkStudentSheet.loading
+      ) {
+        return;
+      }
 
       getBulkStudentCells().forEach(cell => {
         const row = Number(cell.dataset.bulkRow);
@@ -9466,7 +9607,8 @@
     function openBulkStudentDialogShell({
       mode,
       kelas,
-      rows = []
+      rows = [],
+      loading = false
     }) {
       const classOptions =
         ['9A','9B','9C','9D','9E','9F','9G','9H','9I','9J']
@@ -9500,7 +9642,8 @@
             </label>
 
             <select id="bulkStudentClass"
-              class="student-form-select">
+              class="student-form-select"
+              ${loading ? 'disabled' : ''}>
               ${classOptions}
             </select>
           </div>
@@ -9515,18 +9658,20 @@
           </div>
         </div>
 
-        ${buildBulkStudentGridHtml(rows)}
+        ${buildBulkStudentGridHtml(rows, loading)}
 
         <div class="bulk-student-footer">
           <div>
             <div id="bulkStudentSummary"
               class="bulk-student-summary">
-              Memeriksa data…
+              ${loading ? 'Menunggu data kelas selesai dimuat…' : 'Memeriksa data…'}
             </div>
 
             <div id="bulkStudentStatus"
               class="dialog-status"
-              style="margin-top:4px"></div>
+              style="margin-top:4px">
+              ${loading ? `Memuat data kelas ${escapeHtml(kelas)}…` : ''}
+            </div>
           </div>
 
           <div class="dialog-actions">
@@ -9538,7 +9683,8 @@
 
             <button id="submitBulkStudents"
               class="action-small primary"
-              type="button">
+              type="button"
+              ${loading ? 'disabled' : ''}>
               <i class="ti ti-device-floppy"></i>
               Simpan
             </button>
@@ -9562,6 +9708,7 @@
         anchor: { row: 0, col: 0 },
         focus: { row: 0, col: 0 },
         dragging: false,
+        loading: loading,
         originalRows: Array.from({ length: 40 }, (_, index) => {
           const row = rows[index];
           return row
@@ -9616,16 +9763,141 @@
       bindBulkStudentSpreadsheet();
     }
 
+    function setBulkStudentEditorLoading(
+      loading,
+      kelas = ''
+    ) {
+      if (!bulkStudentSheet) return;
+
+      bulkStudentSheet.loading =
+        loading === true;
+
+      bulkStudentSheet.dragging =
+        false;
+
+      const grid =
+        $('#bulkStudentGridWrap');
+
+      const submit =
+        $('#submitBulkStudents');
+
+      const classSelect =
+        $('#bulkStudentClass');
+
+      const status =
+        $('#bulkStudentStatus');
+
+      const summary =
+        $('#bulkStudentSummary');
+
+      getBulkStudentInputs().forEach(
+        input => {
+          input.disabled =
+            loading === true;
+        }
+      );
+
+      if (grid) {
+        grid.classList.toggle(
+          'is-loading',
+          loading === true
+        );
+
+        grid.setAttribute(
+          'aria-busy',
+          loading ? 'true' : 'false'
+        );
+
+        grid.tabIndex =
+          loading ? -1 : 0;
+
+        let overlay =
+          $('#bulkGridLoadingOverlay');
+
+        if (loading && !overlay) {
+          overlay =
+            document.createElement('div');
+
+          overlay.id =
+            'bulkGridLoadingOverlay';
+
+          overlay.className =
+            'bulk-grid-loading-overlay';
+
+          overlay.setAttribute(
+            'aria-live',
+            'polite'
+          );
+
+          overlay.innerHTML = `
+            <div class="bulk-grid-loading-card">
+              <span class="mini-spinner"></span>
+              <strong>Memuat data murid…</strong>
+              <span>Cell akan aktif setelah seluruh data kelas selesai dimuat.</span>
+            </div>
+          `;
+
+          grid.appendChild(overlay);
+        }
+
+        if (!loading && overlay) {
+          overlay.remove();
+        }
+      }
+
+      if (submit) {
+        submit.disabled =
+          loading === true ||
+          submit.disabled;
+      }
+
+      if (classSelect) {
+        classSelect.disabled =
+          loading === true;
+      }
+
+      if (loading) {
+        closeInlineInfoPopovers();
+
+        getBulkStudentCells().forEach(
+          cell => {
+            cell.classList.remove(
+              'selected',
+              'active',
+              'range-top',
+              'range-bottom',
+              'range-left',
+              'range-right'
+            );
+          }
+        );
+
+        if (summary) {
+          summary.textContent =
+            'Menunggu data kelas selesai dimuat…';
+        }
+
+        if (status) {
+          status.textContent =
+            `Memuat data kelas ${kelas || bulkStudentSheet.kelas}…`;
+
+          status.className =
+            'dialog-status';
+        }
+      }
+    }
+
+
     async function loadBulkEditClass(kelas) {
       const loadVersion = ++bulkStudentLoadVersion;
       const status = $('#bulkStudentStatus');
       const submit = $('#submitBulkStudents');
+      const classSelect = $('#bulkStudentClass');
 
-      if (submit) submit.disabled = true;
-      if (status) {
-        status.textContent = `Memuat data kelas ${kelas}…`;
-        status.className = 'dialog-status';
-      }
+      setBulkStudentEditorLoading(
+        true,
+        kelas
+      );
 
       try {
         const data = await apiPost('liststudents', {
@@ -9657,16 +9929,44 @@
         openBulkStudentDialogShell({
           mode: 'edit',
           kelas,
-          rows
+          rows,
+          loading: false
         });
 
       } catch (error) {
         if (await handleSessionError(error)) return;
-        if (status) {
-          status.textContent = error.message || 'Data kelas gagal dimuat.';
-          status.className = 'dialog-status error';
+
+        // Data gagal dimuat: grid tetap terkunci agar grid kosong
+        // tidak pernah dianggap sebagai data asli.
+        if (bulkStudentSheet) {
+          bulkStudentSheet.loading = true;
         }
-        if (submit) submit.disabled = false;
+
+        getBulkStudentInputs().forEach(
+          input => {
+            input.disabled = true;
+          }
+        );
+
+        $('#bulkStudentGridWrap')
+          ?.classList.add('is-loading');
+
+        if (status) {
+          status.textContent =
+            error.message ||
+            'Data kelas gagal dimuat. Pilih kelas lain atau tutup lalu buka Edit Massal kembali.';
+
+          status.className =
+            'dialog-status error';
+        }
+
+        if (submit) {
+          submit.disabled = true;
+        }
+
+        if (classSelect) {
+          classSelect.disabled = false;
+        }
       }
     }
 
@@ -9681,7 +9981,8 @@
       openBulkStudentDialogShell({
         mode: 'add',
         kelas: defaultClass,
-        rows: []
+        rows: [],
+        loading: false
       });
     }
 
@@ -9697,7 +9998,8 @@
       openBulkStudentDialogShell({
         mode: 'edit',
         kelas: defaultClass,
-        rows: []
+        rows: [],
+        loading: true
       });
 
       await loadBulkEditClass(defaultClass);
