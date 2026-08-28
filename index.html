@@ -6592,6 +6592,379 @@
       caret-color: auto;
     }
 
+
+    /* ============================================================
+       2H-1 Revisi 015 — Panel Nilai dapat diringkas
+       ============================================================ */
+
+    .grades-control-card .grades-toolbar {
+      grid-template-columns:
+        max-content
+        minmax(130px, 190px)
+        minmax(0, 1fr)
+        38px;
+      grid-template-areas:
+        "judul kelas aksi collapse"
+        "semester semester semester semester";
+    }
+
+    .grade-panel-toggle {
+      grid-area: collapse;
+      width: 38px;
+      height: 38px;
+      min-width: 38px;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      align-self: center;
+      justify-self: end;
+
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: var(--surface-2);
+      color: var(--muted);
+      cursor: pointer;
+
+      font-size: 1rem;
+      transition:
+        background .18s ease,
+        border-color .18s ease,
+        color .18s ease,
+        transform .18s ease;
+    }
+
+    .grade-panel-toggle:hover {
+      color: var(--primary);
+      background: var(--primary-soft);
+      border-color:
+        color-mix(
+          in srgb,
+          var(--primary) 24%,
+          var(--border)
+        );
+    }
+
+    .grade-panel-toggle:active {
+      transform: translateY(1px);
+    }
+
+    .grade-collapsed-summary {
+      display: none;
+      color: var(--muted);
+      font-size: .68rem;
+      font-weight: 650;
+      white-space: nowrap;
+    }
+
+    /* Collapsed: satu bar ringkas, bukan card yang menumpuk. */
+    .grades-page.grades-panel-collapsed
+    .grades-control-card {
+      padding: 10px 14px;
+    }
+
+    .grades-page.grades-panel-collapsed
+    .grades-control-card
+    .grades-toolbar {
+      grid-template-columns:
+        minmax(0, 1fr)
+        38px;
+      grid-template-areas:
+        "judul collapse";
+      gap: 10px;
+    }
+
+    .grades-page.grades-panel-collapsed
+    .grade-class-control,
+    .grades-page.grades-panel-collapsed
+    .grades-actions,
+    .grades-page.grades-panel-collapsed
+    .semester-tabs,
+    .grades-page.grades-panel-collapsed
+    .grade-summary-grid {
+      display: none !important;
+    }
+
+    .grades-page.grades-panel-collapsed
+    .grade-title-inline {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      white-space: normal;
+    }
+
+    .grades-page.grades-panel-collapsed
+    .grade-collapsed-summary {
+      display: inline-flex;
+      align-items: center;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Statistik berada di luar control-card sehingga disembunyikan
+       langsung sebagai anak halaman ketika panel diringkas. */
+    .grades-page.grades-panel-collapsed
+    > .grade-summary-grid {
+      display: none !important;
+    }
+
+    /* Beri tabel ruang vertikal yang nyata setelah panel diringkas. */
+    .grades-page.grades-panel-collapsed
+    .grades-table-wrap {
+      max-height: calc(100vh - 190px);
+      min-height: 500px;
+    }
+
+    @media (max-width: 980px) {
+      .grades-control-card .grades-toolbar {
+        grid-template-columns:
+          max-content
+          minmax(120px, 165px)
+          minmax(0, 1fr)
+          38px;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .grades-control-card .grades-toolbar {
+        grid-template-columns:
+          minmax(0, 1fr)
+          38px;
+        grid-template-areas:
+          "judul collapse"
+          "kelas kelas"
+          "aksi aksi"
+          "semester semester";
+      }
+
+      .grade-title-inline {
+        justify-content: flex-start;
+      }
+
+      .grades-page.grades-panel-collapsed
+      .grades-control-card
+      .grades-toolbar {
+        grid-template-columns:
+          minmax(0, 1fr)
+          38px;
+        grid-template-areas:
+          "judul collapse";
+      }
+
+      .grades-page.grades-panel-collapsed
+      .grade-title-inline {
+        gap: 7px;
+      }
+
+      .grades-page.grades-panel-collapsed
+      .grade-title-inline h4 {
+        flex: 0 0 auto;
+      }
+
+      .grades-page.grades-panel-collapsed
+      .grade-collapsed-summary {
+        font-size: .64rem;
+      }
+
+      .grades-page.grades-panel-collapsed
+      .grades-table-wrap {
+        max-height: calc(100vh - 205px);
+        min-height: 360px;
+      }
+    }
+
+    @media (max-width: 460px) {
+      .grades-page.grades-panel-collapsed
+      .grade-title-inline {
+        display: grid;
+        gap: 2px;
+      }
+
+      .grades-page.grades-panel-collapsed
+      .grade-collapsed-summary {
+        display: block;
+      }
+    }
+
+
+    /* ============================================================
+       2H-1 Revisi 016 — Compact Action Bar saat panel Nilai diringkas
+       ============================================================ */
+
+    /* Desktop minimized:
+       Judul/ringkasan di kiri, aksi penting + chevron di kanan. */
+    .grades-page.grades-panel-collapsed
+    .grades-control-card
+    .grades-toolbar {
+      grid-template-columns:
+        minmax(0, 1fr)
+        max-content
+        38px;
+      grid-template-areas:
+        "judul aksi collapse";
+      align-items: center;
+      gap: 9px;
+    }
+
+    /* Saat minimized, kelas/semester/statistik tetap disembunyikan,
+       tetapi area aksi TIDAK disembunyikan lagi. */
+    .grades-page.grades-panel-collapsed
+    .grade-class-control,
+    .grades-page.grades-panel-collapsed
+    .semester-tabs,
+    .grades-page.grades-panel-collapsed
+    .grade-summary-grid {
+      display: none !important;
+    }
+
+    .grades-page.grades-panel-collapsed
+    .grades-actions {
+      display: flex !important;
+      grid-area: aksi;
+      justify-content: flex-end;
+      align-items: center;
+      flex-wrap: nowrap;
+      gap: 7px;
+      min-width: 0;
+    }
+
+    /* Super Admin: tombol Kunci Semester tidak ditampilkan
+       pada mode minimized sesuai keputusan final. */
+    .grades-page.grades-panel-collapsed
+    #toggleSemesterLockBtn {
+      display: none !important;
+    }
+
+    /* Tombol penting tetap normal/berteks pada desktop. */
+    .grades-page.grades-panel-collapsed
+    .grades-actions
+    .grade-compact-action {
+      width: auto;
+      min-width: 0;
+      white-space: nowrap;
+      justify-content: center;
+    }
+
+    .grades-page.grades-panel-collapsed
+    .grades-actions
+    .grade-action-label {
+      display: inline;
+    }
+
+    /* Revisi 015 sebelumnya menyembunyikan seluruh grades-actions;
+       override eksplisit agar tidak terjadi konflik urutan CSS. */
+    .grades-page.grades-panel-collapsed
+    .grades-actions {
+      visibility: visible;
+    }
+
+    /* Tablet/HP:
+       saat minimized, tombol aksi menjadi icon-only agar panel tetap tipis.
+       Expanded tidak disentuh dan tetap memakai layout sebelumnya. */
+    @media (max-width: 760px) {
+      .grades-page.grades-panel-collapsed
+      .grades-control-card {
+        padding: 9px 11px;
+      }
+
+      .grades-page.grades-panel-collapsed
+      .grades-control-card
+      .grades-toolbar {
+        grid-template-columns:
+          minmax(0, 1fr)
+          max-content
+          38px;
+        grid-template-areas:
+          "judul aksi collapse";
+        gap: 6px;
+      }
+
+      .grades-page.grades-panel-collapsed
+      .grades-actions {
+        display: flex !important;
+        grid-template-columns: none;
+        gap: 5px;
+      }
+
+      .grades-page.grades-panel-collapsed
+      .grades-actions
+      .grade-compact-action {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        padding: 0;
+        display: inline-grid;
+        place-items: center;
+        border-radius: 10px;
+      }
+
+      .grades-page.grades-panel-collapsed
+      .grades-actions
+      .grade-action-label {
+        display: none !important;
+      }
+
+      .grades-page.grades-panel-collapsed
+      .grades-actions
+      .grade-compact-action i {
+        margin: 0;
+        font-size: 1rem;
+      }
+
+      /* Ringkasan sekunder disembunyikan pada HP supaya judul
+         tidak bertabrakan dengan tombol icon-only. */
+      .grades-page.grades-panel-collapsed
+      .grade-collapsed-summary {
+        display: none !important;
+      }
+
+      .grades-page.grades-panel-collapsed
+      .grade-title-inline {
+        min-width: 0;
+        overflow: hidden;
+      }
+
+      .grades-page.grades-panel-collapsed
+      .grade-title-inline h4 {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+
+    @media (max-width: 460px) {
+      .grades-page.grades-panel-collapsed
+      .grades-control-card
+      .grades-toolbar {
+        grid-template-columns:
+          minmax(0, 1fr)
+          max-content
+          36px;
+        gap: 5px;
+      }
+
+      .grades-page.grades-panel-collapsed
+      .grade-panel-toggle {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+      }
+
+      .grades-page.grades-panel-collapsed
+      .grade-title-inline {
+        display: flex;
+        gap: 0;
+      }
+
+      .grades-page.grades-panel-collapsed
+      .grade-title-inline h4 {
+        font-size: .84rem;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -10589,6 +10962,11 @@
             <div class="grades-toolbar">
               <div class="grade-title-inline">
                 <h4>Nilai Semester 1–6</h4>
+                <span
+                  class="grade-collapsed-summary"
+                  id="gradeCollapsedSummary">
+                  Kelas ${escapeHtml(state.grades.kelas || '—')} · Semester ${state.grades.semester}
+                </span>
               </div>
 
               ${
@@ -10602,23 +10980,38 @@
               }
 
               <div class="grades-actions">
-                <button id="refreshGradesBtn" class="action-small" type="button">
-                  <i class="ti ti-refresh"></i> Perbarui
+                <button
+                  id="refreshGradesBtn"
+                  class="action-small grade-compact-action"
+                  type="button"
+                  aria-label="Perbarui nilai"
+                  title="Perbarui">
+                  <i class="ti ti-refresh" aria-hidden="true"></i>
+                  <span class="grade-action-label">Perbarui</span>
                 </button>
 
                 ${isSuper ? `
-                  <button id="toggleSemesterLockBtn" class="action-small" type="button">
-                    <i class="ti ti-lock"></i> Kunci Semester
+                  <button
+                    id="toggleSemesterLockBtn"
+                    class="action-small grade-compact-action"
+                    type="button"
+                    aria-label="Kunci semester"
+                    title="Kunci Semester">
+                    <i class="ti ti-lock" aria-hidden="true"></i>
+                    <span class="grade-action-label">Kunci Semester</span>
                   </button>
                 ` : ''}
 
                 ${
                   canRoleEditGrades && isMassGradeDesktopAvailable()
                     ? `<button id="pasteGradesBtn"
-                        class="action-small desktop-grade-paste"
+                        class="action-small desktop-grade-paste grade-compact-action"
                         type="button"
-                        disabled>
-                        <i class="ti ti-table-options"></i> Edit Semua
+                        disabled
+                        aria-label="Edit semua nilai"
+                        title="Edit Semua">
+                        <i class="ti ti-table-options" aria-hidden="true"></i>
+                        <span class="grade-action-label">Edit Semua</span>
                       </button>`
                     : ''
                 }
@@ -10626,10 +11019,13 @@
                 ${
                   canRoleEditGrades
                     ? `<button id="saveAllGradesBtn"
-                        class="action-small primary"
+                        class="action-small primary grade-compact-action"
                         type="button"
-                        disabled>
-                        <i class="ti ti-device-floppy"></i> Simpan Perubahan
+                        disabled
+                        aria-label="Simpan perubahan nilai"
+                        title="Simpan Perubahan">
+                        <i class="ti ti-device-floppy" aria-hidden="true"></i>
+                        <span class="grade-action-label">Simpan Perubahan</span>
                       </button>`
                     : ''
                 }
@@ -10646,6 +11042,16 @@
                   </button>
                 `).join('')}
               </div>
+
+              <button
+                id="toggleGradesPanelBtn"
+                class="grade-panel-toggle"
+                type="button"
+                aria-expanded="true"
+                title="Ringkas panel nilai"
+                aria-label="Ringkas panel nilai">
+                <i class="ti ti-chevron-up" aria-hidden="true"></i>
+              </button>
             </div>
           </article>
 
@@ -10675,6 +11081,17 @@
     }
 
     function bindGradesModuleEvents() {
+      $('#toggleGradesPanelBtn')?.addEventListener('click', () => {
+        const page = $('.grades-page');
+        if (!page) return;
+
+        setGradesPanelCollapsed(
+          !page.classList.contains('grades-panel-collapsed')
+        );
+      });
+
+      updateGradeCollapsedSummary();
+
       $('#gradeClassFilter')?.addEventListener('change', async event => {
         if (!(await confirmLeaveDirtyGrades())) {
           event.target.value = state.grades.kelas;
@@ -10998,7 +11415,59 @@
       }
     }
 
+    function updateGradeCollapsedSummary() {
+      const target = $('#gradeCollapsedSummary');
+      if (!target) return;
+
+      const kelas =
+        state.user?.role === 'WALI_KELAS'
+          ? (state.user?.kelasPerwalian || state.grades.kelas || '—')
+          : (state.grades.kelas || '—');
+
+      target.textContent =
+        `Kelas ${kelas} · Semester ${state.grades.semester}`;
+    }
+
+    function setGradesPanelCollapsed(collapsed) {
+      const page = $('.grades-page');
+      const button = $('#toggleGradesPanelBtn');
+
+      if (!page || !button) return;
+
+      page.classList.toggle(
+        'grades-panel-collapsed',
+        collapsed === true
+      );
+
+      button.setAttribute(
+        'aria-expanded',
+        collapsed ? 'false' : 'true'
+      );
+
+      button.setAttribute(
+        'aria-label',
+        collapsed
+          ? 'Tampilkan panel nilai'
+          : 'Ringkas panel nilai'
+      );
+
+      button.title =
+        collapsed
+          ? 'Tampilkan panel nilai'
+          : 'Ringkas panel nilai';
+
+      button.innerHTML =
+        collapsed
+          ? '<i class="ti ti-chevron-down" aria-hidden="true"></i>'
+          : '<i class="ti ti-chevron-up" aria-hidden="true"></i>';
+
+      updateGradeCollapsedSummary();
+    }
+
+
     function renderGradeStatus() {
+      updateGradeCollapsedSummary();
+
       const pasteBtn = $('#pasteGradesBtn');
       const saveBtn = $('#saveAllGradesBtn');
       const lockBtn = $('#toggleSemesterLockBtn');
