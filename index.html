@@ -6967,7 +6967,7 @@
 
 
     /* ============================================================
-       2H-1 Revisi 017 — Sidebar desktop + Profile Popup + Avatar
+       2H-1 Revisi 018 — Final Profile / Account Photo / Mobile Header
        ============================================================ */
 
     /* Avatar gambar menggantikan inisial tanpa mengubah ukuran card. */
@@ -7342,6 +7342,253 @@
       }
     }
 
+
+    /* ============================================================
+       2H-1 Revisi 018 — Penyempurnaan profil, akun, nilai, dan HP
+       ============================================================ */
+
+    /* Tombol yang memakai atribut hidden harus benar-benar hilang,
+       termasuk Ganti Password untuk SUPER_ADMIN. */
+    .profile-popup-item[hidden] {
+      display: none !important;
+    }
+
+    /* Role di popup profil menjadi badge/kapsul sesuai warna role. */
+    .profile-popup-identity .profile-role-badge {
+      width: fit-content;
+      min-height: 24px;
+      margin-top: 6px;
+      padding: 0 9px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: .59rem;
+      line-height: 1;
+      font-weight: 760;
+      white-space: nowrap;
+    }
+
+    .profile-role-badge.super {
+      color: var(--primary);
+      background: var(--primary-soft);
+      border-color:
+        color-mix(
+          in srgb,
+          var(--primary) 22%,
+          var(--border)
+        );
+    }
+
+    .profile-role-badge.wali {
+      color: #7d56d8;
+      background:
+        color-mix(
+          in srgb,
+          #7d56d8 8%,
+          var(--surface)
+        );
+      border-color:
+        color-mix(
+          in srgb,
+          #7d56d8 20%,
+          var(--border)
+        );
+    }
+
+    .profile-role-badge.tu {
+      color: var(--warning);
+      background:
+        color-mix(
+          in srgb,
+          var(--warning) 8%,
+          var(--surface)
+        );
+      border-color:
+        color-mix(
+          in srgb,
+          var(--warning) 20%,
+          var(--border)
+        );
+    }
+
+    /* Input ganti password Wali/TU dengan tombol mata di kanan. */
+    .profile-password-input-wrap {
+      position: relative;
+      width: 100%;
+    }
+
+    .profile-password-input-wrap input {
+      padding-right: 46px;
+    }
+
+    .profile-password-toggle {
+      position: absolute;
+      top: 50%;
+      right: 7px;
+      transform: translateY(-50%);
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: .95rem;
+    }
+
+    .profile-password-toggle:hover {
+      color: var(--primary);
+      background: var(--primary-soft);
+    }
+
+    /* Kolom Aksi Nilai = 1,5 x kolom mapel (82px x 1,5 = 123px). */
+    .grades-table th.grade-action-head,
+    .grades-table td.grade-row-actions {
+      width: 123px !important;
+      min-width: 123px !important;
+      max-width: 123px !important;
+      box-sizing: border-box;
+      text-align: center;
+    }
+
+    .grades-table th.grade-action-head {
+      padding-left: 6px;
+      padding-right: 6px;
+    }
+
+    /* Kurangi min-width lama agar sisa ruang tidak menumpuk
+       secara berlebihan pada kolom Aksi. */
+    .grades-table {
+      min-width: 1370px;
+    }
+
+    /* Kolom FOTO pada Manajemen Akun Super Admin. */
+    .accounts-table {
+      min-width: 1115px;
+    }
+
+    .accounts-table th.account-photo-head,
+    .accounts-table td.account-photo-cell {
+      width: 68px;
+      min-width: 68px;
+      max-width: 68px;
+      box-sizing: border-box;
+      text-align: center;
+    }
+
+    .account-photo {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      border-radius: 12px;
+      border: 1px solid
+        color-mix(
+          in srgb,
+          var(--primary) 22%,
+          var(--border)
+        );
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-size: .75rem;
+      font-weight: 800;
+      user-select: none;
+    }
+
+    .account-photo img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    /* Logo sekolah hanya tampil pada header setelah login di HP. */
+    .mobile-app-school-logo {
+      display: none;
+    }
+
+    @media (max-width: 820px) {
+      .app-header {
+        display: grid;
+        grid-template-columns: 38px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 9px;
+      }
+
+      .mobile-app-school-logo {
+        display: block;
+        width: 38px;
+        height: 38px;
+        object-fit: contain;
+        object-position: center;
+        flex: 0 0 38px;
+      }
+
+      .app-header-title {
+        min-width: 0;
+      }
+
+      .app-header-title h2 {
+        font-size: 1rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .app-header-title p {
+        width: 100%;
+        max-width: none;
+        margin-top: 2px;
+        font-size: .62rem;
+      }
+
+      .app-header-actions {
+        justify-self: end;
+      }
+
+      /* Pada mode kartu HP, FOTO tetap ringkas dan tidak mengambil
+         seluruh satu baris. */
+      .accounts-table td.account-photo-cell {
+        width: auto;
+        min-width: 0;
+        max-width: none;
+        text-align: left;
+      }
+
+      .account-photo {
+        margin: 0;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .app-header {
+        grid-template-columns: 34px minmax(0, 1fr) auto;
+        gap: 7px;
+        padding-left: 9px;
+        padding-right: 9px;
+      }
+
+      .mobile-app-school-logo {
+        width: 34px;
+        height: 34px;
+      }
+
+      .app-header-title h2 {
+        font-size: .92rem;
+      }
+
+      .app-header-title p {
+        font-size: .58rem;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -7624,17 +7871,6 @@
           </div>
         </div>
 
-        <div class="user-side-card">
-          <div class="user-side-top">
-            <div class="user-avatar" id="sideAvatar">A</div>
-            <div class="user-side-name">
-              <strong id="sideUserName">Pengguna</strong>
-              <span id="sideRoleName"><span class="sk sk-line-sm"></span></span>
-            </div>
-          </div>
-          <div class="scope-pill" id="sideScope"><span class="sk sk-line-lg"></span></div>
-        </div>
-
         <nav class="app-nav" id="appNav"></nav>
 
         <div class="sidebar-footer">
@@ -7645,6 +7881,11 @@
 
       <div class="app-main">
         <header class="app-header">
+          <img
+            class="mobile-app-school-logo"
+            src="https://i.imgur.com/uJw5HNF.png"
+            alt="Logo SMP Negeri 3 Jayapura">
+
           <div class="app-header-title">
             <h2 id="appPageTitle">Dashboard</h2>
             <p id="appPageSubtitle"><span class="sk sk-line-xl"></span></p>
@@ -7672,7 +7913,7 @@
                   <div class="user-avatar profile-popup-avatar" id="profilePopupAvatar">A</div>
                   <div class="profile-popup-identity">
                     <strong id="profilePopupName">Pengguna</strong>
-                    <span id="profilePopupRole">—</span>
+                    <span id="profilePopupRole" class="profile-role-badge">—</span>
                   </div>
                 </div>
 
@@ -8395,7 +8636,6 @@
 
     function renderUserAvatars() {
       const initial = userInitial(state.user);
-      paintUserAvatar($('#sideAvatar'), initial);
       paintUserAvatar($('#headerAvatar'), initial);
       paintUserAvatar($('#profilePopupAvatar'), initial);
     }
@@ -8407,27 +8647,42 @@
 
       renderUserAvatars();
 
-      $('#sideUserName').textContent =
-        state.user.nama || state.user.username || 'Pengguna';
-
-      $('#sideRoleName').textContent = meta.label;
-      $('#sideScope').textContent = currentRoleScope();
-
       if ($('#profilePopupName')) {
         $('#profilePopupName').textContent =
           state.user.nama || state.user.username || 'Pengguna';
       }
 
-      if ($('#profilePopupRole')) {
-        $('#profilePopupRole').textContent = meta.label;
+      const profileRole = $('#profilePopupRole');
+      if (profileRole) {
+        const role = state.user.role || '';
+        const roleLabel =
+          role === 'WALI_KELAS'
+            ? `Wali Kelas ${state.user.kelasPerwalian || '—'}`
+            : meta.label;
+
+        profileRole.textContent = roleLabel;
+        profileRole.className =
+          'profile-role-badge ' +
+          (
+            role === 'SUPER_ADMIN'
+              ? 'super'
+              : (
+                role === 'WALI_KELAS'
+                  ? 'wali'
+                  : 'tu'
+              )
+          );
       }
 
       const ownPasswordButton = $('#profileChangePasswordBtn');
       if (ownPasswordButton) {
-        ownPasswordButton.hidden = !(
+        const allowed =
           state.user.role === 'WALI_KELAS' ||
-          state.user.role === 'ADMIN_TU'
-        );
+          state.user.role === 'ADMIN_TU';
+
+        ownPasswordButton.hidden = !allowed;
+        ownPasswordButton.style.display =
+          allowed ? 'flex' : 'none';
       }
 
       $('#appPageSubtitle').textContent =
@@ -8762,17 +9017,47 @@
         <form id="ownPasswordForm" class="profile-password-form" autocomplete="off">
           <label>
             <span>Password Saat Ini</span>
-            <input id="ownCurrentPassword" type="password" autocomplete="current-password" required>
+            <div class="profile-password-input-wrap">
+              <input id="ownCurrentPassword" type="password" autocomplete="current-password" required>
+              <button
+                class="profile-password-toggle"
+                type="button"
+                data-own-password-toggle="ownCurrentPassword"
+                aria-label="Tampilkan Password Saat Ini"
+                title="Lihat/sembunyikan password">
+                <i class="ti ti-eye" aria-hidden="true"></i>
+              </button>
+            </div>
           </label>
 
           <label>
             <span>Password Baru</span>
-            <input id="ownNewPassword" type="password" autocomplete="new-password" required>
+            <div class="profile-password-input-wrap">
+              <input id="ownNewPassword" type="password" autocomplete="new-password" required>
+              <button
+                class="profile-password-toggle"
+                type="button"
+                data-own-password-toggle="ownNewPassword"
+                aria-label="Tampilkan Password Baru"
+                title="Lihat/sembunyikan password">
+                <i class="ti ti-eye" aria-hidden="true"></i>
+              </button>
+            </div>
           </label>
 
           <label>
             <span>Ulangi Password Baru</span>
-            <input id="ownConfirmPassword" type="password" autocomplete="new-password" required>
+            <div class="profile-password-input-wrap">
+              <input id="ownConfirmPassword" type="password" autocomplete="new-password" required>
+              <button
+                class="profile-password-toggle"
+                type="button"
+                data-own-password-toggle="ownConfirmPassword"
+                aria-label="Tampilkan Ulangi Password Baru"
+                title="Lihat/sembunyikan password">
+                <i class="ti ti-eye" aria-hidden="true"></i>
+              </button>
+            </div>
           </label>
 
           <div class="form-status" id="ownPasswordStatus"></div>
@@ -8788,6 +9073,41 @@
 
       $('#ownPasswordCloseBtn').addEventListener('click', closeAppDialog);
       $('#ownPasswordCancelBtn').addEventListener('click', closeAppDialog);
+
+      $$('[data-own-password-toggle]').forEach(button => {
+        button.addEventListener('click', () => {
+          const targetId =
+            button.getAttribute('data-own-password-toggle');
+
+          const input = targetId
+            ? document.getElementById(targetId)
+            : null;
+
+          const icon = button.querySelector('i');
+
+          if (!input) return;
+
+          const showing =
+            input.type === 'text';
+
+          input.type =
+            showing ? 'password' : 'text';
+
+          if (icon) {
+            icon.className =
+              showing
+                ? 'ti ti-eye'
+                : 'ti ti-eye-off';
+          }
+
+          button.setAttribute(
+            'aria-label',
+            showing
+              ? 'Tampilkan password'
+              : 'Sembunyikan password'
+          );
+        });
+      });
 
       $('#ownPasswordForm').addEventListener('submit', async event => {
         event.preventDefault();
@@ -12553,7 +12873,7 @@
                 ${subjects.map(subject => `<th class="grade-subject-head" title="${escapeHtml(subject)}">${gradeSubjectHeaderHtml(subject)}</th>`).join('')}
                 <th class="grade-average-head">Rata-rata<br>Semester</th>
                 <th class="grade-average-head">Rata-rata<br>Keseluruhan</th>
-                ${state.grades.canEdit ? '<th>Aksi</th>' : ''}
+                ${state.grades.canEdit ? '<th class="grade-action-head">Aksi</th>' : ''}
               </tr>
             </thead>
             <tbody>
@@ -17154,6 +17474,47 @@
       return 'tu';
     }
 
+    function accountPhotoHtml(account) {
+      const name = String(
+        account?.nama ||
+        account?.username ||
+        'A'
+      ).trim();
+
+      const initial =
+        (name.charAt(0) || 'A').toUpperCase();
+
+      const dataUrl =
+        String(account?.avatar?.dataUrl || '');
+
+      const custom =
+        account?.avatar?.hasAvatar === true &&
+        dataUrl.startsWith('data:image/png;base64,');
+
+      if (custom) {
+        return `
+          <span class="account-photo is-custom"
+            title="Foto custom"
+            aria-label="Foto custom ${escapeHtml(name)}">
+            <img
+              src="${escapeHtml(dataUrl)}"
+              alt="Foto ${escapeHtml(name)}"
+              loading="lazy"
+              draggable="false">
+          </span>
+        `;
+      }
+
+      return `
+        <span class="account-photo is-default"
+          title="Avatar default"
+          aria-label="Avatar default ${escapeHtml(name)}">
+          ${escapeHtml(initial)}
+        </span>
+      `;
+    }
+
+
     function maskedPassword(password) {
       const length = Math.max(
         8,
@@ -17195,6 +17556,7 @@
             <thead>
               <tr>
                 <th>Nama</th>
+                <th class="account-photo-head">Foto</th>
                 <th>Username</th>
                 <th>Password</th>
                 <th>Role</th>
@@ -17213,6 +17575,10 @@
                         ? '<span class="account-self-badge"><i class="ti ti-user-check"></i> Akun Anda</span>'
                         : '<span>Akun pengguna</span>'}
                     </div>
+                  </td>
+
+                  <td class="account-photo-cell" data-label="Foto">
+                    ${accountPhotoHtml(account)}
                   </td>
 
                   <td data-label="Username"><strong>${escapeHtml(account.username)}</strong></td>
