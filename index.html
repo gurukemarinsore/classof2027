@@ -6967,7 +6967,7 @@
 
 
     /* ============================================================
-       2H-1 Revisi 023 — Fullscreen Edit Semua + Wali Mobile Actions + Sidebar Rail Fix
+       2H-1 Revisi 024 — Stable Sidebar Icons + Wali 50-50 Actions + App Version 1.24
        ============================================================ */
 
     /* Avatar gambar menggantikan inisial tanpa mengubah ukuran card. */
@@ -8648,6 +8648,183 @@
       }
     }
 
+
+    /* ============================================================
+       2H-1 Revisi 024 — Versi 1.24
+       Stable Sidebar Icons + Wali Mobile 50:50
+       ============================================================ */
+
+    /* Label versi mengikuti font/warna "Dikembangkan oleh". */
+    .sidebar-footer .app-version-label {
+      color: var(--muted);
+      font-size: .66rem;
+      line-height: 1.45;
+      text-align: center;
+    }
+
+    /* ------------------------------------------------------------
+       A. SIDEBAR DESKTOP — IKON TIDAK BOLEH MEMANTUL
+       Ikon dipisahkan dari flow teks dengan position:absolute.
+       Dengan ini teks boleh mengecil/hilang tanpa pernah
+       memengaruhi koordinat ikon.
+       ------------------------------------------------------------ */
+    @media (min-width: 821px) {
+      .app-nav-btn,
+      .app-layout.sidebar-collapsed
+      .app-nav-btn {
+        position: relative;
+        justify-content: flex-start;
+        min-height: 42px;
+      }
+
+      /* Expanded: ruang teks dimulai setelah rail ikon tetap. */
+      .app-nav-btn {
+        padding:
+          0
+          12px
+          0
+          54px;
+      }
+
+      /*
+       * Ikon selalu berada 17px dari kiri tombol.
+       * Tombol sendiri selalu mulai pada x yang sama di sidebar,
+       * jadi center ikon tidak pernah berpindah.
+       */
+      .app-nav-btn > i,
+      .app-layout.sidebar-collapsed
+      .app-nav-btn > i {
+        position: absolute;
+        left: 17px;
+        top: 50%;
+        width: 20px;
+        min-width: 20px;
+        max-width: 20px;
+        height: 20px;
+        margin: 0;
+        display: grid;
+        place-items: center;
+        flex: none;
+        transform: translateY(-50%) !important;
+        transition: none !important;
+        animation: none !important;
+        line-height: 1;
+        text-align: center;
+      }
+
+      /*
+       * Collapse: hanya lebar badge/tombol yang mengecil.
+       * Ikon tetap di left:17px dan tidak bergantung pada teks.
+       */
+      .app-layout.sidebar-collapsed
+      .app-nav-btn {
+        width: 54px;
+        min-width: 54px;
+        max-width: 54px;
+        padding: 0;
+        margin: 0;
+      }
+
+      /* Teks hanya menghilang ke kanan; tidak mendorong ikon. */
+      .app-nav-btn > span {
+        margin: 0;
+        transform-origin: left center;
+      }
+
+      .app-layout.sidebar-collapsed
+      .app-nav-btn > span {
+        max-width: 0;
+        opacity: 0;
+        overflow: hidden;
+        transform: translateX(-4px);
+        pointer-events: none;
+      }
+
+      /*
+       * Hindari transition "all" lama menginterpolasi padding/layout.
+       * Hanya visual tombol yang dianimasikan.
+       */
+      .app-nav-btn {
+        transition:
+          width .24s cubic-bezier(.2,.8,.2,1),
+          background .18s ease,
+          border-color .18s ease,
+          color .18s ease;
+      }
+
+      /* Logo tetap benar-benar fixed seperti Revisi 023. */
+      .app-brand-school-logo {
+        width: 46px !important;
+        min-width: 46px !important;
+        max-width: 46px !important;
+        height: 46px !important;
+        min-height: 46px !important;
+        max-height: 46px !important;
+        flex: 0 0 46px !important;
+        transform: none !important;
+        transition: none !important;
+        animation: none !important;
+      }
+    }
+
+    /* ------------------------------------------------------------
+       B. NILAI HP — WALI KELAS
+       Reset grid-column lama yang sebelumnya membuat area aksi
+       hanya memakai kolom pertama dan menyisakan ruang di kanan.
+       ------------------------------------------------------------ */
+    @media (max-width: 760px) {
+      .grades-page-wali:not(.grades-panel-collapsed)
+      .grades-control-card
+      .grades-toolbar {
+        width: 100%;
+        max-width: 100%;
+        grid-template-columns:
+          minmax(0, 1fr)
+          38px;
+        grid-template-areas:
+          "judul collapse"
+          "kelas kelas"
+          "aksi aksi"
+          "semester semester";
+      }
+
+      .grades-page-wali:not(.grades-panel-collapsed)
+      .grades-control-card
+      .grades-actions {
+        grid-area: aksi !important;
+        grid-column: 1 / -1 !important;
+        width: auto !important;
+        max-width: none !important;
+        min-width: 0;
+        justify-self: stretch !important;
+        align-self: stretch;
+        display: grid !important;
+        grid-template-columns:
+          minmax(0, 1fr)
+          minmax(0, 1fr) !important;
+        gap: 8px;
+        padding: 0;
+        margin: 0;
+      }
+
+      .grades-page-wali:not(.grades-panel-collapsed)
+      .grades-control-card
+      .grades-actions
+      > #refreshGradesBtn,
+      .grades-page-wali:not(.grades-panel-collapsed)
+      .grades-control-card
+      .grades-actions
+      > #saveAllGradesBtn {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        margin: 0 !important;
+        justify-self: stretch;
+        justify-content: center;
+        box-sizing: border-box;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -8902,6 +9079,7 @@
   <footer class="footer app-shell">
     <div><strong>SMP NEGERI 3 JAYAPURA</strong> · Sistem Pendataan Terpadu Murid & Nilai</div>
     <div style="margin-top:6px">Dikembangkan oleh gurukemarinsore</div>
+    <div style="margin-top:3px">Versi 1.24</div>
     <div class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</div>
   </footer>
   </div>
@@ -8925,6 +9103,7 @@
 
         <div class="sidebar-footer">
           <small>Dikembangkan oleh gurukemarinsore</small>
+          <small class="app-version-label">Versi 1.24</small>
           <small class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</small>
         </div>
       </aside>
