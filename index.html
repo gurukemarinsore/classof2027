@@ -6967,7 +6967,7 @@
 
 
     /* ============================================================
-       2H-1 Revisi 026 — Reference-style Sidebar Animation + App Version 1.26
+       2H-1 Revisi 027 — Sidebar Footer Follows Nav Text + App Version 1.27
        ============================================================ */
 
     /* Avatar gambar menggantikan inisial tanpa mengubah ukuran card. */
@@ -8053,7 +8053,27 @@
         display: none !important;
       }
 
-      .app-layout.sidebar-collapsed .sidebar-footer small {
+      /*
+       * Footer utama mengikuti mekanisme teks menu:
+       * expanded = ikut lebar sidebar, collapsed = keluar dari layout.
+       * Tidak memakai fade / translate / max-width animation.
+       */
+      .sidebar-footer-copy {
+        min-width: 0;
+        display: grid;
+        gap: 8px;
+        overflow: hidden;
+      }
+
+      .sidebar-footer-copy small {
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: clip;
+      }
+
+      .app-layout.sidebar-collapsed .sidebar-footer-copy,
+      .app-layout.sidebar-collapsed .sidebar-footer > .global-font-credit {
         display: none !important;
       }
 
@@ -8558,6 +8578,12 @@
       }
     }
 
+
+    /* ============================================================
+       2H-1 Revisi 027 — Versi 1.27
+       Footer sidebar mengikuti mekanisme teks menu.
+       ============================================================ */
+
   </style>
 </head>
 <body>
@@ -8812,7 +8838,7 @@
   <footer class="footer app-shell">
     <div><strong>SMP NEGERI 3 JAYAPURA</strong> · Sistem Pendataan Terpadu Murid & Nilai</div>
     <div style="margin-top:6px">Dikembangkan oleh gurukemarinsore</div>
-    <div style="margin-top:3px">Versi 1.26</div>
+    <div style="margin-top:3px">Versi 1.27</div>
     <div class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</div>
   </footer>
   </div>
@@ -8835,8 +8861,10 @@
         <nav class="app-nav" id="appNav"></nav>
 
         <div class="sidebar-footer">
-          <small>Dikembangkan oleh gurukemarinsore</small>
-          <small class="app-version-label">Versi 1.26</small>
+          <div class="sidebar-footer-copy">
+            <small>Dikembangkan oleh gurukemarinsore</small>
+            <small class="app-version-label">Versi 1.27</small>
+          </div>
           <small class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</small>
         </div>
       </aside>
