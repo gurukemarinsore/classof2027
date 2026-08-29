@@ -1313,7 +1313,7 @@
 
     .app-two-col {
       display: grid;
-      grid-template-columns: 1.05fr .95fr;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 12px;
     }
 
@@ -5606,9 +5606,9 @@
     }
 
     .mass-grade-table .mass-average-col {
-      min-width: 118px;
-      width: 118px;
-      max-width: 118px;
+      min-width: 82px;
+      width: 82px;
+      max-width: 82px;
       background: color-mix(in srgb, var(--surface-2) 68%, var(--surface));
       color: var(--text);
       font-weight: 760;
@@ -6965,6 +6965,383 @@
       }
     }
 
+
+    /* ============================================================
+       2H-1 Revisi 017 — Sidebar desktop + Profile Popup + Avatar
+       ============================================================ */
+
+    /* Avatar gambar menggantikan inisial tanpa mengubah ukuran card. */
+    .user-avatar {
+      overflow: hidden;
+    }
+
+    .user-avatar.has-image {
+      padding: 0;
+      background: var(--surface-2);
+    }
+
+    .user-avatar.has-image img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      border-radius: inherit;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    /* Desktop sidebar collapse. Default tetap terbuka. */
+    .app-layout {
+      transition: grid-template-columns .2s ease;
+    }
+
+    .app-sidebar {
+      transition: padding .2s ease;
+    }
+
+    .sidebar-toggle-btn {
+      position: absolute;
+      top: 67px;
+      right: -13px;
+      z-index: 5;
+      width: 26px;
+      height: 26px;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--muted);
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      transition: color .16s ease, background .16s ease, transform .16s ease;
+    }
+
+    .sidebar-toggle-btn:hover {
+      color: var(--primary);
+      background: var(--primary-soft);
+    }
+
+    .sidebar-toggle-btn:active {
+      transform: scale(.95);
+    }
+
+    .app-layout.sidebar-collapsed {
+      grid-template-columns: 76px minmax(0, 1fr);
+    }
+
+    .app-layout.sidebar-collapsed .app-sidebar {
+      padding-left: 9px;
+      padding-right: 9px;
+      gap: 14px;
+    }
+
+    .app-layout.sidebar-collapsed .app-brand {
+      justify-content: center;
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    .app-layout.sidebar-collapsed .app-brand > div,
+    .app-layout.sidebar-collapsed .user-side-name,
+    .app-layout.sidebar-collapsed .scope-pill,
+    .app-layout.sidebar-collapsed .app-nav-btn span,
+    .app-layout.sidebar-collapsed .sidebar-footer small {
+      display: none !important;
+    }
+
+    .app-layout.sidebar-collapsed .user-side-card {
+      padding: 8px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+    }
+
+    .app-layout.sidebar-collapsed .user-side-top {
+      gap: 0;
+    }
+
+    .app-layout.sidebar-collapsed .app-nav {
+      padding-right: 0;
+    }
+
+    .app-layout.sidebar-collapsed .app-nav-btn {
+      padding: 0;
+      justify-content: center;
+    }
+
+    .app-layout.sidebar-collapsed .app-nav-btn i {
+      width: auto;
+      font-size: 1.12rem;
+    }
+
+    .app-layout.sidebar-collapsed .sidebar-footer {
+      min-height: 12px;
+    }
+
+    /* Header kanan atas: hanya avatar, menu tampil saat diklik. */
+    .profile-menu-wrap {
+      position: relative;
+      z-index: 2;
+    }
+
+    .profile-avatar-trigger {
+      width: 42px;
+      height: 42px;
+      padding: 4px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface);
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+    }
+
+    .profile-avatar-trigger:hover,
+    .profile-avatar-trigger[aria-expanded="true"] {
+      border-color: color-mix(in srgb, var(--primary) 34%, var(--border));
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 8%, transparent);
+    }
+
+    .profile-avatar-trigger:active {
+      transform: scale(.97);
+    }
+
+    .profile-avatar-trigger .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      font-size: .76rem;
+    }
+
+    .profile-popup {
+      position: absolute;
+      top: calc(100% + 9px);
+      right: 0;
+      width: min(300px, calc(100vw - 24px));
+      padding: 10px;
+      display: none;
+      border: 1px solid var(--border);
+      border-radius: 17px;
+      background: var(--surface);
+      box-shadow: 0 18px 52px rgba(26, 46, 72, .18);
+      z-index: 480;
+    }
+
+    .profile-popup.open {
+      display: block;
+      animation: profilePopupIn .14s ease-out;
+    }
+
+    @keyframes profilePopupIn {
+      from { opacity: 0; transform: translateY(-4px) scale(.985); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .profile-popup-head {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 6px 7px 9px;
+    }
+
+    .profile-popup-avatar {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      font-size: .9rem;
+    }
+
+    .profile-popup-identity {
+      min-width: 0;
+    }
+
+    .profile-popup-identity strong {
+      display: block;
+      color: var(--text);
+      font-size: .82rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .profile-popup-identity span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: .66rem;
+    }
+
+    .profile-popup-separator {
+      height: 1px;
+      margin: 5px 3px;
+      background: var(--border);
+    }
+
+    .profile-popup-item {
+      width: 100%;
+      min-height: 39px;
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--text);
+      cursor: pointer;
+      text-align: left;
+      font: inherit;
+      font-size: .73rem;
+      font-weight: 650;
+    }
+
+    .profile-popup-item i {
+      width: 18px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 1rem;
+    }
+
+    .profile-popup-item:hover {
+      background: var(--surface-2);
+    }
+
+    .profile-popup-item.danger {
+      color: var(--danger);
+    }
+
+    .profile-popup-item.danger i {
+      color: var(--danger);
+    }
+
+    /* Main table: kolom rata-rata sama persis dengan kolom mapel. */
+    .grades-table th.grade-average-head,
+    .grades-table td.grade-average {
+      width: 82px;
+      min-width: 82px;
+      max-width: 82px;
+      box-sizing: border-box;
+    }
+
+    .grades-table th.grade-average-head {
+      height: 46px;
+      padding: 5px 4px;
+      line-height: 1.15;
+      white-space: normal;
+      vertical-align: middle;
+    }
+
+    /* Avatar crop 1:1 / 360x360. */
+    .avatar-crop-stage {
+      width: min(360px, 100%);
+      aspect-ratio: 1 / 1;
+      margin: 0 auto;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background:
+        linear-gradient(45deg, var(--surface-2) 25%, transparent 25%),
+        linear-gradient(-45deg, var(--surface-2) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, var(--surface-2) 75%),
+        linear-gradient(-45deg, transparent 75%, var(--surface-2) 75%),
+        var(--surface);
+      background-size: 20px 20px;
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+      touch-action: none;
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 7%, transparent);
+    }
+
+    .avatar-crop-stage canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: grab;
+      touch-action: none;
+    }
+
+    .avatar-crop-stage canvas:active {
+      cursor: grabbing;
+    }
+
+    .avatar-zoom-row {
+      width: min(390px, 100%);
+      margin: 15px auto 0;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+    }
+
+    .avatar-zoom-row input[type="range"] {
+      width: 100%;
+      accent-color: var(--primary);
+    }
+
+    .avatar-crop-note {
+      margin: 10px auto 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      font-size: .68rem;
+    }
+
+    .profile-password-form {
+      display: grid;
+      gap: 12px;
+    }
+
+    .profile-password-form label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: .68rem;
+      font-weight: 690;
+    }
+
+    .profile-password-form input {
+      width: 100%;
+      min-height: 42px;
+      padding: 0 12px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      outline: none;
+      background: var(--surface-2);
+      color: var(--text);
+      font: inherit;
+      font-size: .76rem;
+    }
+
+    .profile-password-form input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 10%, transparent);
+      background: var(--surface);
+    }
+
+    @media (max-width: 820px) {
+      /* HP mempertahankan navigasi bawah yang sudah ada. */
+      .sidebar-toggle-btn {
+        display: none !important;
+      }
+
+      .app-layout.sidebar-collapsed {
+        display: block;
+      }
+
+      .profile-popup {
+        position: fixed;
+        top: 60px;
+        right: 10px;
+        width: min(300px, calc(100vw - 20px));
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -7009,7 +7386,7 @@
       <div class="hero-main">
         <div class="eyebrow">
           <i class="ti ti-chart-bar"></i>
-          DASHBOARD PEMANTAUAN PUBLIK
+          DASHBOARD INFORMASI
         </div>
         <h1>Satu Pintu.<br>Cepat, Aman,<br>dan Terpusat.</h1>
         <p class="subtitle">
@@ -7018,7 +7395,7 @@
         </p>
         <div class="slogan">
           <i class="ti ti-shield-check"></i>
-          Data yang ditampilkan hanya berupa statistik agregat.
+          Data yang ditampilkan hanya berupa ringkasan umum (tanpa data pribadi).
         </div>
       </div>
 
@@ -7027,10 +7404,10 @@
           <div>
             <div class="live">
               <span class="live-dot"></span>
-              TERHUBUNG KE BACKEND
+              TERHUBUNG KE SERVER
             </div>
-            <strong>Semester aktif untuk statistik nilai</strong>
-            <p>Super Admin menentukan semester mana yang ikut dihitung pada Landing Page.</p>
+            <strong>Semester yang Ditampilkan</strong>
+            <p>Super Admin menentukan semester yang ditampilkan pada halaman ini.</p>
             <div class="semester-pills" id="semesterPills">
               <span class="sk sk-pill-sm"></span>
               <span class="sk sk-pill-sm"></span>
@@ -7227,6 +7604,15 @@
   <div id="appView" class="app-view view-hidden">
     <div class="app-layout">
       <aside class="app-sidebar">
+        <button
+          class="sidebar-toggle-btn"
+          id="sidebarToggleBtn"
+          type="button"
+          aria-label="Tutup sidebar"
+          title="Tutup sidebar">
+          <i class="ti ti-chevron-left" aria-hidden="true"></i>
+        </button>
+
         <div class="app-brand">
           <img
             class="app-brand-school-logo"
@@ -7252,10 +7638,6 @@
         <nav class="app-nav" id="appNav"></nav>
 
         <div class="sidebar-footer">
-          <button class="logout-side" id="logoutSideBtn" type="button">
-            <i class="ti ti-logout"></i>
-            Keluar
-          </button>
           <small>Dikembangkan oleh gurukemarinsore</small>
           <small class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</small>
         </div>
@@ -7269,21 +7651,56 @@
           </div>
 
           <div class="app-header-actions">
-            <button class="icon-btn" id="appThemeBtn" type="button" aria-label="Ganti tema">
-              <i class="ti ti-moon" id="appThemeIcon"></i>
-            </button>
+            <div class="profile-menu-wrap" id="profileMenuWrap">
+              <button
+                class="profile-avatar-trigger"
+                id="profileMenuBtn"
+                type="button"
+                aria-haspopup="menu"
+                aria-expanded="false"
+                aria-label="Buka profil pengguna"
+                title="Profil pengguna">
+                <span class="user-avatar" id="headerAvatar">A</span>
+              </button>
 
-            <div class="app-user-chip">
-              <div class="user-avatar" id="headerAvatar">A</div>
-              <div class="app-user-chip-text">
-                <strong id="headerUserName">Pengguna</strong>
-                <span id="headerRoleName"><span class="sk sk-line-sm"></span></span>
+              <div
+                class="profile-popup"
+                id="profilePopup"
+                role="menu"
+                aria-hidden="true">
+                <div class="profile-popup-head">
+                  <div class="user-avatar profile-popup-avatar" id="profilePopupAvatar">A</div>
+                  <div class="profile-popup-identity">
+                    <strong id="profilePopupName">Pengguna</strong>
+                    <span id="profilePopupRole">—</span>
+                  </div>
+                </div>
+
+                <div class="profile-popup-separator"></div>
+
+                <button class="profile-popup-item" id="profileChangeAvatarBtn" type="button" role="menuitem">
+                  <i class="ti ti-photo-edit" aria-hidden="true"></i>
+                  <span>Ganti Avatar</span>
+                </button>
+
+                <button class="profile-popup-item" id="profileChangePasswordBtn" type="button" role="menuitem" hidden>
+                  <i class="ti ti-key" aria-hidden="true"></i>
+                  <span>Ganti Password</span>
+                </button>
+
+                <button class="profile-popup-item" id="profileThemeBtn" type="button" role="menuitem">
+                  <i class="ti ti-moon" id="profileThemeIcon" aria-hidden="true"></i>
+                  <span id="profileThemeLabel">Mode Gelap</span>
+                </button>
+
+                <div class="profile-popup-separator"></div>
+
+                <button class="profile-popup-item danger" id="profileLogoutBtn" type="button" role="menuitem">
+                  <i class="ti ti-logout" aria-hidden="true"></i>
+                  <span>Keluar</span>
+                </button>
               </div>
             </div>
-
-            <button class="icon-btn" id="logoutHeaderBtn" type="button" aria-label="Keluar">
-              <i class="ti ti-logout"></i>
-            </button>
           </div>
         </header>
 
@@ -7365,6 +7782,12 @@
       appSection: 'dashboard',
       semesterLocks: [],
       accountsSummary: null,
+      sidebarCollapsed: false,
+      profile: {
+        avatarDataUrl: '',
+        avatarLoaded: false,
+        canChangeOwnPassword: false
+      },
 
       students: {
         query: '',
@@ -7927,8 +8350,18 @@
 
     function syncThemeIcons() {
       const dark = document.documentElement.dataset.theme === 'dark';
-      if ($('#themeIcon')) $('#themeIcon').className = dark ? 'ti ti-sun' : 'ti ti-moon';
-      if ($('#appThemeIcon')) $('#appThemeIcon').className = dark ? 'ti ti-sun' : 'ti ti-moon';
+
+      if ($('#themeIcon')) {
+        $('#themeIcon').className = dark ? 'ti ti-sun' : 'ti ti-moon';
+      }
+
+      if ($('#profileThemeIcon')) {
+        $('#profileThemeIcon').className = dark ? 'ti ti-sun' : 'ti ti-moon';
+      }
+
+      if ($('#profileThemeLabel')) {
+        $('#profileThemeLabel').textContent = dark ? 'Mode Terang' : 'Mode Gelap';
+      }
     }
 
     function toggleTheme() {
@@ -7939,20 +8372,464 @@
       syncThemeIcons();
     }
 
+    function paintUserAvatar(target, initial) {
+      if (!target) return;
+
+      target.replaceChildren();
+
+      const dataUrl = String(state.profile?.avatarDataUrl || '');
+      const validAvatar = dataUrl.startsWith('data:image/png;base64,');
+
+      target.classList.toggle('has-image', validAvatar);
+
+      if (validAvatar) {
+        const img = document.createElement('img');
+        img.src = dataUrl;
+        img.alt = '';
+        img.draggable = false;
+        target.appendChild(img);
+      } else {
+        target.textContent = initial;
+      }
+    }
+
+    function renderUserAvatars() {
+      const initial = userInitial(state.user);
+      paintUserAvatar($('#sideAvatar'), initial);
+      paintUserAvatar($('#headerAvatar'), initial);
+      paintUserAvatar($('#profilePopupAvatar'), initial);
+    }
+
     function renderAppIdentity() {
       if (!state.user) return;
 
       const meta = roleMeta(state.user.role);
-      const initial = userInitial(state.user);
 
-      $('#sideAvatar').textContent = initial;
-      $('#headerAvatar').textContent = initial;
-      $('#sideUserName').textContent = state.user.nama || state.user.username || 'Pengguna';
-      $('#headerUserName').textContent = state.user.nama || state.user.username || 'Pengguna';
+      renderUserAvatars();
+
+      $('#sideUserName').textContent =
+        state.user.nama || state.user.username || 'Pengguna';
+
       $('#sideRoleName').textContent = meta.label;
-      $('#headerRoleName').textContent = meta.label;
       $('#sideScope').textContent = currentRoleScope();
-      $('#appPageSubtitle').textContent = `${currentRoleScope()} · ${sessionSubtitle()}`;
+
+      if ($('#profilePopupName')) {
+        $('#profilePopupName').textContent =
+          state.user.nama || state.user.username || 'Pengguna';
+      }
+
+      if ($('#profilePopupRole')) {
+        $('#profilePopupRole').textContent = meta.label;
+      }
+
+      const ownPasswordButton = $('#profileChangePasswordBtn');
+      if (ownPasswordButton) {
+        ownPasswordButton.hidden = !(
+          state.user.role === 'WALI_KELAS' ||
+          state.user.role === 'ADMIN_TU'
+        );
+      }
+
+      $('#appPageSubtitle').textContent =
+        `${currentRoleScope()} · ${sessionSubtitle()}`;
+    }
+
+    async function loadMyProfile() {
+      if (!state.sessionToken || !state.user) return;
+
+      try {
+        const data = await apiPost('getmyprofile', {
+          token: state.sessionToken
+        });
+
+        if (data?.user) {
+          state.user = data.user;
+          sessionStorage.setItem(
+            'smp3_session_user',
+            JSON.stringify(data.user)
+          );
+        }
+
+        state.profile.avatarDataUrl =
+          data?.avatar?.hasAvatar === true
+            ? String(data.avatar.dataUrl || '')
+            : '';
+
+        state.profile.avatarLoaded = true;
+        state.profile.canChangeOwnPassword =
+          data?.canChangeOwnPassword === true;
+
+        renderAppIdentity();
+
+      } catch (error) {
+        if (await handleSessionError(error)) return;
+        console.warn('Profil pengguna:', error.message);
+      }
+    }
+
+    function setSidebarCollapsed(collapsed) {
+      const layout = $('.app-layout');
+      const button = $('#sidebarToggleBtn');
+
+      if (!layout || !button) return;
+
+      // Pada HP sidebar memang tidak digunakan; navigasi bawah tetap asli.
+      if (window.matchMedia('(max-width: 820px)').matches) {
+        collapsed = false;
+      }
+
+      state.sidebarCollapsed = collapsed === true;
+      layout.classList.toggle(
+        'sidebar-collapsed',
+        state.sidebarCollapsed
+      );
+
+      const label = state.sidebarCollapsed
+        ? 'Buka sidebar'
+        : 'Tutup sidebar';
+
+      button.setAttribute('aria-label', label);
+      button.title = label;
+      button.innerHTML = state.sidebarCollapsed
+        ? '<i class="ti ti-chevron-right" aria-hidden="true"></i>'
+        : '<i class="ti ti-chevron-left" aria-hidden="true"></i>';
+    }
+
+    function closeProfileMenu() {
+      const popup = $('#profilePopup');
+      const button = $('#profileMenuBtn');
+
+      if (popup) {
+        popup.classList.remove('open');
+        popup.setAttribute('aria-hidden', 'true');
+      }
+
+      if (button) button.setAttribute('aria-expanded', 'false');
+    }
+
+    function toggleProfileMenu() {
+      const popup = $('#profilePopup');
+      const button = $('#profileMenuBtn');
+      if (!popup || !button) return;
+
+      const open = !popup.classList.contains('open');
+      closeProfileMenu();
+
+      if (open) {
+        popup.classList.add('open');
+        popup.setAttribute('aria-hidden', 'false');
+        button.setAttribute('aria-expanded', 'true');
+      }
+    }
+
+    function chooseAvatarImage() {
+      closeProfileMenu();
+
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/jpeg,image/png,image/webp';
+
+      input.addEventListener('change', () => {
+        const file = input.files?.[0];
+        if (!file) return;
+
+        if (file.size > 10 * 1024 * 1024) {
+          showToast('File gambar maksimal 10 MB sebelum crop.');
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => openAvatarCropDialog(String(reader.result || ''));
+        reader.onerror = () => showToast('Gambar tidak dapat dibaca.');
+        reader.readAsDataURL(file);
+      }, { once: true });
+
+      input.click();
+    }
+
+    function openAvatarCropDialog(sourceDataUrl) {
+      const overlay = appendDialog(`
+        <div class="dialog-head">
+          <div>
+            <h3>Ganti Avatar</h3>
+            <p>Geser gambar dan atur zoom. Hasil akhir selalu 1:1 dan disimpan 360×360 px.</p>
+          </div>
+          <button class="icon-btn" id="avatarCropCloseBtn" type="button" aria-label="Tutup">
+            <i class="ti ti-x"></i>
+          </button>
+        </div>
+
+        <div class="avatar-crop-stage">
+          <canvas id="avatarCropCanvas" width="360" height="360" aria-label="Area crop avatar"></canvas>
+        </div>
+
+        <div class="avatar-zoom-row">
+          <i class="ti ti-zoom-out" aria-hidden="true"></i>
+          <input id="avatarZoomSlider" type="range" min="1" max="3" value="1" step="0.01" aria-label="Zoom avatar">
+          <i class="ti ti-zoom-in" aria-hidden="true"></i>
+        </div>
+
+        <div class="avatar-crop-note">
+          <i class="ti ti-crop" aria-hidden="true"></i>
+          Rasio 1:1 · PNG · 360×360 px
+        </div>
+
+        <div class="dialog-actions">
+          <button class="action-small" id="avatarCropCancelBtn" type="button">Batal</button>
+          <button class="action-small primary" id="avatarCropSaveBtn" type="button" disabled>
+            <i class="ti ti-device-floppy"></i> Simpan Avatar
+          </button>
+        </div>
+      `);
+
+      const canvas = $('#avatarCropCanvas');
+      const slider = $('#avatarZoomSlider');
+      const saveBtn = $('#avatarCropSaveBtn');
+      const ctx = canvas.getContext('2d');
+
+      const crop = {
+        image: new Image(),
+        baseScale: 1,
+        zoom: 1,
+        offsetX: 0,
+        offsetY: 0,
+        dragging: false,
+        lastX: 0,
+        lastY: 0
+      };
+
+      function clampOffset() {
+        const scaledWidth =
+          crop.image.naturalWidth * crop.baseScale * crop.zoom;
+        const scaledHeight =
+          crop.image.naturalHeight * crop.baseScale * crop.zoom;
+
+        const maxX = Math.max(0, (scaledWidth - 360) / 2);
+        const maxY = Math.max(0, (scaledHeight - 360) / 2);
+
+        crop.offsetX = Math.max(-maxX, Math.min(maxX, crop.offsetX));
+        crop.offsetY = Math.max(-maxY, Math.min(maxY, crop.offsetY));
+      }
+
+      function drawCrop() {
+        if (!crop.image.naturalWidth) return;
+
+        clampOffset();
+
+        const width =
+          crop.image.naturalWidth * crop.baseScale * crop.zoom;
+        const height =
+          crop.image.naturalHeight * crop.baseScale * crop.zoom;
+
+        const x = (360 - width) / 2 + crop.offsetX;
+        const y = (360 - height) / 2 + crop.offsetY;
+
+        ctx.clearRect(0, 0, 360, 360);
+        ctx.drawImage(crop.image, x, y, width, height);
+      }
+
+      crop.image.onload = () => {
+        crop.baseScale = Math.max(
+          360 / crop.image.naturalWidth,
+          360 / crop.image.naturalHeight
+        );
+        crop.zoom = 1;
+        crop.offsetX = 0;
+        crop.offsetY = 0;
+        slider.value = '1';
+        saveBtn.disabled = false;
+        drawCrop();
+      };
+
+      crop.image.onerror = () => {
+        showToast('Format gambar tidak dapat diproses. Gunakan JPG, PNG, atau WebP.');
+        closeAppDialog();
+      };
+
+      crop.image.src = sourceDataUrl;
+
+      slider.addEventListener('input', () => {
+        crop.zoom = Number(slider.value) || 1;
+        drawCrop();
+      });
+
+      canvas.addEventListener('pointerdown', event => {
+        crop.dragging = true;
+        crop.lastX = event.clientX;
+        crop.lastY = event.clientY;
+        canvas.setPointerCapture(event.pointerId);
+      });
+
+      canvas.addEventListener('pointermove', event => {
+        if (!crop.dragging) return;
+
+        const rect = canvas.getBoundingClientRect();
+        const ratio = 360 / Math.max(1, rect.width);
+
+        crop.offsetX += (event.clientX - crop.lastX) * ratio;
+        crop.offsetY += (event.clientY - crop.lastY) * ratio;
+        crop.lastX = event.clientX;
+        crop.lastY = event.clientY;
+        drawCrop();
+      });
+
+      function stopDrag(event) {
+        crop.dragging = false;
+        try {
+          if (event?.pointerId !== undefined) {
+            canvas.releasePointerCapture(event.pointerId);
+          }
+        } catch (_) {}
+      }
+
+      canvas.addEventListener('pointerup', stopDrag);
+      canvas.addEventListener('pointercancel', stopDrag);
+
+      $('#avatarCropCloseBtn').addEventListener('click', closeAppDialog);
+      $('#avatarCropCancelBtn').addEventListener('click', closeAppDialog);
+
+      saveBtn.addEventListener('click', async () => {
+        if (saveBtn.disabled || !crop.image.naturalWidth) return;
+
+        const original = saveBtn.innerHTML;
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="mini-spinner"></span> Menyimpan…';
+
+        try {
+          drawCrop();
+          const dataUrl = canvas.toDataURL('image/png');
+
+          const result = await apiPost('saveavatar', {
+            token: state.sessionToken,
+            avatarBase64: dataUrl
+          });
+
+          const profile = result?.profile;
+
+          if (profile?.user) {
+            state.user = profile.user;
+            sessionStorage.setItem(
+              'smp3_session_user',
+              JSON.stringify(profile.user)
+            );
+          }
+
+          state.profile.avatarDataUrl =
+            profile?.avatar?.hasAvatar === true
+              ? String(profile.avatar.dataUrl || '')
+              : dataUrl;
+
+          state.profile.avatarLoaded = true;
+          state.profile.canChangeOwnPassword =
+            profile?.canChangeOwnPassword === true;
+
+          renderAppIdentity();
+          closeAppDialog();
+          showToast('Avatar berhasil diperbarui.');
+
+        } catch (error) {
+          if (await handleSessionError(error)) return;
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = original;
+        }
+      });
+
+      return overlay;
+    }
+
+    function openOwnPasswordDialog() {
+      closeProfileMenu();
+
+      if (
+        state.user?.role !== 'WALI_KELAS' &&
+        state.user?.role !== 'ADMIN_TU'
+      ) {
+        showToast('Password Super Admin tetap dikelola melalui menu Akun.');
+        return;
+      }
+
+      appendDialog(`
+        <div class="dialog-head">
+          <div>
+            <h3>Ganti Password</h3>
+            <p>Password baru berlaku setelah Anda login kembali.</p>
+          </div>
+          <button class="icon-btn" id="ownPasswordCloseBtn" type="button" aria-label="Tutup">
+            <i class="ti ti-x"></i>
+          </button>
+        </div>
+
+        <form id="ownPasswordForm" class="profile-password-form" autocomplete="off">
+          <label>
+            <span>Password Saat Ini</span>
+            <input id="ownCurrentPassword" type="password" autocomplete="current-password" required>
+          </label>
+
+          <label>
+            <span>Password Baru</span>
+            <input id="ownNewPassword" type="password" autocomplete="new-password" required>
+          </label>
+
+          <label>
+            <span>Ulangi Password Baru</span>
+            <input id="ownConfirmPassword" type="password" autocomplete="new-password" required>
+          </label>
+
+          <div class="form-status" id="ownPasswordStatus"></div>
+
+          <div class="dialog-actions">
+            <button class="action-small" id="ownPasswordCancelBtn" type="button">Batal</button>
+            <button class="action-small primary" id="ownPasswordSaveBtn" type="submit">
+              <i class="ti ti-key"></i> Simpan Password
+            </button>
+          </div>
+        </form>
+      `);
+
+      $('#ownPasswordCloseBtn').addEventListener('click', closeAppDialog);
+      $('#ownPasswordCancelBtn').addEventListener('click', closeAppDialog);
+
+      $('#ownPasswordForm').addEventListener('submit', async event => {
+        event.preventDefault();
+
+        const currentPassword = $('#ownCurrentPassword').value;
+        const newPassword = $('#ownNewPassword').value;
+        const confirmPassword = $('#ownConfirmPassword').value;
+        const status = $('#ownPasswordStatus');
+        const saveBtn = $('#ownPasswordSaveBtn');
+
+        if (newPassword !== confirmPassword) {
+          status.textContent = 'Konfirmasi password baru tidak sama.';
+          status.className = 'form-status error';
+          return;
+        }
+
+        const original = saveBtn.innerHTML;
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="mini-spinner"></span> Menyimpan…';
+        status.textContent = 'Memverifikasi password saat ini…';
+        status.className = 'form-status';
+
+        try {
+          await apiPost('changemypassword', {
+            token: state.sessionToken,
+            currentPassword,
+            newPassword,
+            confirmPassword
+          });
+
+          closeAppDialog();
+          await leaveApp(false);
+          showToast('Password berhasil diubah. Silakan login kembali.');
+
+        } catch (error) {
+          if (await handleSessionError(error)) return;
+          status.textContent = error.message || 'Password gagal diubah.';
+          status.className = 'form-status error';
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = original;
+        }
+      });
     }
 
     function allowedNavItems() {
@@ -7964,7 +8841,8 @@
       return `
         <button type="button"
           class="app-nav-btn ${state.appSection === item.key ? 'active' : ''}"
-          data-app-section="${item.key}">
+          data-app-section="${item.key}"
+          title="${escapeHtml(item.label)}">
           <i class="${item.icon}"></i>
           <span>${item.label}</span>
         </button>
@@ -8577,7 +9455,8 @@
       const sessionCodes = [
         'SESSION_TIDAK_VALID',
         'SESSION_SUDAH_LOGOUT',
-        'SESSION_KEDALUWARSA'
+        'SESSION_KEDALUWARSA',
+        'SESSION_DICABUT'
       ];
 
       if (sessionCodes.includes(error?.code)) {
@@ -11672,8 +12551,8 @@
                 <th class="sticky-no">No</th>
                 <th class="sticky-name">Nama Lengkap</th>
                 ${subjects.map(subject => `<th class="grade-subject-head" title="${escapeHtml(subject)}">${gradeSubjectHeaderHtml(subject)}</th>`).join('')}
-                <th>Rata-rata<br>Semester</th>
-                <th>Rata-rata<br>Keseluruhan</th>
+                <th class="grade-average-head">Rata-rata<br>Semester</th>
+                <th class="grade-average-head">Rata-rata<br>Keseluruhan</th>
                 ${state.grades.canEdit ? '<th>Aksi</th>' : ''}
               </tr>
             </thead>
@@ -17918,6 +18797,8 @@
     }
 
     async function switchAppSection(section) {
+      closeProfileMenu();
+
       const allowed = allowedNavItems().some(item => item.key === section);
       if (!allowed) return;
 
@@ -18001,7 +18882,7 @@
           renderGradeSemesterTabs();
         }
       } catch (error) {
-        if (['SESSION_TIDAK_VALID','SESSION_SUDAH_LOGOUT','SESSION_KEDALUWARSA'].includes(error.code)) {
+        if (['SESSION_TIDAK_VALID','SESSION_SUDAH_LOGOUT','SESSION_KEDALUWARSA','SESSION_DICABUT'].includes(error.code)) {
           await leaveApp(true);
           return;
         }
@@ -18050,10 +18931,20 @@
       $('#publicView').classList.add('view-hidden');
       $('#appView').classList.remove('view-hidden');
 
+      state.profile = {
+        avatarDataUrl: '',
+        avatarLoaded: false,
+        canChangeOwnPassword:
+          user?.role === 'WALI_KELAS' ||
+          user?.role === 'ADMIN_TU'
+      };
+
+      setSidebarCollapsed(false);
       renderAppIdentity();
       renderAppNav();
       switchAppSection('dashboard');
       syncThemeIcons();
+      loadMyProfile();
     }
 
     async function leaveApp(sessionExpired = false) {
@@ -18062,6 +18953,12 @@
       state.sessionExpiresAt = '';
       state.semesterLocks = [];
       state.accountsSummary = null;
+      state.sidebarCollapsed = false;
+      state.profile = {
+        avatarDataUrl: '',
+        avatarLoaded: false,
+        canChangeOwnPassword: false
+      };
       state.appSection = 'dashboard';
       state.students = {
         query: '',
@@ -18188,10 +19085,31 @@
     }
 
     $('#themeBtn').addEventListener('click', toggleTheme);
-    $('#appThemeBtn').addEventListener('click', toggleTheme);
 
-    $('#logoutSideBtn').addEventListener('click', logoutCurrentSession);
-    $('#logoutHeaderBtn').addEventListener('click', logoutCurrentSession);
+    $('#sidebarToggleBtn').addEventListener('click', () => {
+      setSidebarCollapsed(!state.sidebarCollapsed);
+    });
+
+    $('#profileMenuBtn').addEventListener('click', event => {
+      event.stopPropagation();
+      toggleProfileMenu();
+    });
+
+    $('#profileChangeAvatarBtn').addEventListener('click', chooseAvatarImage);
+    $('#profileChangePasswordBtn').addEventListener('click', openOwnPasswordDialog);
+    $('#profileThemeBtn').addEventListener('click', toggleTheme);
+    $('#profileLogoutBtn').addEventListener('click', logoutCurrentSession);
+
+    document.addEventListener('click', event => {
+      const wrap = $('#profileMenuWrap');
+      if (
+        $('#profilePopup')?.classList.contains('open') &&
+        wrap &&
+        !wrap.contains(event.target)
+      ) {
+        closeProfileMenu();
+      }
+    });
 
     $('#loginBtn').addEventListener('click', openLogin);
     $('#closeLoginBtn').addEventListener('click', closeLogin);
@@ -18262,6 +19180,10 @@
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && $('#loginModal').classList.contains('open')) {
         closeLogin();
+      }
+
+      if (event.key === 'Escape' && $('#profilePopup')?.classList.contains('open')) {
+        closeProfileMenu();
       }
     });
 
