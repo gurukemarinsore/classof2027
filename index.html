@@ -6967,7 +6967,7 @@
 
 
     /* ============================================================
-       2H-1 Revisi 024 — Stable Sidebar Icons + Wali 50-50 Actions + App Version 1.24
+       2H-1 Revisi 025 — Fade-only Sidebar Text + App Version 1.25
        ============================================================ */
 
     /* Avatar gambar menggantikan inisial tanpa mengubah ukuran card. */
@@ -8650,7 +8650,7 @@
 
 
     /* ============================================================
-       2H-1 Revisi 024 — Versi 1.24
+       2H-1 Revisi 024 — Versi 1.25
        Stable Sidebar Icons + Wali Mobile 50:50
        ============================================================ */
 
@@ -8822,6 +8822,91 @@
         justify-self: stretch;
         justify-content: center;
         box-sizing: border-box;
+      }
+    }
+
+
+    /* ============================================================
+       2H-1 Revisi 025 — Versi 1.25
+       Sidebar text: fade-only, tanpa slide/translate
+       ============================================================ */
+
+    @media (min-width: 821px) {
+      /*
+       * Ikon tetap dikunci seperti Revisi 024.
+       * Teks menu tidak lagi memakai translateX atau efek geser.
+       */
+      .app-nav-btn > span {
+        display: block !important;
+        min-width: 0;
+        max-width: 180px;
+        margin: 0;
+        opacity: 1;
+        transform: none !important;
+        overflow: hidden;
+        white-space: nowrap;
+        pointer-events: auto;
+        transition: opacity .16s ease !important;
+      }
+
+      .app-layout.sidebar-collapsed
+      .app-nav-btn > span {
+        display: block !important;
+        max-width: 180px;
+        opacity: 0;
+        transform: none !important;
+        pointer-events: none;
+        transition: opacity .12s ease !important;
+      }
+
+      /*
+       * Teks identitas sekolah juga fade-only.
+       * Tidak ada gerakan horizontal saat sidebar buka/tutup.
+       */
+      .app-brand > div {
+        display: block !important;
+        min-width: 0;
+        max-width: 180px;
+        opacity: 1;
+        transform: none !important;
+        overflow: hidden;
+        white-space: nowrap;
+        pointer-events: auto;
+        transition: opacity .16s ease !important;
+      }
+
+      .app-layout.sidebar-collapsed
+      .app-brand > div {
+        display: block !important;
+        max-width: 180px;
+        opacity: 0;
+        transform: none !important;
+        pointer-events: none;
+        transition: opacity .12s ease !important;
+      }
+
+      /*
+       * Rail ikon tidak ikut transisi teks.
+       * Semua transform/transition visual ikon tetap dimatikan.
+       */
+      .app-nav-btn > i,
+      .app-layout.sidebar-collapsed
+      .app-nav-btn > i,
+      .app-brand-school-logo {
+        transform: none !important;
+        transition: none !important;
+        animation: none !important;
+      }
+
+      /*
+       * Saat collapsed, potong konten teks hanya di sisi kanan rail.
+       * Karena ikon absolute di left:17px, teks tidak bisa menabrak ikon.
+       */
+      .app-layout.sidebar-collapsed
+      .app-nav-btn,
+      .app-layout.sidebar-collapsed
+      .app-brand {
+        overflow: hidden;
       }
     }
 
@@ -9079,7 +9164,7 @@
   <footer class="footer app-shell">
     <div><strong>SMP NEGERI 3 JAYAPURA</strong> · Sistem Pendataan Terpadu Murid & Nilai</div>
     <div style="margin-top:6px">Dikembangkan oleh gurukemarinsore</div>
-    <div style="margin-top:3px">Versi 1.24</div>
+    <div style="margin-top:3px">Versi 1.25</div>
     <div class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</div>
   </footer>
   </div>
@@ -9103,7 +9188,7 @@
 
         <div class="sidebar-footer">
           <small>Dikembangkan oleh gurukemarinsore</small>
-          <small class="app-version-label">Versi 1.24</small>
+          <small class="app-version-label">Versi 1.25</small>
           <small class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</small>
         </div>
       </aside>
