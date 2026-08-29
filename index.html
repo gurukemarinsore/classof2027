@@ -6967,7 +6967,7 @@
 
 
     /* ============================================================
-       2H-1 Revisi 021 — Seamless Sidebar + Custom Tooltip + Mobile Nav Padding
+       2H-1 Revisi 022 — Rounded Mobile Nav Viewport + Vertical Alignment Fix
        ============================================================ */
 
     /* Avatar gambar menggantikan inisial tanpa mengubah ukuran card. */
@@ -8280,6 +8280,114 @@
     @media (max-width: 820px) {
       .app-sidebar {
         display: none;
+      }
+    }
+
+
+    /* ============================================================
+       2H-1 Revisi 022 — Rounded Mobile Nav Viewport
+       ============================================================ */
+
+    @media (max-width: 820px) {
+      /*
+       * Outer navbar tetap dock seperti Revisi 020.
+       * Padding 7px menjadi ruang aman di kiri/kanan/atas.
+       */
+      .mobile-app-nav,
+      .mobile-app-nav[data-count="4"] {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        overflow: hidden;
+        padding:
+          7px
+          7px
+          calc(7px + env(safe-area-inset-bottom, 0px));
+      }
+
+      /*
+       * Viewport internal inilah batas visual tempat menu menghilang.
+       * Karena border-radius ada di viewport, item yang bergeser keluar
+       * akan terpotong dengan sudut rounded, bukan potongan siku.
+       */
+      .mobile-nav-scroll-viewport {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        overflow: hidden;
+        border-radius: 12px;
+        box-sizing: border-box;
+      }
+
+      /*
+       * Track kembali memiliki tinggi/alignment seperti navbar lama,
+       * sehingga ikon dan teks tidak terdorong ke atas.
+       */
+      .mobile-nav-scroll-track {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        min-height: 48px;
+        display: flex;
+        align-items: stretch;
+        gap: 4px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+        overscroll-behavior-inline: contain;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+
+      .mobile-nav-scroll-track::-webkit-scrollbar {
+        display: none;
+      }
+
+      .mobile-nav-scroll-track .app-nav-btn {
+        width: auto;
+        min-width: 68px;
+        min-height: 48px;
+        margin: 0;
+        padding: 5px 8px;
+        flex: 0 0 auto;
+        align-self: stretch;
+        justify-content: center;
+        flex-direction: column;
+        gap: 3px;
+        box-sizing: border-box;
+      }
+
+      .mobile-nav-scroll-track .app-nav-btn i {
+        line-height: 1;
+        margin: 0;
+      }
+
+      .mobile-nav-scroll-track .app-nav-btn span {
+        line-height: 1.15;
+        margin: 0;
+      }
+
+      /*
+       * Jika hanya 4 menu, pertahankan mode grid penuh tanpa scroll.
+       */
+      .mobile-app-nav[data-count="4"]
+      .mobile-nav-scroll-track {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        align-items: stretch;
+        gap: 4px;
+        overflow-x: hidden;
+      }
+
+      .mobile-app-nav[data-count="4"]
+      .mobile-nav-scroll-track
+      .app-nav-btn {
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+        padding-inline: 4px;
       }
     }
 
@@ -10203,8 +10311,10 @@
 
       // Mobile: menu role saja. Toggle sidebar TIDAK ikut navbar HP.
       mobileNav.innerHTML = `
-        <div class="mobile-nav-scroll-track">
-          ${items.map(navButtonHtml).join('')}
+        <div class="mobile-nav-scroll-viewport">
+          <div class="mobile-nav-scroll-track">
+            ${items.map(navButtonHtml).join('')}
+          </div>
         </div>
       `;
       mobileNav.dataset.count = String(items.length);
