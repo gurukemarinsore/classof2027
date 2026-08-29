@@ -6967,7 +6967,7 @@
 
 
     /* ============================================================
-       2H-1 Revisi 025 — Fade-only Sidebar Text + App Version 1.25
+       2H-1 Revisi 026 — Reference-style Sidebar Animation + App Version 1.26
        ============================================================ */
 
     /* Avatar gambar menggantikan inisial tanpa mengubah ukuran card. */
@@ -6988,96 +6988,6 @@
       border-radius: inherit;
       pointer-events: none;
       user-select: none;
-    }
-
-    /* Desktop sidebar collapse. Default tetap terbuka. */
-    .app-layout {
-      transition: grid-template-columns .2s ease;
-    }
-
-    .app-sidebar {
-      transition: padding .2s ease;
-    }
-
-    .sidebar-toggle-btn {
-      position: absolute;
-      top: 67px;
-      right: -13px;
-      z-index: 5;
-      width: 26px;
-      height: 26px;
-      padding: 0;
-      display: grid;
-      place-items: center;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      background: var(--surface);
-      color: var(--muted);
-      box-shadow: var(--shadow-sm);
-      cursor: pointer;
-      transition: color .16s ease, background .16s ease, transform .16s ease;
-    }
-
-    .sidebar-toggle-btn:hover {
-      color: var(--primary);
-      background: var(--primary-soft);
-    }
-
-    .sidebar-toggle-btn:active {
-      transform: scale(.95);
-    }
-
-    .app-layout.sidebar-collapsed {
-      grid-template-columns: 76px minmax(0, 1fr);
-    }
-
-    .app-layout.sidebar-collapsed .app-sidebar {
-      padding-left: 9px;
-      padding-right: 9px;
-      gap: 14px;
-    }
-
-    .app-layout.sidebar-collapsed .app-brand {
-      justify-content: center;
-      padding-left: 0;
-      padding-right: 0;
-    }
-
-    .app-layout.sidebar-collapsed .app-brand > div,
-    .app-layout.sidebar-collapsed .user-side-name,
-    .app-layout.sidebar-collapsed .scope-pill,
-    .app-layout.sidebar-collapsed .app-nav-btn span,
-    .app-layout.sidebar-collapsed .sidebar-footer small {
-      display: none !important;
-    }
-
-    .app-layout.sidebar-collapsed .user-side-card {
-      padding: 8px;
-      display: grid;
-      place-items: center;
-      border-radius: 14px;
-    }
-
-    .app-layout.sidebar-collapsed .user-side-top {
-      gap: 0;
-    }
-
-    .app-layout.sidebar-collapsed .app-nav {
-      padding-right: 0;
-    }
-
-    .app-layout.sidebar-collapsed .app-nav-btn {
-      padding: 0;
-      justify-content: center;
-    }
-
-    .app-layout.sidebar-collapsed .app-nav-btn i {
-      width: auto;
-      font-size: 1.12rem;
-    }
-
-    .app-layout.sidebar-collapsed .sidebar-footer {
-      min-height: 12px;
     }
 
     /* Header kanan atas: hanya avatar, menu tampil saat diklik. */
@@ -7992,146 +7902,164 @@
        ============================================================ */
 
     /* ------------------------------------------------------------
-       A. SIDEBAR DESKTOP SEAMLESS
-       Rail ikon/logo tidak berpindah ketika lebar sidebar berubah.
+       A. SIDEBAR DESKTOP — MEKANISME REFERENSI
+       Hanya lebar sidebar yang dianimasikan. Ikon memakai slot tetap,
+       teks dikeluarkan dari layout saat collapsed.
        ------------------------------------------------------------ */
 
-    .app-layout {
-      transition:
-        grid-template-columns .26s cubic-bezier(.2,.8,.2,1);
-    }
+    @media (min-width: 821px) {
+      .app-layout {
+        transition:
+          grid-template-columns .28s cubic-bezier(.4,0,.2,1);
+      }
 
-    .app-layout.sidebar-collapsed {
-      grid-template-columns: 82px minmax(0, 1fr);
-    }
+      .app-layout.sidebar-collapsed {
+        grid-template-columns: 82px minmax(0, 1fr);
+      }
 
-    /* Padding sidebar sengaja SAMA pada expanded dan collapsed.
-       Ini kunci agar koordinat horizontal ikon tidak bergeser. */
-    .app-sidebar,
-    .app-layout.sidebar-collapsed .app-sidebar {
-      padding: 16px 14px;
-      gap: 18px;
-      overflow: visible;
-      transition: none;
-    }
+      /*
+       * Padding sidebar sama pada dua state.
+       * Ini menjaga rail logo + ikon pada koordinat horizontal tetap.
+       */
+      .app-sidebar,
+      .app-layout.sidebar-collapsed .app-sidebar {
+        padding: 16px 14px;
+        gap: 18px;
+        overflow: visible;
+        transition: none;
+      }
 
-    /* Tombol floating lama benar-benar tidak digunakan. */
-    .sidebar-toggle-btn {
-      display: none !important;
-    }
+      /* Tombol floating lama tidak digunakan. */
+      .sidebar-toggle-btn {
+        display: none !important;
+      }
 
-    /* Logo selalu berada di koordinat yang sama.
-       Hanya teks brand yang mengecil/menghilang. */
-    .app-brand,
-    .app-layout.sidebar-collapsed .app-brand {
-      justify-content: flex-start;
-      padding: 5px 4px 12px;
-      min-width: 0;
-    }
+      /*
+       * Brand: logo selalu fixed. Teks brand hilang langsung dari layout
+       * ketika collapsed, persis prinsip referensi.
+       */
+      .app-brand,
+      .app-layout.sidebar-collapsed .app-brand {
+        min-width: 0;
+        min-height: 63px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 11px;
+        padding: 5px 4px 12px;
+        overflow: hidden;
+      }
 
-    .app-brand {
-      gap: 11px;
-    }
+      .app-brand-school-logo {
+        width: 46px !important;
+        min-width: 46px !important;
+        max-width: 46px !important;
+        height: 46px !important;
+        min-height: 46px !important;
+        max-height: 46px !important;
+        flex: 0 0 46px !important;
+        object-fit: contain;
+        object-position: center;
+        transform: none !important;
+        transition: none !important;
+        animation: none !important;
+      }
 
-    .app-layout.sidebar-collapsed .app-brand {
-      gap: 0;
-    }
+      .app-brand > div {
+        min-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+      }
 
-    .app-brand-school-logo {
-      flex: 0 0 46px;
-      width: 46px;
-      height: 46px;
-    }
+      .app-layout.sidebar-collapsed .app-brand > div {
+        display: none !important;
+      }
 
-    .app-brand > div {
-      min-width: 0;
-      max-width: 170px;
-      opacity: 1;
-      transform: translateX(0);
-      overflow: hidden;
-      white-space: nowrap;
-      transition:
-        max-width .24s cubic-bezier(.2,.8,.2,1),
-        opacity .16s ease,
-        transform .24s cubic-bezier(.2,.8,.2,1);
-    }
+      .app-nav {
+        overflow: visible;
+        padding-right: 0;
+      }
 
-    .app-layout.sidebar-collapsed .app-brand > div {
-      display: block !important;
-      max-width: 0;
-      opacity: 0;
-      transform: translateX(-5px);
-      pointer-events: none;
-    }
+      /*
+       * Button rail tidak mengubah padding/alignment saat state berubah.
+       * Center ikon:
+       * 14px sidebar padding + 15px button padding + 12px icon slot = 41px.
+       * Logo center juga 14 + 4 + 23 = 41px.
+       */
+      .app-nav-btn,
+      .app-layout.sidebar-collapsed .app-nav-btn {
+        position: relative;
+        width: 100%;
+        min-width: 0;
+        min-height: 42px;
+        padding: 0 12px 0 15px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 11px;
+        overflow: visible;
+        transition:
+          color .18s ease,
+          background .18s ease,
+          border-color .18s ease;
+      }
 
-    /* Nav desktop tidak perlu scroll internal; jumlah menu pendek.
-       Overflow visible diperlukan agar tooltip custom tidak terpotong. */
-    .app-nav {
-      overflow: visible;
-      padding-right: 2px;
-    }
+      /*
+       * Slot ikon fixed/shrink-0 seperti referensi.
+       * Tidak absolute, tidak center ulang, tidak berubah state.
+       */
+      .app-nav-icon {
+        width: 24px;
+        min-width: 24px;
+        max-width: 24px;
+        height: 24px;
+        flex: 0 0 24px;
+        display: grid;
+        place-items: center;
+        margin: 0;
+        transform: none !important;
+        transition: none !important;
+        animation: none !important;
+      }
 
-    .app-nav-btn {
-      position: relative;
-      flex: none;
-      justify-content: flex-start;
-      padding: 0 12px;
-      gap: 11px;
-      overflow: visible;
-      transition:
-        background .18s ease,
-        border-color .18s ease,
-        color .18s ease,
-        gap .22s cubic-bezier(.2,.8,.2,1);
-    }
+      .app-nav-icon > i {
+        width: 20px;
+        min-width: 20px;
+        max-width: 20px;
+        height: 20px;
+        display: grid;
+        place-items: center;
+        margin: 0;
+        font-size: 1.05rem;
+        line-height: 1;
+        text-align: center;
+        transform: none !important;
+        transition: none !important;
+        animation: none !important;
+      }
 
-    /* Ikon tidak berubah ukuran/posisi pada kedua state. */
-    .app-nav-btn i,
-    .app-layout.sidebar-collapsed .app-nav-btn i {
-      width: 20px;
-      min-width: 20px;
-      flex: 0 0 20px;
-      font-size: 1.05rem;
-      text-align: center;
-    }
+      .app-nav-label {
+        min-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+      }
 
-    .app-nav-btn > span {
-      display: block;
-      min-width: 0;
-      max-width: 170px;
-      opacity: 1;
-      transform: translateX(0);
-      overflow: hidden;
-      white-space: nowrap;
-      transition:
-        max-width .24s cubic-bezier(.2,.8,.2,1),
-        opacity .14s ease,
-        transform .22s cubic-bezier(.2,.8,.2,1);
-    }
+      /*
+       * Tidak ada fade/slide/max-width animation.
+       * Label langsung keluar dari layout saat collapsed, sehingga
+       * tidak pernah dapat mendorong atau menabrak slot ikon.
+       */
+      .app-layout.sidebar-collapsed .app-nav-label {
+        display: none !important;
+      }
 
-    .app-layout.sidebar-collapsed .app-nav-btn {
-      padding: 0 12px;
-      justify-content: flex-start;
-      gap: 0;
-    }
+      .app-layout.sidebar-collapsed .sidebar-footer small {
+        display: none !important;
+      }
 
-    .app-layout.sidebar-collapsed .app-nav-btn > span {
-      display: block !important;
-      max-width: 0;
-      opacity: 0;
-      transform: translateX(-5px);
-      pointer-events: none;
-    }
-
-    /* Footer boleh hilang saat collapsed, tetapi tidak memengaruhi rail. */
-    .app-layout.sidebar-collapsed .sidebar-footer small {
-      display: none !important;
-    }
-
-    /* Item Buka/Tutup Sidebar adalah menu biasa, tepat setelah
-       menu terakhir role masing-masing. */
-    .sidebar-nav-toggle {
-      margin-top: 0;
+      .sidebar-nav-toggle {
+        margin-top: 0;
+      }
     }
 
     /* ------------------------------------------------------------
@@ -8532,122 +8460,6 @@
     }
 
 
-    /* ------------------------------------------------------------
-       C. SIDEBAR DESKTOP — CENTER RAIL PRESISI
-       Logo dan ikon tetap pada center-line x = 41px.
-       ------------------------------------------------------------ */
-    @media (min-width: 821px) {
-      .app-layout.sidebar-collapsed {
-        grid-template-columns:
-          82px minmax(0, 1fr);
-      }
-
-      .app-sidebar,
-      .app-layout.sidebar-collapsed
-      .app-sidebar {
-        padding-left: 14px;
-        padding-right: 14px;
-      }
-
-      /*
-       * Logo fixed mutlak: tidak ikut transition/scale/flex-shrink.
-       * Posisi x juga tidak berubah saat sidebar membuka/menutup.
-       */
-      .app-brand-school-logo {
-        width: 46px !important;
-        min-width: 46px !important;
-        max-width: 46px !important;
-        height: 46px !important;
-        min-height: 46px !important;
-        max-height: 46px !important;
-        flex: 0 0 46px !important;
-        aspect-ratio: 1 / 1;
-        object-fit: contain;
-        object-position: center;
-        transform: none !important;
-        scale: 1 !important;
-        transition: none !important;
-        animation: none !important;
-      }
-
-      .app-brand,
-      .app-layout.sidebar-collapsed
-      .app-brand {
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        min-height: 63px;
-        padding:
-          5px
-          4px
-          12px;
-      }
-
-      .app-brand {
-        gap: 11px;
-      }
-
-      .app-layout.sidebar-collapsed
-      .app-brand {
-        gap: 0;
-      }
-
-      /*
-       * Expanded:
-       * sidebar left padding 14 + button left padding 17 + 10px
-       * setengah lebar ikon 20 = center 41px.
-       */
-      .app-nav-btn {
-        padding-left: 17px;
-        padding-right: 12px;
-        justify-content: flex-start;
-      }
-
-      /*
-       * Collapsed:
-       * button 54px berada mulai x=14, sehingga center = 41px.
-       * Badge aktif dan ikon otomatis memiliki center yang sama.
-       */
-      .app-layout.sidebar-collapsed
-      .app-nav-btn {
-        width: 54px;
-        min-width: 54px;
-        max-width: 54px;
-        padding-left: 0;
-        padding-right: 0;
-        margin-left: 0;
-        margin-right: 0;
-        justify-content: center;
-        gap: 0;
-      }
-
-      .app-nav-btn i,
-      .app-layout.sidebar-collapsed
-      .app-nav-btn i {
-        width: 20px;
-        min-width: 20px;
-        max-width: 20px;
-        flex: 0 0 20px;
-        margin: 0;
-        text-align: center;
-        transform: none;
-      }
-
-      .app-layout.sidebar-collapsed
-      .app-nav-btn.active {
-        background: var(--primary-soft);
-      }
-
-      /* Nama sekolah lebih singkat agar tidak terpotong ketika expanded. */
-      .app-brand > div {
-        max-width: 180px;
-      }
-
-      .app-brand > div strong {
-        white-space: nowrap;
-      }
-    }
-
 
     /* ============================================================
        2H-1 Revisi 024 — Versi 1.25
@@ -8660,111 +8472,6 @@
       font-size: .66rem;
       line-height: 1.45;
       text-align: center;
-    }
-
-    /* ------------------------------------------------------------
-       A. SIDEBAR DESKTOP — IKON TIDAK BOLEH MEMANTUL
-       Ikon dipisahkan dari flow teks dengan position:absolute.
-       Dengan ini teks boleh mengecil/hilang tanpa pernah
-       memengaruhi koordinat ikon.
-       ------------------------------------------------------------ */
-    @media (min-width: 821px) {
-      .app-nav-btn,
-      .app-layout.sidebar-collapsed
-      .app-nav-btn {
-        position: relative;
-        justify-content: flex-start;
-        min-height: 42px;
-      }
-
-      /* Expanded: ruang teks dimulai setelah rail ikon tetap. */
-      .app-nav-btn {
-        padding:
-          0
-          12px
-          0
-          54px;
-      }
-
-      /*
-       * Ikon selalu berada 17px dari kiri tombol.
-       * Tombol sendiri selalu mulai pada x yang sama di sidebar,
-       * jadi center ikon tidak pernah berpindah.
-       */
-      .app-nav-btn > i,
-      .app-layout.sidebar-collapsed
-      .app-nav-btn > i {
-        position: absolute;
-        left: 17px;
-        top: 50%;
-        width: 20px;
-        min-width: 20px;
-        max-width: 20px;
-        height: 20px;
-        margin: 0;
-        display: grid;
-        place-items: center;
-        flex: none;
-        transform: translateY(-50%) !important;
-        transition: none !important;
-        animation: none !important;
-        line-height: 1;
-        text-align: center;
-      }
-
-      /*
-       * Collapse: hanya lebar badge/tombol yang mengecil.
-       * Ikon tetap di left:17px dan tidak bergantung pada teks.
-       */
-      .app-layout.sidebar-collapsed
-      .app-nav-btn {
-        width: 54px;
-        min-width: 54px;
-        max-width: 54px;
-        padding: 0;
-        margin: 0;
-      }
-
-      /* Teks hanya menghilang ke kanan; tidak mendorong ikon. */
-      .app-nav-btn > span {
-        margin: 0;
-        transform-origin: left center;
-      }
-
-      .app-layout.sidebar-collapsed
-      .app-nav-btn > span {
-        max-width: 0;
-        opacity: 0;
-        overflow: hidden;
-        transform: translateX(-4px);
-        pointer-events: none;
-      }
-
-      /*
-       * Hindari transition "all" lama menginterpolasi padding/layout.
-       * Hanya visual tombol yang dianimasikan.
-       */
-      .app-nav-btn {
-        transition:
-          width .24s cubic-bezier(.2,.8,.2,1),
-          background .18s ease,
-          border-color .18s ease,
-          color .18s ease;
-      }
-
-      /* Logo tetap benar-benar fixed seperti Revisi 023. */
-      .app-brand-school-logo {
-        width: 46px !important;
-        min-width: 46px !important;
-        max-width: 46px !important;
-        height: 46px !important;
-        min-height: 46px !important;
-        max-height: 46px !important;
-        flex: 0 0 46px !important;
-        transform: none !important;
-        transition: none !important;
-        animation: none !important;
-      }
     }
 
     /* ------------------------------------------------------------
@@ -8826,87 +8533,28 @@
     }
 
 
-    /* ============================================================
-       2H-1 Revisi 025 — Versi 1.25
-       Sidebar text: fade-only, tanpa slide/translate
-       ============================================================ */
 
-    @media (min-width: 821px) {
-      /*
-       * Ikon tetap dikunci seperti Revisi 024.
-       * Teks menu tidak lagi memakai translateX atau efek geser.
-       */
-      .app-nav-btn > span {
-        display: block !important;
-        min-width: 0;
-        max-width: 180px;
+    @media (max-width: 820px) {
+      .mobile-app-nav .app-nav-icon {
+        width: 20px;
+        min-width: 20px;
+        max-width: 20px;
+        height: 20px;
+        flex: 0 0 20px;
+        display: grid;
+        place-items: center;
+      }
+
+      .mobile-app-nav .app-nav-icon > i {
+        width: 20px;
+        height: 20px;
+        display: grid;
+        place-items: center;
         margin: 0;
-        opacity: 1;
-        transform: none !important;
-        overflow: hidden;
-        white-space: nowrap;
-        pointer-events: auto;
-        transition: opacity .16s ease !important;
       }
 
-      .app-layout.sidebar-collapsed
-      .app-nav-btn > span {
-        display: block !important;
-        max-width: 180px;
-        opacity: 0;
-        transform: none !important;
-        pointer-events: none;
-        transition: opacity .12s ease !important;
-      }
-
-      /*
-       * Teks identitas sekolah juga fade-only.
-       * Tidak ada gerakan horizontal saat sidebar buka/tutup.
-       */
-      .app-brand > div {
-        display: block !important;
+      .mobile-app-nav .app-nav-label {
         min-width: 0;
-        max-width: 180px;
-        opacity: 1;
-        transform: none !important;
-        overflow: hidden;
-        white-space: nowrap;
-        pointer-events: auto;
-        transition: opacity .16s ease !important;
-      }
-
-      .app-layout.sidebar-collapsed
-      .app-brand > div {
-        display: block !important;
-        max-width: 180px;
-        opacity: 0;
-        transform: none !important;
-        pointer-events: none;
-        transition: opacity .12s ease !important;
-      }
-
-      /*
-       * Rail ikon tidak ikut transisi teks.
-       * Semua transform/transition visual ikon tetap dimatikan.
-       */
-      .app-nav-btn > i,
-      .app-layout.sidebar-collapsed
-      .app-nav-btn > i,
-      .app-brand-school-logo {
-        transform: none !important;
-        transition: none !important;
-        animation: none !important;
-      }
-
-      /*
-       * Saat collapsed, potong konten teks hanya di sisi kanan rail.
-       * Karena ikon absolute di left:17px, teks tidak bisa menabrak ikon.
-       */
-      .app-layout.sidebar-collapsed
-      .app-nav-btn,
-      .app-layout.sidebar-collapsed
-      .app-brand {
-        overflow: hidden;
       }
     }
 
@@ -9164,7 +8812,7 @@
   <footer class="footer app-shell">
     <div><strong>SMP NEGERI 3 JAYAPURA</strong> · Sistem Pendataan Terpadu Murid & Nilai</div>
     <div style="margin-top:6px">Dikembangkan oleh gurukemarinsore</div>
-    <div style="margin-top:3px">Versi 1.25</div>
+    <div style="margin-top:3px">Versi 1.26</div>
     <div class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</div>
   </footer>
   </div>
@@ -9188,7 +8836,7 @@
 
         <div class="sidebar-footer">
           <small>Dikembangkan oleh gurukemarinsore</small>
-          <small class="app-version-label">Versi 1.25</small>
+          <small class="app-version-label">Versi 1.26</small>
           <small class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</small>
         </div>
       </aside>
@@ -10768,8 +10416,10 @@
           data-app-section="${item.key}"
           data-sidebar-tooltip="${escapeHtml(item.label)}"
           aria-label="${escapeHtml(item.label)}">
-          <i class="${item.icon}" aria-hidden="true"></i>
-          <span>${item.label}</span>
+          <span class="app-nav-icon" aria-hidden="true">
+            <i class="${item.icon}"></i>
+          </span>
+          <span class="app-nav-label">${item.label}</span>
         </button>
       `;
     }
@@ -10791,8 +10441,10 @@
           data-sidebar-toggle
           data-sidebar-tooltip="${label}"
           aria-label="${label}">
-          <i class="${icon}" aria-hidden="true"></i>
-          <span>${label}</span>
+          <span class="app-nav-icon" aria-hidden="true">
+            <i class="${icon}"></i>
+          </span>
+          <span class="app-nav-label">${label}</span>
         </button>
       `;
     }
@@ -10814,7 +10466,7 @@
       button.dataset.sidebarTooltip = label;
 
       const icon = button.querySelector('i');
-      const text = button.querySelector('span');
+      const text = button.querySelector('.app-nav-label');
 
       if (icon) icon.className = iconClass;
       if (text) text.textContent = label;
