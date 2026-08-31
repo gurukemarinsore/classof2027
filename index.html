@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <link rel="icon" type="image/svg+xml" href="logo.svg" />
   <title>Data Siswa Kelas 9 2026-2027</title>
-  <!-- CLASSOF2027 Revisi 001 · cleanup aman dari basis Frontend Revisi 027 · Versi 1.28 -->
+  <!-- CLASSOF2027 Revisi 002 · Fullscreen Edit Massal Murid + Grid Spreadsheet · Versi 1.30 -->
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -7829,6 +7829,110 @@
     }
 
     /* ------------------------------------------------------------
+       A2. EDIT MASSAL DATA MURID = FULLSCREEN WORKSPACE
+       Mengikuti pola Edit Semua Nilai; bukan popup/dialog mengambang.
+       ------------------------------------------------------------ */
+    .fullscreen-bulk-student {
+      position: fixed;
+      inset: 0;
+      z-index: 1210;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 0;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    .bulk-student-fullscreen-toolbar {
+      min-height: 64px;
+      flex: 0 0 auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+      padding: 9px 12px 9px 16px;
+      border-bottom: 1px solid var(--border);
+      background:
+        color-mix(
+          in srgb,
+          var(--surface) 96%,
+          transparent
+        );
+      box-shadow: 0 5px 18px rgba(20, 45, 75, .06);
+      backdrop-filter: blur(16px);
+    }
+
+    .bulk-student-fullscreen-toolbar > div {
+      min-width: 0;
+    }
+
+    .bulk-student-fullscreen-toolbar h3 {
+      margin: 0;
+      font-size: .9rem;
+      line-height: 1.3;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .bulk-student-fullscreen-toolbar p {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: .63rem;
+      line-height: 1.35;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .bulk-student-fullscreen-body {
+      flex: 1 1 auto;
+      min-height: 0;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 12px;
+      overflow: hidden;
+    }
+
+    .fullscreen-bulk-student .bulk-student-topbar {
+      flex: 0 0 auto;
+      margin-bottom: 0;
+    }
+
+    .fullscreen-bulk-student .bulk-student-grid-wrap {
+      flex: 1 1 auto;
+      min-height: 0;
+      min-width: 0;
+      overflow: auto;
+      border-radius: 10px;
+    }
+
+    .fullscreen-bulk-student .bulk-student-footer {
+      flex: 0 0 auto;
+      margin-top: 0;
+      padding-top: 2px;
+    }
+
+    .fullscreen-bulk-student .dialog-actions {
+      margin: 0;
+    }
+
+    @media (max-width: 760px) {
+      .bulk-student-fullscreen-toolbar {
+        min-height: 58px;
+        padding: 8px 10px 8px 12px;
+      }
+
+      .bulk-student-fullscreen-body {
+        padding: 9px;
+      }
+    }
+
+    /* ------------------------------------------------------------
        B. NILAI HP — WALI KELAS
        Perbarui + Simpan Perubahan benar-benar 50:50.
        ------------------------------------------------------------ */
@@ -7952,6 +8056,14 @@
     /* ============================================================
        Versi 1.27
        Footer sidebar mengikuti mekanisme teks menu.
+       ============================================================ */
+
+
+    /* ============================================================
+       CLASSOF2027 Revisi 002 — Versi 1.30
+       - Edit Massal Data Murid fullscreen.
+       - Grid Data Murid menyamai selection/focus spreadsheet Nilai.
+       - Bar petunjuk Edit Massal Nilai dihapus tanpa menonaktifkan shortcut.
        ============================================================ */
 
   </style>
@@ -8208,7 +8320,7 @@
   <footer class="footer app-shell">
     <div><strong>SMP NEGERI 3 JAYAPURA</strong> · Sistem Pendataan Terpadu Murid & Nilai</div>
     <div style="margin-top:6px">Dikembangkan oleh gurukemarinsore</div>
-    <div style="margin-top:3px">Versi 1.28</div>
+    <div style="margin-top:3px">Versi 1.30</div>
     <div class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</div>
   </footer>
   </div>
@@ -8233,7 +8345,7 @@
         <div class="sidebar-footer">
           <div class="sidebar-footer-copy">
             <small>Dikembangkan oleh gurukemarinsore</small>
-            <small class="app-version-label">Versi 1.28</small>
+            <small class="app-version-label">Versi 1.30</small>
           </div>
           <small class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</small>
         </div>
@@ -10748,6 +10860,7 @@
 
     let bulkStudentSheet = null;
     let bulkStudentLoadVersion = 0;
+    let bulkStudentFullscreenBodyOverflow = null;
 
     function bulkStudentColumns() {
       return [
@@ -12078,11 +12191,42 @@
       }
     }
 
+    function bulkStudentFullscreenEscapeHandler(event) {
+      // Escape saat sedang mengedit cell hanya membatalkan edit cell.
+      // Handler input sudah memanggil preventDefault().
+      if (
+        event.key === 'Escape' &&
+        !event.defaultPrevented
+      ) {
+        closeBulkStudentDialog();
+      }
+    }
+
+    function removeBulkStudentEditorShell() {
+      const fullscreen = $('#fullscreenBulkStudentEditor');
+
+      if (fullscreen) {
+        fullscreen.remove();
+        document.removeEventListener(
+          'keydown',
+          bulkStudentFullscreenEscapeHandler
+        );
+
+        if (bulkStudentFullscreenBodyOverflow !== null) {
+          document.body.style.overflow =
+            bulkStudentFullscreenBodyOverflow;
+          bulkStudentFullscreenBodyOverflow = null;
+        }
+      } else {
+        closeAppDialog();
+      }
+    }
+
     function closeBulkStudentDialog() {
       bulkStudentLoadVersion++;
       document.removeEventListener('mouseup', endBulkStudentDrag);
       bulkStudentSheet = null;
-      closeAppDialog();
+      removeBulkStudentEditorShell();
     }
 
     function bindBulkStudentSpreadsheet() {
@@ -12198,17 +12342,16 @@
         input?.addEventListener('focus', () => {
           if (!bulkStudentSheet) return;
 
-          bulkStudentSheet.anchor = {
-            row,
-            col
-          };
-
-          bulkStudentSheet.focus = {
-            row,
-            col
-          };
-
-          renderBulkStudentSelection();
+          // Sama seperti Edit Semua Nilai: fokus programatis ke cell
+          // tujuan tidak boleh meruntuhkan blok Shift/drag yang sudah ada.
+          if (
+            bulkStudentSheet.focus.row !== row ||
+            bulkStudentSheet.focus.col !== col
+          ) {
+            bulkStudentSheet.anchor = { row, col };
+            bulkStudentSheet.focus = { row, col };
+            renderBulkStudentSelection();
+          }
         });
 
         input?.addEventListener('input', () => {
@@ -12274,19 +12417,7 @@
       const isEdit = mode === 'edit';
       const title = isEdit ? 'Edit Massal Data Murid' : 'Tambah Murid';
 
-      const overlay = appendDialog(`
-        <div class="dialog-head bulk-editor-head">
-          <div>
-            <h3>${escapeHtml(title)}</h3>
-          </div>
-
-          <button class="dialog-close"
-            id="closeBulkStudentDialog"
-            type="button">
-            <i class="ti ti-x"></i>
-          </button>
-        </div>
-
+      const editorBody = `
         <div class="bulk-student-topbar compact">
           <div class="bulk-student-class">
             <label for="bulkStudentClass">
@@ -12349,10 +12480,73 @@
               class="bulk-student-warning-actions"></div>
           </div>
         </div>
-      `, true);
+      `;
 
-      overlay?.querySelector('.dialog-card')
-        ?.classList.add('bulk-student-dialog');
+      let overlay = null;
+
+      if (isEdit) {
+        if ($('#fullscreenBulkStudentEditor')) {
+          removeBulkStudentEditorShell();
+        } else {
+          closeAppDialog();
+        }
+
+        bulkStudentFullscreenBodyOverflow =
+          document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+
+        overlay = document.createElement('div');
+        overlay.id = 'fullscreenBulkStudentEditor';
+        overlay.className = 'fullscreen-bulk-student';
+        overlay.innerHTML = `
+          <div class="bulk-student-fullscreen-toolbar">
+            <div>
+              <h3>${escapeHtml(title)}</h3>
+              <p>
+                Kelas ${escapeHtml(kelas)} ·
+                Edit NIS, NISN, dan Nama Lengkap dalam grid spreadsheet.
+              </p>
+            </div>
+
+            <button class="preview-tool-btn"
+              id="closeBulkStudentDialog"
+              type="button"
+              aria-label="Tutup Edit Massal Data Murid"
+              title="Tutup">
+              <i class="ti ti-x"></i>
+            </button>
+          </div>
+
+          <div class="bulk-student-fullscreen-body">
+            ${editorBody}
+          </div>
+        `;
+
+        document.body.appendChild(overlay);
+        document.addEventListener(
+          'keydown',
+          bulkStudentFullscreenEscapeHandler
+        );
+      } else {
+        overlay = appendDialog(`
+          <div class="dialog-head bulk-editor-head">
+            <div>
+              <h3>${escapeHtml(title)}</h3>
+            </div>
+
+            <button class="dialog-close"
+              id="closeBulkStudentDialog"
+              type="button">
+              <i class="ti ti-x"></i>
+            </button>
+          </div>
+
+          ${editorBody}
+        `, true);
+
+        overlay?.querySelector('.dialog-card')
+          ?.classList.add('bulk-student-dialog');
+      }
 
       bulkStudentSheet = {
         mode,
@@ -12579,7 +12773,7 @@
         // Rebuild dialog agar data-original benar-benar sesuai kelas baru.
         document.removeEventListener('mouseup', endBulkStudentDrag);
         bulkStudentSheet = null;
-        closeAppDialog();
+        removeBulkStudentEditorShell();
         openBulkStudentDialogShell({
           mode: 'edit',
           kelas,
@@ -15926,35 +16120,6 @@
         </div>
 
         <div class="mass-grade-fullscreen-body">
-        <div class="mass-grade-help">
-          <div class="mass-grade-shortcuts">
-            <span>Klik-drag untuk blok</span>
-            <span><span class="mass-grade-key">Shift</span> + klik/panah perluas blok</span>
-            <span><span class="mass-grade-key">Delete</span> hapus nilai</span>
-            <span><span class="mass-grade-key">Ctrl+C</span> copy</span>
-            <span><span class="mass-grade-key">Ctrl+X</span> cut</span>
-            <span><span class="mass-grade-key">Ctrl+V</span> paste</span>
-            <span><span class="mass-grade-key">Enter</span>/<span class="mass-grade-key">Tab</span> pindah</span>
-          </div>
-
-          <div class="mass-grade-help-badges">
-            <span id="massGradeSelectionInfo"
-              class="mass-grade-selection-info">
-              1 cell dipilih
-            </span>
-
-            <span class="mass-grade-help-badge valid">
-              <i class="ti ti-check"></i>
-              Integer 0–100
-            </span>
-
-            <span class="mass-grade-help-badge invalid">
-              <i class="ti ti-alert-circle"></i>
-              Invalid = merah
-            </span>
-          </div>
-        </div>
-
         ${buildMassGradeTableHtml()}
 
         <div class="mass-grade-footer">
