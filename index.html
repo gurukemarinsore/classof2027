@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <link rel="icon" type="image/svg+xml" href="logo.svg" />
   <title>Data Siswa Kelas 9 2026-2027</title>
-  <!-- CLASSOF2027 Revisi 003 · Ctrl+A Select-All Grid · Versi 1.31 -->
+  <!-- CLASSOF2027 Revisi 004 · Direct Docs + Blue Circle Spinner + Ganti Nama + Sidebar Alignment · Versi 1.33 -->
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1361,17 +1361,42 @@
       font-size: .7rem;
     }
 
+    /* Circle spinner Revisi 004:
+       bentuk mengikuti loader radial + conic yang diberikan pengguna,
+       tetapi ukuran tetap mengikuti spinner aplikasi sebelumnya. */
     .mini-spinner {
-      width: 13px;
-      height: 13px;
+      --spinner-size: 13px;
+      --spinner-stroke: 2px;
+      width: var(--spinner-size);
+      height: var(--spinner-size);
+      flex: 0 0 var(--spinner-size);
+      display: inline-block;
+      vertical-align: middle;
       border-radius: 50%;
-      border: 2px solid var(--border);
-      border-top-color: var(--primary);
-      animation: spin360 .7s linear infinite;
+      background:
+        radial-gradient(
+          farthest-side,
+          var(--primary) 94%,
+          #0000
+        ) top / var(--spinner-stroke) var(--spinner-stroke) no-repeat,
+        conic-gradient(#0000 30%, var(--primary));
+      -webkit-mask:
+        radial-gradient(
+          farthest-side,
+          #0000 calc(100% - var(--spinner-stroke)),
+          #000 0
+        );
+      mask:
+        radial-gradient(
+          farthest-side,
+          #0000 calc(100% - var(--spinner-stroke)),
+          #000 0
+        );
+      animation: appCircleSpinner 1s infinite linear;
     }
 
-    @keyframes spin360 {
-      to { transform: rotate(360deg); }
+    @keyframes appCircleSpinner {
+      100% { transform: rotate(1turn); }
     }
 
     @media (max-width: 1080px) {
@@ -5961,13 +5986,25 @@
       width: fit-content;
       min-width: 210px;
       max-width: calc(100% - 28px);
-      grid-template-columns: auto auto;
-      gap: 9px;
+      display: inline-flex;
+      align-items: center;
       justify-content: center;
+      gap: 9px;
     }
 
     .bulk-grid-loading-card > strong {
+      display: inline-flex;
+      align-items: center;
+      min-height: 18px;
+      margin: 0;
       white-space: nowrap;
+      line-height: 1.35;
+    }
+
+    .bulk-grid-loading-card .mini-spinner {
+      grid-row: auto;
+      align-self: center;
+      margin: 0;
     }
 
     .bulk-grid-loading-card
@@ -8060,11 +8097,21 @@
 
 
     /* ============================================================
-       CLASSOF2027 Revisi 003 — Versi 1.31
+       CLASSOF2027 Revisi 005 — Versi 1.33
        - Edit Massal Data Murid fullscreen.
        - Grid Data Murid menyamai selection/focus spreadsheet Nilai.
        - Bar petunjuk Edit Massal Nilai dihapus tanpa menonaktifkan shortcut.
        ============================================================ */
+    /* ============================================================
+       CLASSOF2027 Revisi 005 — Versi 1.33
+       Stable Sidebar Rail
+       - Mengembalikan mekanisme rail Revisi 003 yang sudah stabil.
+       - Padding/alignment tombol identik saat sidebar buka/tutup.
+       - Slot ikon fixed 24px, tidak di-center ulang saat collapsed.
+       - Tidak ada translate/margin-auto khusus state collapsed.
+       - Hanya lebar sidebar dan teks yang berubah saat animasi.
+       ============================================================ */
+
 
   </style>
 </head>
@@ -8320,7 +8367,7 @@
   <footer class="footer app-shell">
     <div><strong>SMP NEGERI 3 JAYAPURA</strong> · Sistem Pendataan Terpadu Murid & Nilai</div>
     <div style="margin-top:6px">Dikembangkan oleh gurukemarinsore</div>
-    <div style="margin-top:3px">Versi 1.31</div>
+    <div style="margin-top:3px">Versi 1.33</div>
     <div class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</div>
   </footer>
   </div>
@@ -8345,7 +8392,7 @@
         <div class="sidebar-footer">
           <div class="sidebar-footer-copy">
             <small>Dikembangkan oleh gurukemarinsore</small>
-            <small class="app-version-label">Versi 1.31</small>
+            <small class="app-version-label">Versi 1.33</small>
           </div>
           <small class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</small>
         </div>
@@ -8394,6 +8441,11 @@
                 <button class="profile-popup-item" id="profileChangeAvatarBtn" type="button" role="menuitem">
                   <i class="ti ti-photo-edit" aria-hidden="true"></i>
                   <span>Ganti Avatar</span>
+                </button>
+
+                <button class="profile-popup-item" id="profileChangeNameBtn" type="button" role="menuitem">
+                  <i class="ti ti-user-edit" aria-hidden="true"></i>
+                  <span>Ganti Nama</span>
                 </button>
 
                 <button class="profile-popup-item" id="profileChangePasswordBtn" type="button" role="menuitem" hidden>
@@ -9753,6 +9805,132 @@
 
       return overlay;
     }
+
+
+    function openOwnNameDialog() {
+      closeProfileMenu();
+
+      const currentName =
+        String(state.user?.nama || '').trim();
+
+      appendDialog(`
+        <div class="dialog-head">
+          <div>
+            <h3>Ganti Nama</h3>
+            <p>Nama ini akan tampil pada profil aplikasi. Username, password, role, dan kelas tidak berubah.</p>
+          </div>
+          <button class="icon-btn" id="ownNameCloseBtn" type="button" aria-label="Tutup">
+            <i class="ti ti-x"></i>
+          </button>
+        </div>
+
+        <form id="ownNameForm" class="profile-password-form" autocomplete="off">
+          <label>
+            <span>Nama Pengguna</span>
+            <input
+              id="ownNameInput"
+              type="text"
+              maxlength="120"
+              value="${escapeHtml(currentName)}"
+              autocomplete="name"
+              required>
+          </label>
+
+          <div class="form-status" id="ownNameStatus"></div>
+
+          <div class="dialog-actions">
+            <button class="action-small" id="ownNameCancelBtn" type="button">Batal</button>
+            <button class="action-small primary" id="ownNameSaveBtn" type="submit">
+              <i class="ti ti-device-floppy"></i> Simpan Nama
+            </button>
+          </div>
+        </form>
+      `);
+
+      $('#ownNameCloseBtn').addEventListener('click', closeAppDialog);
+      $('#ownNameCancelBtn').addEventListener('click', closeAppDialog);
+
+      const input = $('#ownNameInput');
+      if (input) {
+        input.focus();
+        input.select();
+      }
+
+      $('#ownNameForm').addEventListener('submit', async event => {
+        event.preventDefault();
+
+        const newName =
+          String($('#ownNameInput')?.value || '')
+            .trim()
+            .replace(/\s+/g, ' ');
+
+        const status = $('#ownNameStatus');
+        const saveBtn = $('#ownNameSaveBtn');
+
+        if (!newName) {
+          status.textContent = 'Nama pengguna wajib diisi.';
+          status.className = 'form-status error';
+          return;
+        }
+
+        if (newName === currentName) {
+          closeAppDialog();
+          return;
+        }
+
+        const original = saveBtn.innerHTML;
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="mini-spinner"></span> Menyimpan…';
+        status.textContent = 'Menyimpan nama…';
+        status.className = 'form-status';
+
+        try {
+          const result = await apiPost('changemyname', {
+            token: state.sessionToken,
+            name: newName
+          });
+
+          const updatedUser =
+            result?.user ||
+            result?.profile?.user;
+
+          if (updatedUser) {
+            state.user = updatedUser;
+            sessionStorage.setItem(
+              'smp3_session_user',
+              JSON.stringify(updatedUser)
+            );
+          } else if (state.user) {
+            state.user.nama = newName;
+            sessionStorage.setItem(
+              'smp3_session_user',
+              JSON.stringify(state.user)
+            );
+          }
+
+          renderAppIdentity();
+          closeAppDialog();
+          showToast('Nama berhasil diperbarui.');
+
+          // Jika halaman Akun sedang terbuka sebagai Super Admin,
+          // muat ulang agar nama pada tabel akun ikut sinkron.
+          if (
+            state.user?.role === 'SUPER_ADMIN' &&
+            state.appSection === 'accounts'
+          ) {
+            loadAccounts();
+          }
+
+        } catch (error) {
+          if (await handleSessionError(error)) return;
+          status.textContent = error.message || 'Nama gagal diperbarui.';
+          status.className = 'form-status error';
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = original;
+        }
+      });
+    }
+
 
     function openOwnPasswordDialog() {
       closeProfileMenu();
@@ -20393,6 +20571,7 @@
     });
 
     $('#profileChangeAvatarBtn').addEventListener('click', openAvatarManageDialog);
+    $('#profileChangeNameBtn').addEventListener('click', openOwnNameDialog);
     $('#profileChangePasswordBtn').addEventListener('click', openOwnPasswordDialog);
     $('#profileThemeBtn').addEventListener('click', toggleTheme);
     $('#profileLogoutBtn').addEventListener('click', logoutCurrentSession);
