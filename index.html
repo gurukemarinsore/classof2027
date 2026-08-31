@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <link rel="icon" type="image/svg+xml" href="logo.svg" />
   <title>Data Siswa Kelas 9 2026-2027</title>
-  <!-- CLASSOF2027 Revisi 002 · Fullscreen Edit Massal Murid + Grid Spreadsheet · Versi 1.30 -->
+  <!-- CLASSOF2027 Revisi 003 · Ctrl+A Select-All Grid · Versi 1.31 -->
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -8060,7 +8060,7 @@
 
 
     /* ============================================================
-       CLASSOF2027 Revisi 002 — Versi 1.30
+       CLASSOF2027 Revisi 003 — Versi 1.31
        - Edit Massal Data Murid fullscreen.
        - Grid Data Murid menyamai selection/focus spreadsheet Nilai.
        - Bar petunjuk Edit Massal Nilai dihapus tanpa menonaktifkan shortcut.
@@ -8320,7 +8320,7 @@
   <footer class="footer app-shell">
     <div><strong>SMP NEGERI 3 JAYAPURA</strong> · Sistem Pendataan Terpadu Murid & Nilai</div>
     <div style="margin-top:6px">Dikembangkan oleh gurukemarinsore</div>
-    <div style="margin-top:3px">Versi 1.30</div>
+    <div style="margin-top:3px">Versi 1.31</div>
     <div class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</div>
   </footer>
   </div>
@@ -8345,7 +8345,7 @@
         <div class="sidebar-footer">
           <div class="sidebar-footer-copy">
             <small>Dikembangkan oleh gurukemarinsore</small>
-            <small class="app-version-label">Versi 1.30</small>
+            <small class="app-version-label">Versi 1.31</small>
           </div>
           <small class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</small>
         </div>
@@ -11676,6 +11676,45 @@
       renderBulkStudentSummary();
     }
 
+    function selectAllBulkStudentEditableCells() {
+      if (
+        !bulkStudentSheet ||
+        bulkStudentSheet.loading
+      ) {
+        return;
+      }
+
+      // Seluruh area editable Data Murid:
+      // 40 baris × 3 kolom (NIS, NISN, Nama Lengkap).
+      // No. tidak termasuk karena read-only/non-editable.
+      bulkStudentSheet.anchor = {
+        row: 39,
+        col: 2
+      };
+
+      bulkStudentSheet.focus = {
+        row: 0,
+        col: 0
+      };
+
+      renderBulkStudentSelection();
+
+      const input =
+        findBulkStudentInput(0, 0);
+
+      if (input) {
+        input.readOnly = true;
+        input.focus({
+          preventScroll: true
+        });
+
+        try {
+          input.setSelectionRange(0, 0);
+        } catch (_) {}
+      }
+    }
+
+
     function handleBulkStudentKeyboard(event) {
       if (!bulkStudentSheet) return;
 
@@ -11780,6 +11819,24 @@
         // Explicit edit mode (double click / F2):
         // Arrow, Home, End, Backspace, Delete, selection teks,
         // copy/paste semuanya tetap native di dalam input.
+        return;
+      }
+
+      const ctrl =
+        event.ctrlKey ||
+        event.metaKey;
+
+      // Spreadsheet mode:
+      // Ctrl+A / Cmd+A memilih seluruh cell editable,
+      // bukan memilih teks di satu input.
+      // Saat explicit edit mode, blok di atas sudah return sehingga
+      // Ctrl+A tetap native untuk memilih seluruh teks di cell.
+      if (
+        ctrl &&
+        String(event.key || '').toLowerCase() === 'a'
+      ) {
+        event.preventDefault();
+        selectAllBulkStudentEditableCells();
         return;
       }
 
@@ -15510,6 +15567,46 @@
       );
     }
 
+    function selectAllMassGradeEditableCells() {
+      if (!massGradeSheet) return;
+
+      const maxRow =
+        massGradeMaxRow();
+
+      const maxCol =
+        massGradeMaxCol();
+
+      // Hanya area nilai yang editable.
+      // Kolom No., Nama, Rata-rata Semester, dan Rata-rata Keseluruhan
+      // tidak ikut terpilih karena bukan cell input nilai.
+      massGradeSheet.anchor = {
+        row: maxRow,
+        col: maxCol
+      };
+
+      massGradeSheet.focus = {
+        row: 0,
+        col: 0
+      };
+
+      renderMassGradeSelection();
+
+      const input =
+        findMassGradeInput(0, 0);
+
+      if (input) {
+        input.readOnly = true;
+        input.focus({
+          preventScroll: true
+        });
+
+        try {
+          input.setSelectionRange(0, 0);
+        } catch (_) {}
+      }
+    }
+
+
     function handleMassGradeKeyboard(event) {
       if (!massGradeSheet) return;
 
@@ -15620,6 +15717,19 @@
       const ctrl =
         event.ctrlKey ||
         event.metaKey;
+
+      // Spreadsheet mode:
+      // Ctrl+A / Cmd+A memilih seluruh cell nilai yang editable.
+      // Saat explicit edit mode, blok editing di atas sudah return,
+      // sehingga Ctrl+A tetap native untuk memilih seluruh teks cell.
+      if (
+        ctrl &&
+        String(event.key || '').toLowerCase() === 'a'
+      ) {
+        event.preventDefault();
+        selectAllMassGradeEditableCells();
+        return;
+      }
 
       if (
         ctrl &&
