@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <link rel="icon" type="image/svg+xml" href="logo.svg" />
   <title>Data Siswa Kelas 9 2026-2027</title>
-  <!-- CLASSOF2027 Revisi 006 · Simple Delete + ChatGPT Preview Guard + Replace Icon + Image Rotation · Versi 1.34 -->
+  <!-- CLASSOF2027 Revisi 007 · Session Cache + Unified Live Sync + Incremental Refresh + Conflict Guard · Versi 1.35 -->
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -8383,7 +8383,7 @@
   <footer class="footer app-shell">
     <div><strong>SMP NEGERI 3 JAYAPURA</strong> · Sistem Pendataan Terpadu Murid & Nilai</div>
     <div style="margin-top:6px">Dikembangkan oleh gurukemarinsore</div>
-    <div style="margin-top:3px">Versi 1.34</div>
+    <div style="margin-top:3px">Versi 1.35</div>
     <div class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</div>
   </footer>
   </div>
@@ -8408,7 +8408,7 @@
         <div class="sidebar-footer">
           <div class="sidebar-footer-copy">
             <small>Dikembangkan oleh gurukemarinsore</small>
-            <small class="app-version-label">Versi 1.34</small>
+            <small class="app-version-label">Versi 1.35</small>
           </div>
           <small class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</small>
         </div>
@@ -8626,8 +8626,8 @@
           fontKey: 'GOOGLE_SANS_FLEX',
           fontLabel: 'Google Sans Flex',
           fontSource: 'Preview lokal',
-          appVersion: '1.34',
-          backendRevision: 'MASTER_002',
+          appVersion: '1.35',
+          backendRevision: 'MASTER_003',
           schemaVersion: 2
         },
         semesterNilai: {
@@ -8662,6 +8662,21 @@
       chartType: 'dokumen',
       appFontKey: 'GOOGLE_SANS_FLEX',
       appFontSyncTimer: null,
+      appFontVisibilityBound: false,
+      liveSync: {
+        timer: null,
+        visibilityBound: false,
+        running: false,
+        manualRefreshRunning: false,
+        syncEpoch: null,
+        lastChangeId: null,
+        failureCount: 0,
+        lastSuccessAt: 0,
+        deferredEffects: null,
+        deferredReset: false,
+        deferredResetReason: '',
+        flushingDeferred: false
+      },
 
       sessionToken: '',
       user: null,
@@ -8743,6 +8758,1547 @@
         savingFont: false
       }
     };
+
+
+    // ===== Revisi 007 · Tahap 4: Session Cache Frontend =====
+    // Cache hanya hidup selama sesi login/browser aktif. Tidak disimpan ke
+    // localStorage/sessionStorage agar data operasional tidak menetap di browser.
+    function createSessionCache() {
+      return {
+        dashboard: null,
+        overview: null,
+        students: new Map(),
+        grades: new Map(),
+        documents: new Map(),
+        accounts: null,
+        settings: null
+      };
+    }
+
+    state.sessionCache = createSessionCache();
+
+    function resetSessionCache() {
+      state.sessionCache = createSessionCache();
+    }
+
+    function plainClone(value) {
+      if (value === null || value === undefined) return value;
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    function setBoundedSessionCache(map, key, value, maxEntries = 24) {
+      if (!(map instanceof Map)) return;
+
+      if (map.has(key)) {
+        map.delete(key);
+      }
+
+      map.set(key, value);
+
+      while (map.size > maxEntries) {
+        const oldestKey = map.keys().next().value;
+        map.delete(oldestKey);
+      }
+    }
+
+    function studentSessionCacheKey(source = state.students) {
+      return [
+        String(source?.kelas || 'SEMUA'),
+        String(source?.query || '').trim(),
+        Number(source?.page || 1),
+        Number(source?.limit || 20)
+      ].join('|');
+    }
+
+    function gradeSessionCacheKey(source = state.grades) {
+      return [
+        String(source?.kelas || ''),
+        Number(source?.semester || 1)
+      ].join('|');
+    }
+
+    function documentSessionCacheKey(source = state.documents) {
+      return [
+        String(source?.kelas || 'SEMUA'),
+        String(source?.query || '').trim(),
+        Number(source?.page || 1),
+        Number(source?.limit || 20)
+      ].join('|');
+    }
+
+    function captureDashboardSessionCache() {
+      if (!state.sessionToken || !state.dashboard) return;
+      state.sessionCache.dashboard = {
+        cachedAt: Date.now(),
+        data: plainClone(state.dashboard),
+        selectedClass: state.selectedClass,
+        chartType: state.chartType
+      };
+    }
+
+    function captureOverviewSessionCache() {
+      if (!state.sessionToken) return;
+      state.sessionCache.overview = {
+        cachedAt: Date.now(),
+        semesterLocks: plainClone(state.semesterLocks || []),
+        accountsSummary: plainClone(state.accountsSummary)
+      };
+    }
+
+    function captureStudentsSessionCache() {
+      if (!state.sessionToken || state.students.loading) return;
+
+      const snapshot = {
+        cachedAt: Date.now(),
+        query: state.students.query,
+        kelas: state.students.kelas,
+        page: state.students.page,
+        limit: state.students.limit,
+        total: state.students.total,
+        totalPages: state.students.totalPages,
+        rows: plainClone(state.students.rows || []),
+        activeSemesters: plainClone(state.students.activeSemesters || [])
+      };
+
+      setBoundedSessionCache(
+        state.sessionCache.students,
+        studentSessionCacheKey(snapshot),
+        snapshot,
+        24
+      );
+    }
+
+    function captureGradesSessionCache() {
+      if (
+        !state.sessionToken ||
+        state.grades.loading ||
+        state.grades.saving ||
+        state.grades.dirtyRows?.size
+      ) {
+        return;
+      }
+
+      const snapshot = {
+        cachedAt: Date.now(),
+        kelas: state.grades.kelas,
+        semester: state.grades.semester,
+        subjects: plainClone(state.grades.subjects || []),
+        students: plainClone(state.grades.students || []),
+        classReferenceSemester: Number(state.grades.classReferenceSemester || 0),
+        locked: state.grades.locked === true,
+        canEdit: state.grades.canEdit === true,
+        lastSavedAt: state.grades.lastSavedAt || ''
+      };
+
+      setBoundedSessionCache(
+        state.sessionCache.grades,
+        gradeSessionCacheKey(snapshot),
+        snapshot,
+        24
+      );
+    }
+
+    function captureDocumentsSessionCache() {
+      if (!state.sessionToken || state.documents.loading) return;
+
+      const snapshot = {
+        cachedAt: Date.now(),
+        kelas: state.documents.kelas,
+        query: state.documents.query,
+        page: state.documents.page,
+        limit: state.documents.limit,
+        total: state.documents.total,
+        totalPages: state.documents.totalPages,
+        students: plainClone(state.documents.students || [])
+      };
+
+      setBoundedSessionCache(
+        state.sessionCache.documents,
+        documentSessionCacheKey(snapshot),
+        snapshot,
+        24
+      );
+    }
+
+    function captureAccountsSessionCache() {
+      if (
+        !state.sessionToken ||
+        state.user?.role !== 'SUPER_ADMIN' ||
+        state.accounts.loading ||
+        !state.accounts.loaded
+      ) {
+        return;
+      }
+
+      state.sessionCache.accounts = {
+        cachedAt: Date.now(),
+        rows: plainClone(state.accounts.rows || []),
+        roles: plainClone(state.accounts.roles || []),
+        classes: plainClone(state.accounts.classes || []),
+        max: Number(state.accounts.max || 20)
+      };
+    }
+
+    function captureSettingsSessionCache() {
+      if (
+        !state.sessionToken ||
+        state.user?.role !== 'SUPER_ADMIN' ||
+        state.settings.loading ||
+        state.settings.savingDashboard ||
+        state.settings.savingFont ||
+        state.settings.savingLock
+      ) {
+        return;
+      }
+
+      state.sessionCache.settings = {
+        cachedAt: Date.now(),
+        dashboardSemesters: plainClone(state.settings.dashboardSemesters || []),
+        originalDashboardSemesters: plainClone(state.settings.originalDashboardSemesters || []),
+        locks: plainClone(state.settings.locks || []),
+        preview: plainClone(state.settings.preview),
+        fontKey: state.settings.fontKey,
+        originalFontKey: state.settings.originalFontKey,
+        fontOptions: plainClone(state.settings.fontOptions || [])
+      };
+    }
+
+    function captureCurrentSectionSessionCache() {
+      switch (state.appSection) {
+        case 'dashboard':
+          captureDashboardSessionCache();
+          captureOverviewSessionCache();
+          break;
+        case 'students':
+          captureStudentsSessionCache();
+          break;
+        case 'grades':
+          captureGradesSessionCache();
+          break;
+        case 'documents':
+          captureDocumentsSessionCache();
+          break;
+        case 'accounts':
+          captureAccountsSessionCache();
+          break;
+        case 'settings':
+          captureSettingsSessionCache();
+          break;
+      }
+    }
+
+    function restoreDashboardSessionCache() {
+      const snapshot = state.sessionCache.dashboard;
+      if (!snapshot?.data) return false;
+
+      state.dashboard = plainClone(snapshot.data);
+      state.selectedClass = snapshot.selectedClass || state.selectedClass || 'ALL';
+      state.chartType = snapshot.chartType || state.chartType || 'dokumen';
+      renderAll();
+      return true;
+    }
+
+    function restoreOverviewSessionCache() {
+      const snapshot = state.sessionCache.overview;
+      if (!snapshot) return false;
+
+      state.semesterLocks = plainClone(snapshot.semesterLocks || []);
+      state.accountsSummary = plainClone(snapshot.accountsSummary);
+
+      if (state.appSection === 'dashboard') {
+        renderDashboardShell();
+        renderSemesterLocks();
+      } else if (state.appSection === 'grades') {
+        renderGradeSemesterTabs();
+      }
+
+      return true;
+    }
+
+    function restoreStudentsSessionCache() {
+      const snapshot = state.sessionCache.students.get(
+        studentSessionCacheKey()
+      );
+
+      if (!snapshot) return false;
+
+      state.students.total = Number(snapshot.total || 0);
+      state.students.totalPages = Number(snapshot.totalPages || 0);
+      state.students.page = Number(snapshot.page || 1);
+      state.students.limit = Number(snapshot.limit || 20);
+      state.students.rows = plainClone(snapshot.rows || []);
+      state.students.activeSemesters = plainClone(snapshot.activeSemesters || []);
+
+      renderStudentsTable();
+      renderStudentsPagination();
+
+      if ($('#studentResultInfo')) {
+        $('#studentResultInfo').textContent =
+          `${state.students.total.toLocaleString('id-ID')} murid ditemukan`;
+      }
+
+      if ($('#studentSemesterInfo')) {
+        $('#studentSemesterInfo').textContent =
+          state.students.activeSemesters.length
+            ? `Statistik nilai: Semester ${state.students.activeSemesters.join(', ')}`
+            : 'Semester statistik belum ditentukan';
+      }
+
+      return true;
+    }
+
+    function restoreGradesSessionCache() {
+      const snapshot = state.sessionCache.grades.get(
+        gradeSessionCacheKey()
+      );
+
+      if (!snapshot) return false;
+
+      state.grades.subjects = plainClone(snapshot.subjects || []);
+      state.grades.students = plainClone(snapshot.students || []);
+      state.grades.classReferenceSemester = Number(snapshot.classReferenceSemester || 0);
+      state.grades.locked = snapshot.locked === true;
+      state.grades.canEdit = snapshot.canEdit === true;
+      state.grades.dirtyRows = new Set();
+      state.grades.editingRows = new Set();
+      state.grades.lastSavedAt = snapshot.lastSavedAt || '';
+
+      syncCurrentGradeSemesterLock();
+      renderGradeStatus();
+      renderGradeSummary();
+      renderGradeTable();
+      startGradeAutosaveTimer();
+      return true;
+    }
+
+    function restoreDocumentsSessionCache() {
+      const snapshot = state.sessionCache.documents.get(
+        documentSessionCacheKey()
+      );
+
+      if (!snapshot) return false;
+
+      state.documents.total = Number(snapshot.total || 0);
+      state.documents.totalPages = Number(snapshot.totalPages || 0);
+      state.documents.page = Number(snapshot.page || 1);
+      state.documents.limit = Number(snapshot.limit || 20);
+      state.documents.students = plainClone(snapshot.students || []);
+
+      renderDocumentStudentList();
+      renderDocumentPagination();
+
+      if ($('#documentResultInfo')) {
+        $('#documentResultInfo').textContent =
+          `${state.documents.total.toLocaleString('id-ID')} murid ditemukan`;
+      }
+
+      return true;
+    }
+
+    function restoreAccountsSessionCache() {
+      const snapshot = state.sessionCache.accounts;
+      if (!snapshot || state.user?.role !== 'SUPER_ADMIN') return false;
+
+      state.accounts.rows = plainClone(snapshot.rows || []);
+      state.accounts.roles = plainClone(snapshot.roles || state.accounts.roles);
+      state.accounts.classes = plainClone(snapshot.classes || state.accounts.classes);
+      state.accounts.max = Number(snapshot.max || 20);
+      state.accounts.loaded = true;
+
+      const active = state.accounts.rows.filter(
+        item => item.statusAktif === true
+      ).length;
+
+      state.accountsSummary = {
+        total: state.accounts.rows.length,
+        active
+      };
+
+      renderAccountSummary();
+      renderAccountsTable();
+      renderAccountCapacity();
+      return true;
+    }
+
+    function restoreSettingsSessionCache() {
+      const snapshot = state.sessionCache.settings;
+      if (!snapshot || state.user?.role !== 'SUPER_ADMIN') return false;
+
+      state.settings.dashboardSemesters = plainClone(snapshot.dashboardSemesters || []);
+      state.settings.originalDashboardSemesters = plainClone(snapshot.originalDashboardSemesters || []);
+      state.settings.locks = plainClone(snapshot.locks || []);
+      state.settings.preview = plainClone(snapshot.preview);
+      state.settings.fontKey = snapshot.fontKey || state.appFontKey;
+      state.settings.originalFontKey = snapshot.originalFontKey || state.settings.fontKey;
+      state.settings.fontOptions = plainClone(snapshot.fontOptions || []);
+
+      applyGlobalFont(state.settings.fontKey);
+      renderDashboardSemesterOptions();
+      updateSaveDashboardSemestersButton();
+      renderSettingsLocks();
+      renderSettingsPreview();
+      renderFontSettings();
+      return true;
+    }
+
+    // ===== Revisi 007 · Tahap 5-6: Unified Live Sync + Forced Incremental Refresh =====
+    // Satu timer global setelah login. Backend hanya mengirim Change Journal
+    // setelah lastChangeId; cache yang tidak terdampak tidak disentuh.
+    const LIVE_SYNC_INTERVAL_MS = 20 * 1000;
+
+    function createLiveSyncEffects() {
+      return {
+        dashboard: false,
+        dashboardAll: false,
+        overview: false,
+        accounts: false,
+        settings: false,
+        semesterLocks: false,
+        font: false,
+        profile: false,
+        allStudents: false,
+        allDocuments: false,
+        allGrades: false,
+        dashboardClasses: new Set(),
+        studentClasses: new Set(),
+        documentClasses: new Set(),
+        gradeClasses: new Set(),
+        gradeKeys: new Set()
+      };
+    }
+
+
+    // ===== Revisi 007 · Tahap 8: Edit Conflict Guard =====
+    // Event Live Sync tetap dicatat dan cache tetap diinvalidasi, tetapi
+    // render/fetch yang dapat menimpa pekerjaan lokal ditahan sampai edit
+    // selesai. Keamanan session tidak ditunda karena getSyncChanges selalu
+    // memvalidasi session pada backend sebelum event dikembalikan.
+    function hasLiveSyncEffects(effects) {
+      if (!effects) return false;
+
+      return !!(
+        effects.dashboard ||
+        effects.dashboardAll ||
+        effects.overview ||
+        effects.accounts ||
+        effects.settings ||
+        effects.semesterLocks ||
+        effects.font ||
+        effects.profile ||
+        effects.allStudents ||
+        effects.allDocuments ||
+        effects.allGrades ||
+        effects.dashboardClasses?.size ||
+        effects.studentClasses?.size ||
+        effects.documentClasses?.size ||
+        effects.gradeClasses?.size ||
+        effects.gradeKeys?.size
+      );
+    }
+
+    function mergeLiveSyncEffects(target, source) {
+      const merged = target || createLiveSyncEffects();
+      if (!source) return merged;
+
+      [
+        'dashboard',
+        'dashboardAll',
+        'overview',
+        'accounts',
+        'settings',
+        'semesterLocks',
+        'font',
+        'profile',
+        'allStudents',
+        'allDocuments',
+        'allGrades'
+      ].forEach(key => {
+        merged[key] = merged[key] === true || source[key] === true;
+      });
+
+      [
+        'dashboardClasses',
+        'studentClasses',
+        'documentClasses',
+        'gradeClasses',
+        'gradeKeys'
+      ].forEach(key => {
+        if (!(merged[key] instanceof Set)) merged[key] = new Set();
+        if (source[key] instanceof Set) {
+          source[key].forEach(value => merged[key].add(value));
+        }
+      });
+
+      return merged;
+    }
+
+    function settingsHasLocalDraft() {
+      if (state.appSection !== 'settings') return false;
+
+      const semesterDraft = !arraysSameNumbers(
+        state.settings.dashboardSemesters || [],
+        state.settings.originalDashboardSemesters || []
+      );
+
+      const fontDraft = normalizeFrontendFontKey(
+        state.settings.fontKey || state.appFontKey
+      ) !== normalizeFrontendFontKey(
+        state.settings.originalFontKey || state.appFontKey
+      );
+
+      return !!(
+        semesterDraft ||
+        fontDraft ||
+        state.settings.savingDashboard ||
+        state.settings.savingFont ||
+        state.settings.savingLock
+      );
+    }
+
+    function liveSyncUiIsProtected() {
+      // Semua app dialog dianggap area edit/proses lokal. Ini juga melindungi
+      // tambah/edit murid, edit massal, dokumen, akun, profil, password,
+      // crop avatar, dan dialog konfirmasi dari rerender di belakangnya.
+      if ($('#appDialogOverlay')) return true;
+
+      if (
+        state.appSection === 'grades' &&
+        (
+          state.grades.loading ||
+          state.grades.saving ||
+          state.grades.dirtyRows?.size ||
+          state.grades.editingRows?.size
+        )
+      ) {
+        return true;
+      }
+
+      if (settingsHasLocalDraft()) return true;
+
+      return false;
+    }
+
+    function deferLiveSyncEffects(effects) {
+      if (!hasLiveSyncEffects(effects)) return;
+
+      state.liveSync.deferredEffects = mergeLiveSyncEffects(
+        state.liveSync.deferredEffects,
+        effects
+      );
+    }
+
+    function deferLiveSyncReset(reason = '') {
+      state.liveSync.deferredReset = true;
+      state.liveSync.deferredResetReason = String(reason || 'RESET_REQUIRED');
+      // Reset authoritative lebih kuat daripada delta lama; cache sesi sudah
+      // akan dihapus dan active section dimuat ulang setelah edit selesai.
+      state.liveSync.deferredEffects = null;
+    }
+
+    function scheduleDeferredLiveSyncFlush() {
+      queueMicrotask(() => {
+        flushDeferredLiveSync().catch(error => {
+          console.warn(
+            'Deferred Live Sync:',
+            error?.message || error
+          );
+        });
+      });
+    }
+
+    async function flushDeferredLiveSync() {
+      if (
+        !state.sessionToken ||
+        !state.user ||
+        !state.liveSync ||
+        state.liveSync.running ||
+        state.liveSync.flushingDeferred ||
+        liveSyncUiIsProtected()
+      ) {
+        return false;
+      }
+
+      const hasReset = state.liveSync.deferredReset === true;
+      const effects = state.liveSync.deferredEffects;
+
+      if (!hasReset && !hasLiveSyncEffects(effects)) {
+        return false;
+      }
+
+      state.liveSync.flushingDeferred = true;
+
+      try {
+        if (hasReset) {
+          state.liveSync.deferredReset = false;
+          state.liveSync.deferredResetReason = '';
+          state.liveSync.deferredEffects = null;
+          await refreshVisibleSectionAfterSyncReset({ ignoreProtection: true });
+          return true;
+        }
+
+        state.liveSync.deferredEffects = null;
+        await refreshVisibleSectionFromLiveSync(
+          effects,
+          { ignoreProtection: true }
+        );
+        return true;
+      } finally {
+        state.liveSync.flushingDeferred = false;
+      }
+    }
+
+    function sessionCacheClassFromKey(key) {
+      return String(key || '').split('|')[0] || '';
+    }
+
+    function invalidateSearchSessionCacheForClass(map, kelas) {
+      if (!(map instanceof Map)) return;
+      const normalized = String(kelas || '').trim().toUpperCase();
+
+      if (!normalized) {
+        map.clear();
+        return;
+      }
+
+      [...map.keys()].forEach(key => {
+        const cachedClass = sessionCacheClassFromKey(key).toUpperCase();
+        if (cachedClass === 'SEMUA' || cachedClass === normalized) {
+          map.delete(key);
+        }
+      });
+    }
+
+    function invalidateGradeSessionCache(kelas, semester = null) {
+      const map = state.sessionCache?.grades;
+      if (!(map instanceof Map)) return;
+
+      const normalizedClass = String(kelas || '').trim().toUpperCase();
+      const normalizedSemester = Number(semester || 0);
+
+      if (!normalizedClass) {
+        if (!normalizedSemester) {
+          map.clear();
+          return;
+        }
+
+        [...map.keys()].forEach(key => {
+          const parts = String(key).split('|');
+          if (Number(parts[1]) === normalizedSemester) {
+            map.delete(key);
+          }
+        });
+        return;
+      }
+
+      [...map.keys()].forEach(key => {
+        const parts = String(key).split('|');
+        const cachedClass = String(parts[0] || '').toUpperCase();
+        const cachedSemester = Number(parts[1] || 0);
+
+        if (
+          cachedClass === normalizedClass &&
+          (!normalizedSemester || cachedSemester === normalizedSemester)
+        ) {
+          map.delete(key);
+        }
+      });
+    }
+
+    function invalidateDashboardSessionCache() {
+      if (state.sessionCache) {
+        state.sessionCache.dashboard = null;
+      }
+    }
+
+    function invalidateOverviewSessionCache() {
+      if (state.sessionCache) {
+        state.sessionCache.overview = null;
+      }
+    }
+
+    function invalidateAccountsSessionCache() {
+      if (state.sessionCache) {
+        state.sessionCache.accounts = null;
+      }
+    }
+
+    function invalidateSettingsSessionCache() {
+      if (state.sessionCache) {
+        state.sessionCache.settings = null;
+      }
+    }
+
+    function applyLiveSyncChanges(changes) {
+      const effects = createLiveSyncEffects();
+      const currentUsername = String(state.user?.username || '')
+        .trim()
+        .toLowerCase();
+
+      (Array.isArray(changes) ? changes : []).forEach(change => {
+        const type = String(change?.type || '').trim().toUpperCase();
+        const kelas = String(change?.kelas || '').trim().toUpperCase();
+        const semester = Number(change?.semester || 0);
+
+        if (type.startsWith('STUDENT_') || type.startsWith('STUDENTS_')) {
+          invalidateSearchSessionCacheForClass(
+            state.sessionCache?.students,
+            kelas
+          );
+          invalidateSearchSessionCacheForClass(
+            state.sessionCache?.documents,
+            kelas
+          );
+          invalidateGradeSessionCache(kelas);
+
+          if (kelas) {
+            effects.studentClasses.add(kelas);
+            effects.documentClasses.add(kelas);
+            effects.gradeClasses.add(kelas);
+            effects.dashboardClasses.add(kelas);
+          } else {
+            effects.allStudents = true;
+            effects.allDocuments = true;
+            effects.allGrades = true;
+            effects.dashboardAll = true;
+            invalidateDashboardSessionCache();
+          }
+          effects.dashboard = true;
+          return;
+        }
+
+        if (type.startsWith('GRADE_')) {
+          invalidateGradeSessionCache(kelas, semester || null);
+          invalidateSearchSessionCacheForClass(
+            state.sessionCache?.students,
+            kelas
+          );
+          invalidateSearchSessionCacheForClass(
+            state.sessionCache?.documents,
+            kelas
+          );
+
+          if (kelas && semester) {
+            effects.gradeKeys.add(`${kelas}|${semester}`);
+          } else if (kelas) {
+            effects.gradeClasses.add(kelas);
+          } else {
+            effects.allGrades = true;
+          }
+
+          if (kelas) {
+            effects.studentClasses.add(kelas);
+            effects.documentClasses.add(kelas);
+            effects.dashboardClasses.add(kelas);
+          } else {
+            effects.allStudents = true;
+            effects.allDocuments = true;
+            effects.dashboardAll = true;
+            invalidateDashboardSessionCache();
+          }
+          effects.dashboard = true;
+          return;
+        }
+
+        if (type.startsWith('DOCUMENT_')) {
+          invalidateSearchSessionCacheForClass(
+            state.sessionCache?.documents,
+            kelas
+          );
+          invalidateSearchSessionCacheForClass(
+            state.sessionCache?.students,
+            kelas
+          );
+
+          if (kelas) {
+            effects.documentClasses.add(kelas);
+            effects.studentClasses.add(kelas);
+            effects.dashboardClasses.add(kelas);
+          } else {
+            effects.allDocuments = true;
+            effects.allStudents = true;
+            effects.dashboardAll = true;
+            invalidateDashboardSessionCache();
+          }
+          effects.dashboard = true;
+          return;
+        }
+
+        if (type.startsWith('ACCOUNT_')) {
+          invalidateAccountsSessionCache();
+          invalidateOverviewSessionCache();
+          effects.accounts = true;
+          effects.overview = true;
+
+          const username = String(change?.username || '').trim().toLowerCase();
+          const oldUsername = String(change?.usernameLama || '').trim().toLowerCase();
+          if (
+            currentUsername &&
+            (currentUsername === username || currentUsername === oldUsername)
+          ) {
+            effects.profile = true;
+          }
+          return;
+        }
+
+        if (type === 'SETTING_UPDATED') {
+          const settingKey = String(change?.settingKey || '')
+            .trim()
+            .toUpperCase();
+
+          if (settingKey === 'APP_FONT') {
+            effects.font = true;
+            return;
+          }
+
+          if (settingKey === 'DASHBOARD_SEMESTERS') {
+            invalidateSettingsSessionCache();
+            state.sessionCache?.students?.clear?.();
+            state.sessionCache?.documents?.clear?.();
+            invalidateDashboardSessionCache();
+            effects.settings = true;
+            effects.dashboard = true;
+            effects.dashboardAll = true;
+            effects.allStudents = true;
+            effects.allDocuments = true;
+            return;
+          }
+
+          if (
+            settingKey.startsWith('SEMESTER_LOCK_') ||
+            (Array.isArray(change?.fields) && change.fields.includes('semesterLock'))
+          ) {
+            effects.semesterLocks = true;
+            if (semester) {
+              invalidateGradeSessionCache('', semester);
+            }
+            return;
+          }
+
+          // Setting baru yang belum dikenal: invalidasi konservatif.
+          invalidateSettingsSessionCache();
+          invalidateOverviewSessionCache();
+          invalidateDashboardSessionCache();
+          effects.settings = true;
+          effects.overview = true;
+          effects.dashboard = true;
+          effects.dashboardAll = true;
+        }
+      });
+
+      return effects;
+    }
+
+    function liveSyncFilterIncludesClass(filterValue, classes, allFlag) {
+      if (allFlag) return true;
+      const filter = String(filterValue || '').trim().toUpperCase();
+      if (!classes?.size) return false;
+      if (filter === 'SEMUA' || filter === 'ALL') return true;
+      return classes.has(filter);
+    }
+
+    function liveSyncGradeViewAffected(effects) {
+      if (effects.allGrades) return true;
+
+      const kelas = String(state.grades.kelas || '').trim().toUpperCase();
+      const semester = Number(state.grades.semester || 0);
+
+      if (effects.gradeClasses.has(kelas)) return true;
+      return effects.gradeKeys.has(`${kelas}|${semester}`);
+    }
+
+    // ===== Revisi 007 · Tahap 7: Dashboard class patch + settings bundle =====
+    function frontendCompletenessMetric(required, filled, specialStatus = '') {
+      const wajib = Number(required) || 0;
+      const terisi = Number(filled) || 0;
+
+      if (specialStatus) {
+        return { wajib, terisi, persentase: null, status: specialStatus };
+      }
+
+      if (wajib <= 0) {
+        return { wajib: 0, terisi, persentase: null, status: 'BELUM_ADA_DATA' };
+      }
+
+      const percent = Math.round(((terisi / wajib) * 100 + Number.EPSILON) * 100) / 100;
+      const status = terisi <= 0
+        ? 'KOSONG'
+        : (terisi >= wajib ? 'LENGKAP' : 'BELUM_LENGKAP');
+
+      return { wajib, terisi, persentase: percent, status };
+    }
+
+    function recalculateDashboardSchoolTotal(classStats, activeSemesters) {
+      const rows = Array.isArray(classStats) ? classStats : [];
+      const semesters = Array.isArray(activeSemesters) ? activeSemesters : [];
+
+      const totals = rows.reduce((acc, item) => {
+        acc.jumlahMurid += Number(item?.jumlahMurid) || 0;
+        acc.dokumenWajib += Number(item?.dokumen?.wajib) || 0;
+        acc.dokumenTerisi += Number(item?.dokumen?.terisi) || 0;
+        acc.dokumenLengkap += Number(item?.dokumen?.muridLengkap) || 0;
+        acc.nilaiWajib += Number(item?.nilai?.wajib) || 0;
+        acc.nilaiTerisi += Number(item?.nilai?.terisi) || 0;
+        acc.nilaiLengkap += Number(item?.nilai?.muridLengkap) || 0;
+        return acc;
+      }, {
+        jumlahMurid: 0,
+        dokumenWajib: 0,
+        dokumenTerisi: 0,
+        dokumenLengkap: 0,
+        nilaiWajib: 0,
+        nilaiTerisi: 0,
+        nilaiLengkap: 0
+      });
+
+      const noStudents = totals.jumlahMurid === 0;
+      const dokumen = frontendCompletenessMetric(
+        totals.dokumenWajib,
+        totals.dokumenTerisi,
+        noStudents ? 'BELUM_ADA_MURID' : ''
+      );
+      const nilai = semesters.length === 0
+        ? frontendCompletenessMetric(0, 0, 'SEMESTER_BELUM_DITENTUKAN')
+        : frontendCompletenessMetric(
+            totals.nilaiWajib,
+            totals.nilaiTerisi,
+            noStudents ? 'BELUM_ADA_MURID' : ''
+          );
+
+      return {
+        label: 'TOTAL SEKOLAH',
+        jumlahMurid: totals.jumlahMurid,
+        dokumen: {
+          ...dokumen,
+          muridLengkap: totals.dokumenLengkap
+        },
+        nilai: {
+          ...nilai,
+          muridLengkap: totals.nilaiLengkap
+        }
+      };
+    }
+
+    function sameSemesterSelection(a, b) {
+      return arraysSameNumbers(a || [], b || []);
+    }
+
+    function applyDashboardClassPatchResult(result) {
+      if (!state.dashboard || !Array.isArray(state.dashboard.perKelas)) {
+        return false;
+      }
+
+      const patches = Array.isArray(result?.classes) ? result.classes : [];
+      const nextSemesters = result?.semesterNilai?.activeSemesters || [];
+      const currentSemesters = state.dashboard?.semesterNilai?.activeSemesters || [];
+
+      if (!sameSemesterSelection(nextSemesters, currentSemesters)) {
+        return false;
+      }
+
+      const byClass = new Map(
+        state.dashboard.perKelas.map(item => [String(item?.kelas || '').toUpperCase(), item])
+      );
+
+      patches.forEach(item => {
+        const kelas = String(item?.kelas || '').toUpperCase();
+        if (kelas) byClass.set(kelas, item);
+      });
+
+      const ordered = ['9A','9B','9C','9D','9E','9F','9G','9H','9I','9J']
+        .map(kelas => byClass.get(kelas))
+        .filter(Boolean);
+
+      if (ordered.length !== 10) return false;
+
+      state.dashboard.perKelas = ordered;
+      state.dashboard.totalSekolah = recalculateDashboardSchoolTotal(
+        ordered,
+        nextSemesters
+      );
+      state.dashboard.generatedAt = result?.generatedAt || new Date().toISOString();
+
+      if (state.dashboard.kelasDipilih?.kelas) {
+        const selected = String(state.dashboard.kelasDipilih.kelas).toUpperCase();
+        state.dashboard.kelasDipilih = byClass.get(selected) || null;
+      }
+
+      captureDashboardSessionCache();
+      return true;
+    }
+
+    async function refreshDashboardFromLiveSync(effects) {
+      if (!effects?.dashboard) return;
+
+      if (effects.dashboardAll) {
+        invalidateDashboardSessionCache();
+        if (state.appSection === 'dashboard') {
+          await loadDashboard(true, false);
+        }
+        return;
+      }
+
+      const classes = [...(effects.dashboardClasses || [])];
+      if (!classes.length) return;
+
+      // Bila dashboard belum pernah dimuat, tidak perlu membuat request baru.
+      // Cache tetap akan diisi melalui first load saat dashboard dibuka.
+      if (!state.dashboard || !Array.isArray(state.dashboard.perKelas)) {
+        invalidateDashboardSessionCache();
+        return;
+      }
+
+      try {
+        const result = await apiPost('getdashboardclasspatches', {
+          token: state.sessionToken,
+          classes
+        });
+
+        if (!applyDashboardClassPatchResult(result)) {
+          invalidateDashboardSessionCache();
+          if (state.appSection === 'dashboard') {
+            await loadDashboard(true, false);
+          }
+          return;
+        }
+
+        if (state.appSection === 'dashboard') {
+          renderAll();
+        }
+      } catch (error) {
+        invalidateDashboardSessionCache();
+        if (state.appSection === 'dashboard') {
+          await loadDashboard(true, false);
+        } else {
+          console.warn('Dashboard class patch:', error?.message || error);
+        }
+      }
+    }
+
+    async function refreshSemesterLocksFromLiveSync() {
+      if (!state.sessionToken) return;
+
+      try {
+        const lockData = await apiPost('getsemesterlocks', {
+          token: state.sessionToken
+        });
+
+        state.semesterLocks = lockData?.semesters || [];
+        captureOverviewSessionCache();
+
+        if (state.user?.role === 'SUPER_ADMIN') {
+          state.settings.locks = plainClone(state.semesterLocks);
+          captureSettingsSessionCache();
+        }
+
+        if (state.appSection === 'dashboard') {
+          renderSemesterLocks();
+        } else if (state.appSection === 'grades') {
+          renderGradeSemesterTabs();
+        } else if (state.appSection === 'settings') {
+          renderSettingsLocks();
+        }
+      } catch (error) {
+        if (!(await handleSessionError(error, true))) {
+          console.warn('Live Sync semester lock:', error?.message || error);
+        }
+      }
+    }
+
+    async function refreshGlobalFontFromLiveSync() {
+      if (!state.sessionToken) return;
+
+      try {
+        const fontSetting = await apiPost('getappfont', {
+          token: state.sessionToken
+        });
+
+        const nextKey = normalizeFrontendFontKey(
+          fontSetting?.fontKey || state.appFontKey
+        );
+
+        applyGlobalFont(nextKey, { toast: false });
+
+        if (state.dashboard?.tampilan) {
+          state.dashboard.tampilan.fontKey = nextKey;
+          state.dashboard.tampilan.fontLabel =
+            fontSetting?.fontLabel || fontMeta(nextKey).label;
+          state.dashboard.tampilan.fontSource =
+            fontSetting?.fontSource || fontMeta(nextKey).source;
+        }
+
+        if (state.settings) {
+          state.settings.fontKey = nextKey;
+          state.settings.originalFontKey = nextKey;
+          if (Array.isArray(fontSetting?.options)) {
+            state.settings.fontOptions = fontSetting.options;
+          }
+          captureSettingsSessionCache();
+        }
+      } catch (error) {
+        if (!(await handleSessionError(error, true))) {
+          console.warn('Live Sync font:', error?.message || error);
+        }
+      }
+    }
+
+    async function refreshVisibleSectionFromLiveSync(effects, options = {}) {
+      if (!state.sessionToken || !state.user) return;
+
+      if (
+        options.ignoreProtection !== true &&
+        liveSyncUiIsProtected()
+      ) {
+        deferLiveSyncEffects(effects);
+        return { deferred: true };
+      }
+
+      if (effects.font) {
+        await refreshGlobalFontFromLiveSync();
+      }
+
+      if (effects.profile) {
+        try {
+          await loadMyProfile();
+        } catch (error) {
+          console.warn('Live Sync profil:', error?.message || error);
+        }
+      }
+
+      if (effects.semesterLocks) {
+        await refreshSemesterLocksFromLiveSync();
+      }
+
+      if (effects.overview && ['dashboard', 'grades'].includes(state.appSection)) {
+        await loadAppOverview();
+      }
+
+      if (
+        state.appSection === 'students' &&
+        liveSyncFilterIncludesClass(
+          state.students.kelas,
+          effects.studentClasses,
+          effects.allStudents
+        )
+      ) {
+        await loadStudents(false, true);
+      }
+
+      if (
+        state.appSection === 'grades' &&
+        liveSyncGradeViewAffected(effects) &&
+        !state.grades.loading &&
+        !state.grades.saving &&
+        !(state.grades.dirtyRows?.size) &&
+        !(state.grades.editingRows?.size)
+      ) {
+        await loadGradeGrid(false, true);
+      }
+
+      if (
+        state.appSection === 'documents' &&
+        liveSyncFilterIncludesClass(
+          state.documents.kelas,
+          effects.documentClasses,
+          effects.allDocuments
+        )
+      ) {
+        await loadDocumentStudents(false, true);
+      }
+
+      if (
+        state.appSection === 'accounts' &&
+        effects.accounts &&
+        state.user?.role === 'SUPER_ADMIN'
+      ) {
+        await loadAccounts(false, true);
+      }
+
+      if (
+        state.appSection === 'settings' &&
+        effects.settings &&
+        state.user?.role === 'SUPER_ADMIN'
+      ) {
+        await loadSettingsModule(false, true);
+      }
+
+      if (effects.dashboard) {
+        await refreshDashboardFromLiveSync(effects);
+      }
+    }
+
+    async function refreshVisibleSectionAfterSyncReset(options = {}) {
+      // Fallback authoritative hanya dilakukan ketika area edit lokal aman.
+      // Bila user sedang mengedit, cache boleh dibuang sekarang tetapi
+      // rerender ditahan sampai save/cancel agar input lokal tidak tertimpa.
+      resetSessionCache();
+
+      if (
+        options.ignoreProtection !== true &&
+        liveSyncUiIsProtected()
+      ) {
+        deferLiveSyncReset('SYNC_RESET_WHILE_EDITING');
+        return { deferred: true };
+      }
+
+      if (state.appSection === 'dashboard') {
+        await Promise.all([
+          loadDashboard(true, false),
+          loadAppOverview()
+        ]);
+      } else if (state.appSection === 'students') {
+        await loadStudents(false, true);
+      } else if (state.appSection === 'grades') {
+        if (!(state.grades.dirtyRows?.size) && !(state.grades.editingRows?.size)) {
+          await Promise.all([
+            loadGradeGrid(false, true),
+            loadAppOverview()
+          ]);
+        }
+      } else if (state.appSection === 'documents') {
+        await loadDocumentStudents(false, true);
+      } else if (state.appSection === 'accounts') {
+        await loadAccounts(false, true);
+      } else if (state.appSection === 'settings') {
+        await loadSettingsModule(false, true);
+      }
+    }
+
+    function stopUnifiedLiveSync() {
+      if (state.liveSync?.timer) {
+        clearInterval(state.liveSync.timer);
+      }
+
+      if (!state.liveSync) return;
+      state.liveSync.timer = null;
+      state.liveSync.running = false;
+      state.liveSync.manualRefreshRunning = false;
+      state.liveSync.syncEpoch = null;
+      state.liveSync.lastChangeId = null;
+      state.liveSync.failureCount = 0;
+      state.liveSync.lastSuccessAt = 0;
+      state.liveSync.deferredEffects = null;
+      state.liveSync.deferredReset = false;
+      state.liveSync.deferredResetReason = '';
+      state.liveSync.flushingDeferred = false;
+    }
+
+    function isTrustedLiveSyncResponse(result, previousEpoch, previousChangeId) {
+      if (!result || typeof result !== 'object') return false;
+
+      const epoch = Number(result.syncEpoch);
+      const lastChangeId = Number(result.lastChangeId);
+
+      if (!Number.isFinite(epoch) || epoch < 1) return false;
+      if (!Number.isFinite(lastChangeId) || lastChangeId < 0) return false;
+
+      if (result.resetRequired === true) return true;
+      if (result.baseline === true) return true;
+
+      if (
+        previousEpoch !== null &&
+        Number(previousEpoch) !== epoch
+      ) {
+        return false;
+      }
+
+      if (
+        previousChangeId !== null &&
+        lastChangeId < Number(previousChangeId)
+      ) {
+        return false;
+      }
+
+      if (!Array.isArray(result.changes)) return false;
+
+      let lastSeen = Number(previousChangeId ?? -1);
+      for (const change of result.changes) {
+        const id = Number(change?.id);
+        if (!Number.isFinite(id) || id <= lastSeen || id > lastChangeId) {
+          return false;
+        }
+        lastSeen = id;
+      }
+
+      return true;
+    }
+
+    async function runUnifiedLiveSync(force = false) {
+      if (
+        RUNTIME_ENV.chatgptPreview ||
+        !state.sessionToken ||
+        !state.user
+      ) {
+        return { ok: false, skipped: true, reason: 'NO_ACTIVE_SESSION' };
+      }
+
+      if (state.liveSync?.running) {
+        return { ok: false, skipped: true, reason: 'SYNC_BUSY' };
+      }
+
+      if (!force && document.visibilityState === 'hidden') {
+        return { ok: false, skipped: true, reason: 'PAGE_HIDDEN' };
+      }
+
+      const tokenAtStart = state.sessionToken;
+      const previousEpoch = state.liveSync.syncEpoch;
+      const previousChangeId = state.liveSync.lastChangeId;
+      state.liveSync.running = true;
+
+      try {
+        const payload = { token: tokenAtStart };
+
+        if (
+          previousEpoch !== null &&
+          previousChangeId !== null
+        ) {
+          payload.syncEpoch = previousEpoch;
+          payload.lastChangeId = previousChangeId;
+        }
+
+        const result = await apiPost('getsyncchanges', payload);
+
+        if (state.sessionToken !== tokenAtStart || !state.user) {
+          return { ok: false, skipped: true, reason: 'SESSION_CHANGED' };
+        }
+
+        const nextEpoch = Number(result?.syncEpoch);
+        const nextChangeId = Number(result?.lastChangeId);
+
+        if (!isTrustedLiveSyncResponse(result, previousEpoch, previousChangeId)) {
+          // Respons incremental tidak dapat dipercaya. Jangan mencoba menebak
+          // state; jadikan posisi sync tidak valid dan lakukan authoritative
+          // refresh hanya untuk tampilan yang sedang aktif.
+          // Karena responsnya sendiri tidak dipercaya, cursor tidak boleh
+          // diambil dari respons tersebut. Setelah authoritative refresh,
+          // poll berikutnya membuat baseline baru dari backend.
+          state.liveSync.syncEpoch = null;
+          state.liveSync.lastChangeId = null;
+          state.liveSync.failureCount = 0;
+          state.liveSync.lastSuccessAt = Date.now();
+          const refreshResult =
+            await refreshVisibleSectionAfterSyncReset();
+          return {
+            ok: true,
+            fallback: true,
+            deferred: refreshResult?.deferred === true,
+            reason: 'UNTRUSTED_INCREMENTAL_RESPONSE',
+            changeCount: 0
+          };
+        }
+
+        if (result?.resetRequired === true) {
+          state.liveSync.syncEpoch = Number.isFinite(nextEpoch)
+            ? nextEpoch
+            : null;
+          state.liveSync.lastChangeId = Number.isFinite(nextChangeId)
+            ? nextChangeId
+            : null;
+          state.liveSync.failureCount = 0;
+          state.liveSync.lastSuccessAt = Date.now();
+          const refreshResult =
+            await refreshVisibleSectionAfterSyncReset();
+          return {
+            ok: true,
+            fallback: true,
+            deferred: refreshResult?.deferred === true,
+            reason: String(result?.resetReason || 'RESET_REQUIRED'),
+            changeCount: 0
+          };
+        }
+
+        // Baseline pertama tidak me-replay event lama.
+        if (result?.baseline === true) {
+          state.liveSync.syncEpoch = Number.isFinite(nextEpoch)
+            ? nextEpoch
+            : null;
+          state.liveSync.lastChangeId = Number.isFinite(nextChangeId)
+            ? nextChangeId
+            : 0;
+          state.liveSync.failureCount = 0;
+          state.liveSync.lastSuccessAt = Date.now();
+          return {
+            ok: true,
+            baseline: true,
+            fallback: false,
+            changeCount: 0
+          };
+        }
+
+        const changes = result.changes;
+
+        // Geser cursor sebelum render/fetch lanjutan agar event yang sama tidak
+        // diproses ulang bila refresh tampilan tertentu gagal sementara.
+        state.liveSync.syncEpoch = nextEpoch;
+        state.liveSync.lastChangeId = nextChangeId;
+        state.liveSync.failureCount = 0;
+        state.liveSync.lastSuccessAt = Date.now();
+
+        let deferred = false;
+
+        if (changes.length) {
+          const effects = applyLiveSyncChanges(changes);
+          const refreshResult =
+            await refreshVisibleSectionFromLiveSync(effects);
+          deferred = refreshResult?.deferred === true;
+        }
+
+        return {
+          ok: true,
+          fallback: false,
+          baseline: false,
+          deferred,
+          changeCount: changes.length
+        };
+
+      } catch (error) {
+        if (await handleSessionError(error, true)) {
+          return { ok: false, sessionEnded: true, error };
+        }
+
+        state.liveSync.failureCount =
+          Number(state.liveSync.failureCount || 0) + 1;
+
+        console.warn(
+          'Unified Live Sync:',
+          error?.message || error
+        );
+
+        return { ok: false, error };
+      } finally {
+        if (state.liveSync) {
+          state.liveSync.running = false;
+        }
+        scheduleDeferredLiveSyncFlush();
+      }
+    }
+
+    async function waitForUnifiedLiveSyncIdle(maxWaitMs = 12000) {
+      const startedAt = Date.now();
+
+      while (state.liveSync?.running) {
+        if (Date.now() - startedAt >= maxWaitMs) {
+          return false;
+        }
+        await new Promise(resolve => setTimeout(resolve, 80));
+      }
+
+      return true;
+    }
+
+    function getManualRefreshButton(section) {
+      const ids = {
+        students: '#refreshStudentsBtn',
+        grades: '#refreshGradesBtn',
+        documents: '#refreshDocumentsBtn',
+        accounts: '#refreshAccountsBtn'
+      };
+      return $(ids[section] || '');
+    }
+
+    async function forceIncrementalRefresh(section = state.appSection) {
+      if (!state.sessionToken || !state.user) {
+        if (section === 'dashboard') {
+          await loadDashboard(true, true);
+          return true;
+        }
+        return false;
+      }
+
+      if (state.liveSync?.manualRefreshRunning) return false;
+
+      const button = getManualRefreshButton(section);
+      const originalHtml = button?.innerHTML;
+      const originalDisabled = button?.disabled === true;
+
+      state.liveSync.manualRefreshRunning = true;
+
+      if (button) {
+        button.disabled = true;
+        button.setAttribute('aria-busy', 'true');
+        button.innerHTML = '<span class="mini-spinner"></span> Perbarui';
+      }
+
+      try {
+        const idle = await waitForUnifiedLiveSyncIdle();
+        if (!idle) {
+          showToast('Sinkronisasi masih berjalan. Coba lagi sesaat lagi.');
+          return false;
+        }
+
+        const result = await runUnifiedLiveSync(true);
+
+        if (result?.sessionEnded) return false;
+
+        if (!result?.ok) {
+          const message = result?.error?.message ||
+            'Tidak dapat memeriksa pembaruan saat ini.';
+          showToast(message);
+          return false;
+        }
+
+        if (result.fallback && result.deferred) {
+          showToast(
+            'Pemulihan sinkronisasi ditahan sampai proses edit selesai.'
+          );
+        } else if (result.fallback) {
+          showToast('Sinkronisasi dipulihkan. Data aktif dimuat ulang.');
+        } else if (result.deferred && result.changeCount > 0) {
+          showToast(
+            `${Number(result.changeCount).toLocaleString('id-ID')} perubahan terdeteksi dan akan diterapkan setelah edit selesai.`
+          );
+        } else if (result.changeCount > 0) {
+          showToast(
+            `${Number(result.changeCount).toLocaleString('id-ID')} perubahan diterapkan.`
+          );
+        } else {
+          showToast('Data sudah terbaru.');
+        }
+
+        return true;
+      } finally {
+        state.liveSync.manualRefreshRunning = false;
+
+        if (button && document.body.contains(button)) {
+          button.disabled = originalDisabled;
+          button.removeAttribute('aria-busy');
+          if (originalHtml) button.innerHTML = originalHtml;
+        }
+      }
+    }
+
+    async function startUnifiedLiveSync() {
+      if (
+        RUNTIME_ENV.chatgptPreview ||
+        !state.sessionToken ||
+        !state.user
+      ) {
+        return;
+      }
+
+      stopUnifiedLiveSync();
+
+      // Baseline langsung setelah login/restored session.
+      await runUnifiedLiveSync(true);
+
+      if (!state.sessionToken || !state.user) return;
+
+      state.liveSync.timer = setInterval(() => {
+        runUnifiedLiveSync(false);
+      }, LIVE_SYNC_INTERVAL_MS);
+
+      if (!state.liveSync.visibilityBound) {
+        state.liveSync.visibilityBound = true;
+        document.addEventListener('visibilitychange', () => {
+          if (
+            document.visibilityState === 'visible' &&
+            state.sessionToken &&
+            state.user
+          ) {
+            runUnifiedLiveSync(true);
+          }
+        });
+      }
+    }
 
     const ROLE_META = {
       SUPER_ADMIN: {
@@ -8921,24 +10477,41 @@
       }
     }
 
-    function startGlobalFontSync() {
-      if (RUNTIME_ENV.chatgptPreview) {
-        return;
-      }
-
+    function stopGlobalFontSync() {
       if (state.appFontSyncTimer) {
         clearInterval(state.appFontSyncTimer);
       }
+      state.appFontSyncTimer = null;
+    }
+
+    function startGlobalFontSync() {
+      if (
+        RUNTIME_ENV.chatgptPreview ||
+        state.sessionToken
+      ) {
+        stopGlobalFontSync();
+        return;
+      }
+
+      stopGlobalFontSync();
 
       state.appFontSyncTimer = setInterval(() => {
-        syncGlobalFontFromBackend(true);
-      }, 60 * 1000);
-
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') {
+        if (!state.sessionToken) {
           syncGlobalFontFromBackend(true);
         }
-      });
+      }, 60 * 1000);
+
+      if (!state.appFontVisibilityBound) {
+        state.appFontVisibilityBound = true;
+        document.addEventListener('visibilitychange', () => {
+          if (
+            document.visibilityState === 'visible' &&
+            !state.sessionToken
+          ) {
+            syncGlobalFontFromBackend(true);
+          }
+        });
+      }
     }
 
     function showToast(message) {
@@ -8995,17 +10568,18 @@
       return result.data;
     }
 
-    async function loadDashboard(silent = false) {
+    async function loadDashboard(silent = false, showRefreshToast = silent) {
       if (!silent) setLoading(true);
       try {
         state.dashboard = await fetchDashboard();
+        captureDashboardSessionCache();
         applyGlobalFont(
           state.dashboard?.tampilan?.fontKey ||
           state.appFontKey ||
           'GOOGLE_SANS_FLEX'
         );
         renderAll();
-        if (silent) showToast('Data dashboard diperbarui.');
+        if (silent && showRefreshToast) showToast('Data dashboard diperbarui.');
       } catch (error) {
         console.error(error);
         showToast(error.message || 'Gagal memuat dashboard.');
@@ -10662,7 +12236,7 @@
         loadStudents();
       });
 
-      $('#refreshStudentsBtn')?.addEventListener('click', () => loadStudents(true));
+      $('#refreshStudentsBtn')?.addEventListener('click', () => forceIncrementalRefresh('students'));
       $('#addStudentBtn')?.addEventListener(
         'click',
         openBulkAddStudentsDialog
@@ -10707,13 +12281,14 @@
       return `${metric.terisi || 0}/${metric.wajib || 0} · ${formatted}`;
     }
 
-    async function loadStudents(showRefreshToast = false) {
+    async function loadStudents(showRefreshToast = false, background = false) {
       if (!state.sessionToken || state.appSection !== 'students') return;
+      if (background && state.students.loading) return;
 
       state.students.loading = true;
 
       const tableArea = $('#studentsTableArea');
-      if (tableArea) {
+      if (!background && tableArea) {
         tableArea.innerHTML = `
           <div class="students-loading">
             <span class="app-loading-line"><span class="mini-spinner"></span> memuat data murid</span>
@@ -10735,6 +12310,8 @@
         state.students.totalPages = Number(data.pagination?.totalPages || 0);
         state.students.page = Number(data.pagination?.page || 1);
         state.students.activeSemesters = data.filter?.activeSemesters || [];
+        state.students.loading = false;
+        captureStudentsSessionCache();
 
         if (state.appSection !== 'students') return;
 
@@ -10758,7 +12335,9 @@
       } catch (error) {
         if (await handleSessionError(error)) return;
 
-        if (tableArea) {
+        if (background) {
+          console.warn('Live Sync Data Murid:', error?.message || error);
+        } else if (tableArea) {
           tableArea.innerHTML = `
             <div class="students-empty">
               <div>
@@ -10922,7 +12501,7 @@
       });
     }
 
-    async function handleSessionError(error) {
+    async function handleSessionError(error, silent = false) {
       const sessionCodes = [
         'SESSION_TIDAK_VALID',
         'SESSION_SUDAH_LOGOUT',
@@ -10935,7 +12514,9 @@
         return true;
       }
 
-      showToast(error?.message || 'Terjadi kesalahan.');
+      if (!silent) {
+        showToast(error?.message || 'Terjadi kesalahan.');
+      }
       return false;
     }
 
@@ -10977,6 +12558,10 @@
         'keydown',
         appDialogEscapeHandler
       );
+
+      // appendDialog dapat langsung membuka dialog pengganti. Microtask akan
+      // mengecek ulang keberadaan overlay sehingga sync tidak menyela transisi.
+      scheduleDeferredLiveSyncFlush();
     }
 
     function openStudentFormDialog(student = null) {
@@ -13540,9 +15125,7 @@
 
       $('#refreshGradesBtn')?.addEventListener('click', async () => {
         if (!(await confirmLeaveDirtyGrades())) return;
-        state.grades.dirtyRows = new Set();
-        state.grades.editingRows = new Set();
-        await loadGradeGrid(true);
+        await forceIncrementalRefresh('grades');
       });
 
       $('#saveAllGradesBtn')?.addEventListener('click', () => saveAllDirtyGrades(false));
@@ -13703,7 +15286,7 @@
       return saved !== false;
     }
 
-    async function loadGradeGrid(showToastAfter = false) {
+    async function loadGradeGrid(showToastAfter = false, background = false) {
       if (
         !state.sessionToken ||
         state.appSection !== 'grades' ||
@@ -13712,10 +15295,22 @@
         return;
       }
 
+      if (
+        background &&
+        (
+          state.grades.loading ||
+          state.grades.saving ||
+          state.grades.dirtyRows?.size ||
+          state.grades.editingRows?.size
+        )
+      ) {
+        return;
+      }
+
       state.grades.loading = true;
 
       const area = $('#gradesTableArea');
-      if (area) {
+      if (!background && area) {
         area.innerHTML = `
           <div class="students-loading">
             <span class="app-loading-line">
@@ -13799,6 +15394,8 @@
         state.grades.locked = data.locked === true;
         state.grades.canEdit = data.canEdit === true;
         state.grades.dirtyRows = new Set();
+        state.grades.loading = false;
+        captureGradesSessionCache();
 
         syncCurrentGradeSemesterLock();
         renderGradeStatus();
@@ -13811,7 +15408,9 @@
       } catch (error) {
         if (await handleSessionError(error)) return;
 
-        if (area) {
+        if (background) {
+          console.warn('Live Sync Nilai:', error?.message || error);
+        } else if (area) {
           area.innerHTML = `
             <div class="grades-empty">
               <div>
@@ -13824,6 +15423,7 @@
         }
       } finally {
         state.grades.loading = false;
+        scheduleDeferredLiveSyncFlush();
       }
     }
 
@@ -14260,6 +15860,10 @@
       });
 
       renderGradeRowActionButton(rowIndex);
+
+      if (!editing) {
+        scheduleDeferredLiveSyncFlush();
+      }
 
       if (editing && focusFirst) {
         const first =
@@ -14799,6 +16403,7 @@
       } finally {
         state.grades.saving = false;
         renderGradeStatus();
+        scheduleDeferredLiveSyncFlush();
       }
     }
 
@@ -14896,6 +16501,7 @@
         }
 
         renderGradeStatus();
+        scheduleDeferredLiveSyncFlush();
       }
     }
 
@@ -16844,11 +18450,11 @@
       });
 
       $('#refreshDocumentsBtn')?.addEventListener('click', () => {
-        loadDocumentStudents(true);
+        forceIncrementalRefresh('documents');
       });
     }
 
-    async function loadDocumentStudents(showToastAfter = false) {
+    async function loadDocumentStudents(showToastAfter = false, background = false) {
       if (
         !state.sessionToken ||
         state.appSection !== 'documents'
@@ -16856,11 +18462,13 @@
         return;
       }
 
+      if (background && state.documents.loading) return;
+
       state.documents.loading = true;
 
       const area = $('#documentStudentListArea');
 
-      if (area) {
+      if (!background && area) {
         area.innerHTML = `
           <div class="students-loading">
             <span class="app-loading-line">
@@ -16883,6 +18491,8 @@
         state.documents.total = Number(data.pagination?.total || 0);
         state.documents.totalPages = Number(data.pagination?.totalPages || 0);
         state.documents.page = Number(data.pagination?.page || 1);
+        state.documents.loading = false;
+        captureDocumentsSessionCache();
 
         if (state.appSection !== 'documents') return;
 
@@ -16901,7 +18511,9 @@
       } catch (error) {
         if (await handleSessionError(error)) return;
 
-        if (area) {
+        if (background) {
+          console.warn('Live Sync Dokumen:', error?.message || error);
+        } else if (area) {
           area.innerHTML = `
             <div class="students-empty">
               <div>
@@ -18622,7 +20234,7 @@
       });
 
       $('#refreshAccountsBtn')?.addEventListener('click', () => {
-        loadAccounts(true);
+        forceIncrementalRefresh('accounts');
       });
 
       $('#addAccountBtn')?.addEventListener('click', () => {
@@ -18635,7 +20247,7 @@
       });
     }
 
-    async function loadAccounts(showToastAfter = false) {
+    async function loadAccounts(showToastAfter = false, background = false) {
       if (
         !state.sessionToken ||
         state.appSection !== 'accounts' ||
@@ -18644,6 +20256,7 @@
         return;
       }
 
+      if (background && state.accounts.loading) return;
       state.accounts.loading = true;
 
       const area = $('#accountsTableArea');
@@ -18651,7 +20264,7 @@
       const refreshButtonOriginal = refreshButton?.innerHTML;
       const hadData = state.accounts.loaded === true;
 
-      if (!hadData && area) {
+      if (!background && !hadData && area) {
         area.innerHTML = `
           <div class="students-loading">
             <span class="app-loading-line">
@@ -18661,7 +20274,7 @@
         `;
       }
 
-      if (hadData && refreshButton) {
+      if (!background && hadData && refreshButton) {
         refreshButton.disabled = true;
         refreshButton.innerHTML =
           '<span class="mini-spinner"></span> Memuat';
@@ -18686,6 +20299,9 @@
           active
         };
 
+        state.accounts.loading = false;
+        captureAccountsSessionCache();
+
         if (state.appSection !== 'accounts') return;
 
         renderAccountSummary();
@@ -18699,7 +20315,9 @@
       } catch (error) {
         if (await handleSessionError(error)) return;
 
-        if (!hadData && area) {
+        if (background) {
+          console.warn('Live Sync Akun:', error?.message || error);
+        } else if (!hadData && area) {
           area.innerHTML = `
             <div class="students-empty">
               <div>
@@ -18716,6 +20334,7 @@
         state.accounts.loading = false;
 
         if (
+          !background &&
           hadData &&
           refreshButton &&
           refreshButtonOriginal
@@ -19902,6 +21521,10 @@
           currentKey === originalKey ||
           state.settings.savingFont;
       }
+
+      if (currentKey === originalKey && !settingsHasLocalDraft()) {
+        scheduleDeferredLiveSyncFlush();
+      }
     }
 
     function bindFontSettingsEvents() {
@@ -19991,6 +21614,7 @@
         }
 
         renderFontSettings();
+        captureSettingsSessionCache();
 
         if (status) {
           status.textContent =
@@ -20021,6 +21645,7 @@
         }
 
         renderFontSettings();
+        scheduleDeferredLiveSyncFlush();
       }
     }
 
@@ -20097,9 +21722,46 @@
       btn.disabled =
         !changed ||
         state.settings.savingDashboard;
+
+      if (!changed && !settingsHasLocalDraft()) {
+        scheduleDeferredLiveSyncFlush();
+      }
     }
 
-    async function loadSettingsModule(showToastAfter = false) {
+    function applySettingsBundleData(bundle, updateDashboard = true) {
+      const dashboardSettings = bundle?.dashboardSettings || {};
+      const lockSettings = bundle?.lockSettings || {};
+      const preview = bundle?.preview || null;
+      const fontSetting = bundle?.fontSetting || {};
+
+      state.settings.dashboardSemesters =
+        (dashboardSettings.activeSemesters || []).map(Number);
+
+      state.settings.originalDashboardSemesters =
+        [...state.settings.dashboardSemesters];
+
+      state.settings.locks = lockSettings.semesters || [];
+      state.settings.preview = preview;
+
+      state.settings.fontKey = normalizeFrontendFontKey(
+        fontSetting.fontKey || state.appFontKey
+      );
+      state.settings.originalFontKey = state.settings.fontKey;
+      state.settings.fontOptions = fontSetting.options || [];
+
+      state.semesterLocks = plainClone(state.settings.locks);
+      applyGlobalFont(state.settings.fontKey);
+
+      if (updateDashboard && bundle?.dashboard) {
+        state.dashboard = bundle.dashboard;
+        captureDashboardSessionCache();
+      }
+
+      captureOverviewSessionCache();
+      captureSettingsSessionCache();
+    }
+
+    async function loadSettingsModule(showToastAfter = false, background = false) {
       if (
         !state.sessionToken ||
         state.appSection !== 'settings' ||
@@ -20108,50 +21770,18 @@
         return;
       }
 
+      if (background && state.settings.loading) return;
       state.settings.loading = true;
 
       try {
-        const [dashboardSettings, lockSettings, preview, fontSetting] =
-          await Promise.all([
-            apiPost('getdashboardsemesters', {
-              token: state.sessionToken
-            }),
-            apiPost('getsemesterlocks', {
-              token: state.sessionToken
-            }),
-            apiPost('previewdashboardgrades', {
-              token: state.sessionToken
-            }),
-            apiPost('getappfont', {
-              token: state.sessionToken
-            })
-          ]);
+        // Tahap 7: satu request menggantikan empat request Pengaturan lama.
+        // Preview + dashboard memakai snapshot 10 kelas yang sama.
+        const bundle = await apiPost('getsettingsbundle', {
+          token: state.sessionToken
+        });
 
-        state.settings.dashboardSemesters =
-          (dashboardSettings.activeSemesters || [])
-            .map(Number);
-
-        state.settings.originalDashboardSemesters =
-          [...state.settings.dashboardSemesters];
-
-        state.settings.locks =
-          lockSettings.semesters || [];
-
-        state.settings.preview = preview;
-
-        state.settings.fontKey =
-          normalizeFrontendFontKey(
-            fontSetting.fontKey ||
-            state.appFontKey
-          );
-
-        state.settings.originalFontKey =
-          state.settings.fontKey;
-
-        state.settings.fontOptions =
-          fontSetting.options || [];
-
-        applyGlobalFont(state.settings.fontKey);
+        applySettingsBundleData(bundle, true);
+        state.settings.loading = false;
 
         if (state.appSection !== 'settings') return;
 
@@ -20168,18 +21798,23 @@
       } catch (error) {
         if (await handleSessionError(error)) return;
 
-        const status = $('#dashboardSemesterStatus');
+        if (background) {
+          console.warn('Live Sync Pengaturan:', error?.message || error);
+        } else {
+          const status = $('#dashboardSemesterStatus');
 
-        if (status) {
-          status.textContent =
-            error.message || 'Pengaturan tidak dapat dimuat.';
-          status.className = 'settings-status-text error';
+          if (status) {
+            status.textContent =
+              error.message || 'Pengaturan tidak dapat dimuat.';
+            status.className = 'settings-status-text error';
+          }
         }
 
       } finally {
         state.settings.loading = false;
       }
     }
+
 
     async function saveDashboardSemesterSettings() {
       if (
@@ -20230,8 +21865,14 @@
           status.className = 'settings-status-text success';
         }
 
-        await loadDashboard(true);
-        await loadSettingsPreview(false);
+        const bundle = await apiPost('getsettingsbundle', {
+          token: state.sessionToken
+        });
+        applySettingsBundleData(bundle, true);
+        renderDashboardSemesterOptions();
+        renderSettingsLocks();
+        renderSettingsPreview();
+        renderFontSettings();
 
         showToast(
           result.message ||
@@ -20255,6 +21896,7 @@
         }
 
         updateSaveDashboardSemestersButton();
+        scheduleDeferredLiveSyncFlush();
       }
     }
 
@@ -20365,7 +22007,8 @@
         }
 
         renderSettingsLocks();
-        loadAppOverview();
+        captureOverviewSessionCache();
+        captureSettingsSessionCache();
 
         showToast(
           result.message ||
@@ -20502,6 +22145,7 @@
             token: state.sessionToken
           });
 
+        captureSettingsSessionCache();
         renderSettingsPreview();
 
         if (showToastAfter) {
@@ -20553,6 +22197,10 @@
         clearGradeAutosaveTimer();
       }
 
+      // Simpan snapshot stabil dari modul yang ditinggalkan. Snapshot yang
+      // sedang loading/saving/dirty sengaja tidak dicache.
+      captureCurrentSectionSessionCache();
+
       state.appSection = section;
       renderAppNav();
 
@@ -20561,32 +22209,52 @@
       $('#appPageSubtitle').textContent = `${currentRoleScope()} · ${sessionSubtitle()}`;
 
       if (section === 'dashboard') {
+        restoreDashboardSessionCache();
         renderDashboardShell();
-        loadAppOverview();
+
+        if (!restoreOverviewSessionCache()) {
+          loadAppOverview();
+        }
       } else if (section === 'students') {
         renderStudentsModule();
-        loadStudents();
+
+        if (!restoreStudentsSessionCache()) {
+          loadStudents();
+        }
       } else if (section === 'grades') {
         renderGradesModule();
-        loadGradeGrid();
 
-        if (!state.semesterLocks.length) {
+        if (!restoreGradesSessionCache()) {
+          loadGradeGrid();
+        }
+
+        if (!state.semesterLocks.length && !restoreOverviewSessionCache()) {
           loadAppOverview();
         }
       } else if (section === 'documents') {
         renderDocumentsModule();
-        loadDocumentStudents();
+
+        if (!restoreDocumentsSessionCache()) {
+          loadDocumentStudents();
+        }
       } else if (section === 'accounts') {
         renderAccountsModule();
-        loadAccounts();
+
+        if (!restoreAccountsSessionCache()) {
+          loadAccounts();
+        }
       } else if (section === 'settings') {
         renderSettingsModule();
-        loadSettingsModule();
+
+        if (!restoreSettingsSessionCache()) {
+          loadSettingsModule();
+        }
       } else {
         renderModulePlaceholder(section);
       }
 
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      scheduleDeferredLiveSyncFlush();
     }
 
     async function loadAppOverview() {
@@ -20612,6 +22280,8 @@
             active: accounts.filter(item => item.statusAktif === true).length
           };
         }
+
+        captureOverviewSessionCache();
 
         if (state.appSection === 'dashboard') {
           renderDashboardShell();
@@ -20659,7 +22329,9 @@
     function enterApp(user, expiresAt = '') {
       state.user = user;
       state.sessionExpiresAt = expiresAt || state.sessionExpiresAt || '';
+      stopGlobalFontSync();
       state.appSection = 'dashboard';
+      resetSessionCache();
       resetStudentsStateForRole();
       resetGradesStateForRole();
       resetDocumentsStateForRole();
@@ -20683,11 +22355,17 @@
       switchAppSection('dashboard');
       syncThemeIcons();
       loadMyProfile();
+      startUnifiedLiveSync();
     }
 
     async function leaveApp(sessionExpired = false) {
+      stopUnifiedLiveSync();
+      stopGlobalFontSync();
+      resetSessionCache();
       state.sessionToken = '';
       state.user = null;
+      closeAppDialog();
+      closeProfileMenu();
       state.sessionExpiresAt = '';
       state.semesterLocks = [];
       state.accountsSummary = null;
@@ -20773,6 +22451,7 @@
       $('#appView').classList.add('view-hidden');
       $('#publicView').classList.remove('view-hidden');
       resetLoginForm();
+      startGlobalFontSync();
 
       if (sessionExpired) {
         showToast('Session telah berakhir. Silakan login kembali.');
@@ -20852,7 +22531,13 @@
 
     $('#loginBtn').addEventListener('click', openLogin);
     $('#closeLoginBtn').addEventListener('click', closeLogin);
-    $('#refreshBtn').addEventListener('click', () => loadDashboard(true));
+    $('#refreshBtn').addEventListener('click', async () => {
+      if (state.sessionToken && state.user) {
+        await forceIncrementalRefresh('dashboard');
+      } else {
+        await loadDashboard(true, true);
+      }
+    });
 
     $('#passwordToggle').addEventListener('click', () => {
       const input = $('#password');
