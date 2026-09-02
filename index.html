@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <link rel="icon" type="image/svg+xml" href="logo.svg" />
   <title>Data Siswa Kelas 9 2026-2027</title>
-  <!-- CLASSOF2027 Revisi 009 · Semester Status Immediate + Role Grade Table Consistency · Versi 1.37 -->
+  <!-- CLASSOF2027 Revisi 014 · Tabel Akun Full-Width Tanpa Gutter Kanan · Versi 1.42 -->
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -3287,7 +3287,7 @@
     }
 
     .account-password-cell {
-      min-width: 155px;
+      min-width: 138px;
     }
 
     .account-password-view {
@@ -6887,7 +6887,7 @@
 
     /* Kolom FOTO pada Manajemen Akun Super Admin. */
     .accounts-table {
-      min-width: 1115px;
+      min-width: 1040px;
     }
 
     .accounts-table th.account-photo-head,
@@ -7042,8 +7042,81 @@
        Scroll kiri-kanan terjadi di accounts-table-wrap, bukan page. */
     @media (min-width: 621px) {
       .accounts-table {
-        width: max(100%, 1115px);
-        min-width: 1115px;
+        width: max(100%, 1040px);
+        min-width: 1040px;
+      }
+
+      /* Revisi 013 · Pemerataan tabel Akun desktop.
+         Teks identitas rata kiri; badge/foto/password/status/aksi rata tengah. */
+      .accounts-table th.account-name-head,
+      .accounts-table td.account-name-cell,
+      .accounts-table th.account-username-head,
+      .accounts-table td.account-username-cell {
+        text-align: left;
+      }
+
+      .accounts-table th.account-photo-head,
+      .accounts-table td.account-photo-cell,
+      .accounts-table th.account-password-head,
+      .accounts-table td.account-password-cell,
+      .accounts-table th.account-role-head,
+      .accounts-table td.account-role-cell,
+      .accounts-table th.account-class-head,
+      .accounts-table td.account-class-cell,
+      .accounts-table th.account-status-head,
+      .accounts-table td.account-status-cell,
+      .accounts-table th.account-actions-head,
+      .accounts-table td.account-actions-cell {
+        text-align: center;
+      }
+
+      .accounts-table th.account-class-head,
+      .accounts-table td.account-class-cell {
+        width: 68px;
+        min-width: 68px;
+        max-width: 68px;
+        box-sizing: border-box;
+      }
+
+      .accounts-table th.account-password-head,
+      .accounts-table td.account-password-cell {
+        min-width: 138px;
+      }
+
+      .accounts-table td.account-password-cell .account-password-view {
+        min-width: 0;
+        justify-content: center;
+      }
+
+      .accounts-table td.account-password-cell .account-password-text {
+        min-width: 0;
+      }
+
+      .accounts-table td.account-actions-cell .account-row-actions {
+        justify-content: center;
+      }
+    }
+
+    /* ============================================================
+       Revisi 014 · Tabel Akun memenuhi lebar kartu sampai sisi kanan
+       ============================================================
+       - Hapus gutter scrollbar permanen yang menyisakan ruang kosong kanan.
+       - Wrapper hanya menangani scroll horizontal bila benar-benar dibutuhkan.
+       - Tabel selalu mengisi 100% ruang yang tersedia, dengan 1040px sebagai
+         batas minimum desktop. Sisa lebar dibagikan alami oleh table-layout:auto
+         ke kolom fleksibel tanpa mengubah ukuran kolom fixed Foto/Kelas. */
+    @media (min-width: 621px) {
+      .accounts-table-wrap {
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-gutter: auto;
+      }
+
+      .accounts-table {
+        width: 100%;
+        min-width: 1040px;
+        max-width: none;
+        table-layout: auto;
       }
     }
 
@@ -8415,7 +8488,7 @@
   <footer class="footer app-shell">
     <div><strong>SMP NEGERI 3 JAYAPURA</strong> · Sistem Pendataan Terpadu Murid & Nilai</div>
     <div style="margin-top:6px">Dikembangkan oleh gurukemarinsore</div>
-    <div style="margin-top:3px">Versi 1.37</div>
+    <div style="margin-top:3px">Versi 1.42</div>
     <div class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</div>
   </footer>
   </div>
@@ -8440,7 +8513,7 @@
         <div class="sidebar-footer">
           <div class="sidebar-footer-copy">
             <small>Dikembangkan oleh gurukemarinsore</small>
-            <small class="app-version-label">Versi 1.37</small>
+            <small class="app-version-label">Versi 1.42</small>
           </div>
           <small class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</small>
         </div>
@@ -8800,8 +8873,10 @@
         dashboard: null,
         overview: null,
         students: new Map(),
+        studentDirectory: new Map(),
         grades: new Map(),
         documents: new Map(),
+        accountAvatars: new Map(),
         accounts: null,
         settings: null
       };
@@ -8818,6 +8893,7 @@
         dashboard: null,
         overview: null,
         students: new Map(),
+        studentDirectory: new Map(),
         grades: new Map(),
         documents: new Map(),
         accounts: null,
@@ -8842,7 +8918,7 @@
         cancelRequestEntry(current.accounts);
         cancelRequestEntry(current.settings);
 
-        ['students','grades','documents'].forEach(name => {
+        ['students','studentDirectory','grades','documents'].forEach(name => {
           const map = current[name];
           if (!(map instanceof Map)) return;
           map.forEach(cancelRequestEntry);
@@ -8946,6 +9022,148 @@
       ].join('|');
     }
 
+    // ===== Revisi 011 · Shared Student Directory Cache =====
+    // Data Murid dan Dokumen memakai endpoint searchstudents yang sama.
+    // Satu snapshot direktori dibagi kedua modul agar kombinasi
+    // kelas+pencarian+halaman yang sudah pernah dimuat tidak diminta ulang.
+    function studentDirectorySessionCacheKey(source) {
+      return [
+        String(source?.kelas || 'SEMUA'),
+        String(source?.query || '').trim(),
+        Number(source?.page || 1),
+        Number(source?.limit || 20)
+      ].join('|');
+    }
+
+    function normalizeStudentDirectorySnapshot(data, request) {
+      return {
+        cachedAt: Date.now(),
+        kelas: String(request?.kelas || 'SEMUA'),
+        query: String(request?.query || ''),
+        page: Number(data?.pagination?.page || request?.page || 1),
+        limit: Number(request?.limit || 20),
+        total: Number(data?.pagination?.total || 0),
+        totalPages: Number(data?.pagination?.totalPages || 0),
+        students: plainClone(data?.students || []),
+        activeSemesters: plainClone(data?.filter?.activeSemesters || [])
+      };
+    }
+
+    function cacheStudentDirectorySnapshot(snapshot, key = '') {
+      if (!snapshot || !state.sessionCache) return null;
+
+      const normalized = {
+        cachedAt: Number(snapshot.cachedAt || Date.now()),
+        kelas: String(snapshot.kelas || 'SEMUA'),
+        query: String(snapshot.query || ''),
+        page: Number(snapshot.page || 1),
+        limit: Number(snapshot.limit || 20),
+        total: Number(snapshot.total || 0),
+        totalPages: Number(snapshot.totalPages || 0),
+        students: plainClone(snapshot.students || snapshot.rows || []),
+        activeSemesters: plainClone(snapshot.activeSemesters || [])
+      };
+
+      const cacheKey = key || studentDirectorySessionCacheKey(normalized);
+
+      setBoundedSessionCache(
+        state.sessionCache.studentDirectory,
+        cacheKey,
+        normalized,
+        36
+      );
+
+      setBoundedSessionCache(
+        state.sessionCache.students,
+        cacheKey,
+        {
+          cachedAt: normalized.cachedAt,
+          query: normalized.query,
+          kelas: normalized.kelas,
+          page: normalized.page,
+          limit: normalized.limit,
+          total: normalized.total,
+          totalPages: normalized.totalPages,
+          rows: plainClone(normalized.students),
+          activeSemesters: plainClone(normalized.activeSemesters)
+        },
+        36
+      );
+
+      setBoundedSessionCache(
+        state.sessionCache.documents,
+        cacheKey,
+        {
+          cachedAt: normalized.cachedAt,
+          kelas: normalized.kelas,
+          query: normalized.query,
+          page: normalized.page,
+          limit: normalized.limit,
+          total: normalized.total,
+          totalPages: normalized.totalPages,
+          students: plainClone(normalized.students)
+        },
+        36
+      );
+
+      return normalized;
+    }
+
+    function sharedStudentDirectorySnapshot(source) {
+      const key = studentDirectorySessionCacheKey(source);
+      const snapshot = state.sessionCache?.studentDirectory?.get?.(key);
+      return snapshot ? plainClone(snapshot) : null;
+    }
+
+    async function requestStudentDirectorySnapshot(request, requestToken) {
+      const key = studentDirectorySessionCacheKey(request);
+
+      return sharedMapRequest(
+        state.sessionRequests.studentDirectory,
+        key,
+        async entry => {
+          const data = await apiPost('searchstudents', {
+            token: requestToken,
+            kelas: request.kelas,
+            query: request.query,
+            page: request.page,
+            limit: request.limit
+          });
+
+          if (entry.cancelled || state.sessionToken !== requestToken) {
+            return null;
+          }
+
+          const snapshot = normalizeStudentDirectorySnapshot(data, request);
+          cacheStudentDirectorySnapshot(snapshot, key);
+          return snapshot;
+        }
+      );
+    }
+
+    function showStudentsCachedOrLoad() {
+      if (!restoreStudentsSessionCache()) {
+        loadStudents();
+      }
+    }
+
+    function showDocumentsCachedOrLoad() {
+      if (!restoreDocumentsSessionCache()) {
+        loadDocumentStudents();
+      }
+    }
+
+    // ===== Revisi 013 · Optimasi Akun =====
+    // Cache akun tetap session-only; tabel dipaint lebih dulu, avatar custom
+    // dihydrate sesudah paint awal. Layout desktop dipadatkan hanya pada
+    // Password + Kelas sesuai keputusan desain.
+
+    // ===== Revisi 012 · Dashboard Stale-While-Revalidate =====
+    // Dashboard yang sudah pernah tersedia selalu ditampilkan dari cache lebih
+    // dahulu. Refresh otoritatif hanya berjalan di background ketika snapshot
+    // sudah cukup lama; Unified Live Sync tetap menjadi jalur pembaruan utama.
+    const DASHBOARD_CACHE_REVALIDATE_MS = 120000;
+
     function captureDashboardSessionCache() {
       if (!state.sessionToken || !state.dashboard) return;
       state.sessionCache.dashboard = {
@@ -8954,6 +9172,24 @@
         selectedClass: state.selectedClass,
         chartType: state.chartType
       };
+    }
+
+    function dashboardSessionCacheNeedsRevalidate() {
+      const snapshot = state.sessionCache?.dashboard;
+      if (!snapshot?.data) return true;
+
+      const cachedAt = Number(snapshot.cachedAt || 0);
+      if (!Number.isFinite(cachedAt) || cachedAt <= 0) return true;
+
+      return (Date.now() - cachedAt) >= DASHBOARD_CACHE_REVALIDATE_MS;
+    }
+
+    function revalidateDashboardInBackground(force = false) {
+      if (!state.sessionToken || !state.user) return Promise.resolve(null);
+      if (!force && !dashboardSessionCacheNeedsRevalidate()) {
+        return Promise.resolve(state.sessionCache?.dashboard?.data || null);
+      }
+      return loadDashboard(true, false);
     }
 
     function captureOverviewSessionCache() {
@@ -8984,8 +9220,13 @@
         state.sessionCache.students,
         studentSessionCacheKey(snapshot),
         snapshot,
-        24
+        36
       );
+
+      cacheStudentDirectorySnapshot({
+        ...snapshot,
+        students: plainClone(snapshot.rows || [])
+      }, studentSessionCacheKey(snapshot));
     }
 
     function captureGradesSessionCache() {
@@ -9036,8 +9277,14 @@
         state.sessionCache.documents,
         documentSessionCacheKey(snapshot),
         snapshot,
-        24
+        36
       );
+
+      const existingShared = sharedStudentDirectorySnapshot(snapshot);
+      cacheStudentDirectorySnapshot({
+        ...snapshot,
+        activeSemesters: plainClone(existingShared?.activeSemesters || [])
+      }, documentSessionCacheKey(snapshot));
     }
 
     function captureAccountsSessionCache() {
@@ -9114,7 +9361,6 @@
       state.dashboard = plainClone(snapshot.data);
       state.selectedClass = snapshot.selectedClass || state.selectedClass || 'ALL';
       state.chartType = snapshot.chartType || state.chartType || 'dokumen';
-      renderAll();
       return true;
     }
 
@@ -9136,9 +9382,24 @@
     }
 
     function restoreStudentsSessionCache() {
-      const snapshot = state.sessionCache.students.get(
-        studentSessionCacheKey()
-      );
+      const key = studentSessionCacheKey();
+      let snapshot = state.sessionCache.students.get(key);
+
+      if (!snapshot) {
+        const shared = sharedStudentDirectorySnapshot(state.students);
+        if (shared) {
+          snapshot = {
+            ...shared,
+            rows: plainClone(shared.students || [])
+          };
+          setBoundedSessionCache(
+            state.sessionCache.students,
+            key,
+            snapshot,
+            36
+          );
+        }
+      }
 
       if (!snapshot) return false;
 
@@ -9181,9 +9442,24 @@
     }
 
     function restoreDocumentsSessionCache() {
-      const snapshot = state.sessionCache.documents.get(
-        documentSessionCacheKey()
-      );
+      const key = documentSessionCacheKey();
+      let snapshot = state.sessionCache.documents.get(key);
+
+      if (!snapshot) {
+        const shared = sharedStudentDirectorySnapshot(state.documents);
+        if (shared) {
+          snapshot = {
+            ...shared,
+            students: plainClone(shared.students || [])
+          };
+          setBoundedSessionCache(
+            state.sessionCache.documents,
+            key,
+            snapshot,
+            36
+          );
+        }
+      }
 
       if (!snapshot) return false;
 
@@ -9590,6 +9866,14 @@
             state.sessionRequests?.documents,
             kelas
           );
+          invalidateSearchSessionCacheForClass(
+            state.sessionCache?.studentDirectory,
+            kelas
+          );
+          cancelSearchRequestsForClass(
+            state.sessionRequests?.studentDirectory,
+            kelas
+          );
           invalidateGradeSessionCache(kelas);
 
           if (kelas) {
@@ -9624,6 +9908,14 @@
           );
           cancelSearchRequestsForClass(
             state.sessionRequests?.documents,
+            kelas
+          );
+          invalidateSearchSessionCacheForClass(
+            state.sessionCache?.studentDirectory,
+            kelas
+          );
+          cancelSearchRequestsForClass(
+            state.sessionRequests?.studentDirectory,
             kelas
           );
 
@@ -9664,6 +9956,14 @@
           );
           cancelSearchRequestsForClass(
             state.sessionRequests?.students,
+            kelas
+          );
+          invalidateSearchSessionCacheForClass(
+            state.sessionCache?.studentDirectory,
+            kelas
+          );
+          cancelSearchRequestsForClass(
+            state.sessionRequests?.studentDirectory,
             kelas
           );
 
@@ -9712,6 +10012,11 @@
             invalidateSettingsSessionCache();
             state.sessionCache?.students?.clear?.();
             state.sessionCache?.documents?.clear?.();
+            state.sessionCache?.studentDirectory?.clear?.();
+            cancelSearchRequestsForClass(
+              state.sessionRequests?.studentDirectory,
+              ''
+            );
             invalidateDashboardSessionCache();
             effects.settings = true;
             effects.dashboard = true;
@@ -9921,6 +10226,8 @@
 
         if (state.appSection === 'dashboard') {
           renderAll();
+          renderDashboardShell();
+          renderSemesterLocks();
         }
       } catch (error) {
         invalidateDashboardSessionCache();
@@ -10728,22 +11035,82 @@
     }
 
     async function loadDashboard(silent = false, showRefreshToast = silent) {
-      if (!silent) setLoading(true);
+      const requestToken = state.sessionToken || '';
+      const authenticatedRequest = Boolean(requestToken && state.user);
+
+      // Loading besar hanya dipakai untuk public/first load. Saat sudah berada
+      // di aplikasi, dashboard lama tetap terlihat sementara refresh berjalan.
+      if (!silent && !authenticatedRequest) setLoading(true);
+
       try {
-        state.dashboard = await fetchDashboard();
-        captureDashboardSessionCache();
+        const dashboard = authenticatedRequest
+          ? await sharedSingleRequest(
+              'dashboard',
+              async entry => {
+                const data = await fetchDashboard();
+
+                if (
+                  entry.cancelled ||
+                  state.sessionToken !== requestToken ||
+                  !state.user
+                ) {
+                  return null;
+                }
+
+                return data;
+              }
+            )
+          : await fetchDashboard();
+
+        if (!dashboard) return null;
+
+        if (
+          authenticatedRequest &&
+          (state.sessionToken !== requestToken || !state.user)
+        ) {
+          return null;
+        }
+
+        state.dashboard = dashboard;
+
+        if (authenticatedRequest) {
+          captureDashboardSessionCache();
+        }
+
         applyGlobalFont(
           state.dashboard?.tampilan?.fontKey ||
           state.appFontKey ||
           'GOOGLE_SANS_FLEX'
         );
+
+        // Public landing dan app dashboard memakai DOM berbeda. Public view
+        // tetap disinkronkan, sedangkan app dashboard hanya dirender ulang bila
+        // memang sedang aktif agar request background tidak menyentuh menu lain.
         renderAll();
-        if (silent && showRefreshToast) showToast('Data dashboard diperbarui.');
+
+        if (
+          authenticatedRequest &&
+          state.appSection === 'dashboard'
+        ) {
+          renderDashboardShell();
+          renderSemesterLocks();
+        }
+
+        if (silent && showRefreshToast) {
+          showToast('Data dashboard diperbarui.');
+        }
+
+        return dashboard;
       } catch (error) {
         console.error(error);
-        showToast(error.message || 'Gagal memuat dashboard.');
+
+        // Cache lama tetap dipertahankan bila refresh background gagal.
+        if (!silent || showRefreshToast) {
+          showToast(error.message || 'Gagal memuat dashboard.');
+        }
+        return null;
       } finally {
-        setLoading(false);
+        if (!authenticatedRequest) setLoading(false);
       }
     }
 
@@ -11452,6 +11819,11 @@
           : '',
         updatedAt: new Date().toISOString()
       };
+
+      const avatarCache = state.sessionCache?.accountAvatars;
+      if (avatarCache instanceof Map) {
+        avatarCache.delete(accountAvatarCacheKey(account));
+      }
 
       if (
         state.appSection === 'accounts' &&
@@ -12377,7 +12749,7 @@
           bindStudentsModuleEvents.searchTimer = setTimeout(() => {
             state.students.query = search.value.trim();
             state.students.page = 1;
-            loadStudents();
+            showStudentsCachedOrLoad();
           }, 350);
         });
       }
@@ -12386,13 +12758,13 @@
         state.students.query = '';
         state.students.page = 1;
         if ($('#studentSearchInput')) $('#studentSearchInput').value = '';
-        loadStudents();
+        showStudentsCachedOrLoad();
       });
 
       $('#studentClassFilter')?.addEventListener('change', event => {
         state.students.kelas = event.target.value;
         state.students.page = 1;
-        loadStudents();
+        showStudentsCachedOrLoad();
       });
 
       $('#refreshStudentsBtn')?.addEventListener('click', () => forceIncrementalRefresh('students'));
@@ -12472,43 +12844,9 @@
       }
 
       try {
-        const snapshot = await sharedMapRequest(
-          state.sessionRequests.students,
-          key,
-          async entry => {
-            const data = await apiPost('searchstudents', {
-              token: requestToken,
-              kelas: request.kelas,
-              query: request.query,
-              page: request.page,
-              limit: request.limit
-            });
-
-            if (entry.cancelled || state.sessionToken !== requestToken) {
-              return null;
-            }
-
-            const next = {
-              cachedAt: Date.now(),
-              query: request.query,
-              kelas: request.kelas,
-              page: Number(data.pagination?.page || request.page || 1),
-              limit: Number(request.limit || 20),
-              total: Number(data.pagination?.total || 0),
-              totalPages: Number(data.pagination?.totalPages || 0),
-              rows: plainClone(data.students || []),
-              activeSemesters: plainClone(data.filter?.activeSemesters || [])
-            };
-
-            setBoundedSessionCache(
-              state.sessionCache.students,
-              key,
-              next,
-              24
-            );
-
-            return next;
-          }
+        const snapshot = await requestStudentDirectorySnapshot(
+          request,
+          requestToken
         );
 
         if (!snapshot || !isCurrentView()) return;
@@ -12517,7 +12855,7 @@
         state.students.totalPages = snapshot.totalPages;
         state.students.page = snapshot.page;
         state.students.limit = snapshot.limit;
-        state.students.rows = plainClone(snapshot.rows || []);
+        state.students.rows = plainClone(snapshot.students || snapshot.rows || []);
         state.students.activeSemesters = plainClone(snapshot.activeSemesters || []);
         state.students.loading = false;
 
@@ -12697,14 +13035,14 @@
       $('#studentPrevPage')?.addEventListener('click', () => {
         if (state.students.page > 1) {
           state.students.page--;
-          loadStudents();
+          showStudentsCachedOrLoad();
         }
       });
 
       $('#studentNextPage')?.addEventListener('click', () => {
         if (state.students.page < state.students.totalPages) {
           state.students.page++;
-          loadStudents();
+          showStudentsCachedOrLoad();
         }
       });
     }
@@ -15357,16 +15695,10 @@
     function gradeSemesterLockMeta(semester) {
       const normalized = Number(semester);
 
-      if (
-        normalized === Number(state.grades.semester) &&
-        state.grades.subjects.length > 0
-      ) {
-        return {
-          known: true,
-          locked: state.grades.locked === true
-        };
-      }
-
+      // Revisi 010: warna/ikon tab Semester 1–6 hanya memakai sumber
+      // status global yang stabil. Jangan membaca state.grades.locked di sini,
+      // karena nilainya masih milik semester sebelumnya ketika perpindahan
+      // semester sedang melakukan first load dan dapat menyebabkan flicker.
       const item = (state.semesterLocks || [])
         .find(entry =>
           Number(entry.semester) === normalized
@@ -18723,7 +19055,7 @@
         bindDocumentsModuleEvents.searchTimer = setTimeout(() => {
           state.documents.query = event.target.value.trim();
           state.documents.page = 1;
-          loadDocumentStudents();
+          showDocumentsCachedOrLoad();
         }, 350);
       });
 
@@ -18735,13 +19067,13 @@
           $('#documentStudentSearch').value = '';
         }
 
-        loadDocumentStudents();
+        showDocumentsCachedOrLoad();
       });
 
       $('#documentClassFilter')?.addEventListener('change', event => {
         state.documents.kelas = event.target.value;
         state.documents.page = 1;
-        loadDocumentStudents();
+        showDocumentsCachedOrLoad();
       });
 
       $('#refreshDocumentsBtn')?.addEventListener('click', () => {
@@ -18783,41 +19115,9 @@
       }
 
       try {
-        const snapshot = await sharedMapRequest(
-          state.sessionRequests.documents,
-          key,
-          async entry => {
-            const data = await apiPost('searchstudents', {
-              token: requestToken,
-              kelas: request.kelas,
-              query: request.query,
-              page: request.page,
-              limit: request.limit
-            });
-
-            if (entry.cancelled || state.sessionToken !== requestToken) {
-              return null;
-            }
-
-            const next = {
-              cachedAt: Date.now(),
-              kelas: request.kelas,
-              query: request.query,
-              page: Number(data.pagination?.page || request.page || 1),
-              limit: Number(request.limit || 20),
-              total: Number(data.pagination?.total || 0),
-              totalPages: Number(data.pagination?.totalPages || 0),
-              students: plainClone(data.students || [])
-            };
-
-            setBoundedSessionCache(
-              state.sessionCache.documents,
-              key,
-              next,
-              24
-            );
-            return next;
-          }
+        const snapshot = await requestStudentDirectorySnapshot(
+          request,
+          requestToken
         );
 
         if (!snapshot || !isCurrentView()) return;
@@ -18979,14 +19279,14 @@
       $('#documentPrevPage')?.addEventListener('click', () => {
         if (state.documents.page > 1) {
           state.documents.page--;
-          loadDocumentStudents();
+          showDocumentsCachedOrLoad();
         }
       });
 
       $('#documentNextPage')?.addEventListener('click', () => {
         if (state.documents.page < state.documents.totalPages) {
           state.documents.page++;
-          loadDocumentStudents();
+          showDocumentsCachedOrLoad();
         }
       });
     }
@@ -20820,6 +21120,49 @@
       return 'tu';
     }
 
+    let accountPhotoPaintGeneration = 0;
+
+    function accountAvatarCacheKey(account) {
+      return String(account?.username || '')
+        .trim()
+        .toLowerCase();
+    }
+
+    function accountAvatarDataUrl(account) {
+      const key = accountAvatarCacheKey(account);
+      const updatedAt = String(account?.avatar?.updatedAt || '');
+      const hasAvatar = account?.avatar?.hasAvatar === true;
+      const directDataUrl = String(account?.avatar?.dataUrl || '');
+
+      const cache = state.sessionCache?.accountAvatars;
+      if (cache instanceof Map && key) {
+        const cached = cache.get(key);
+        if (
+          cached &&
+          cached.updatedAt === updatedAt &&
+          cached.hasAvatar === hasAvatar
+        ) {
+          return String(cached.dataUrl || '');
+        }
+      }
+
+      const validDataUrl =
+        hasAvatar &&
+        directDataUrl.startsWith('data:image/png;base64,')
+          ? directDataUrl
+          : '';
+
+      if (cache instanceof Map && key) {
+        cache.set(key, {
+          updatedAt,
+          hasAvatar: Boolean(validDataUrl),
+          dataUrl: validDataUrl
+        });
+      }
+
+      return validDataUrl;
+    }
+
     function accountPhotoHtml(account) {
       const name = String(
         account?.nama ||
@@ -20830,44 +21173,91 @@
       const initial =
         (name.charAt(0) || 'A').toUpperCase();
 
-      const dataUrl =
-        String(account?.avatar?.dataUrl || '');
+      const username =
+        String(account?.username || '');
 
-      const custom =
-        account?.avatar?.hasAvatar === true &&
-        dataUrl.startsWith('data:image/png;base64,');
+      const hasCustom =
+        account?.avatar?.hasAvatar === true;
 
-      if (custom) {
-        return `
-          <span class="account-photo is-custom"
-            title="Foto custom"
-            aria-label="Foto custom ${escapeHtml(name)}">
-            <img
-              src="${escapeHtml(dataUrl)}"
-              alt="Foto ${escapeHtml(name)}"
-              loading="lazy"
-              draggable="false">
-          </span>
-        `;
-      }
-
+      // Tabel utama dirender dahulu menggunakan inisial.
+      // Foto custom dipasang setelah paint awal agar decode gambar tidak
+      // menahan tampilan data akun.
       return `
-        <span class="account-photo is-default"
-          title="Avatar default"
-          aria-label="Avatar default ${escapeHtml(name)}">
+        <span class="account-photo ${hasCustom ? 'is-custom is-pending' : 'is-default'}"
+          data-account-avatar-username="${escapeHtml(username)}"
+          title="${hasCustom ? 'Foto custom' : 'Avatar default'}"
+          aria-label="${hasCustom ? 'Foto custom' : 'Avatar default'} ${escapeHtml(name)}">
           ${escapeHtml(initial)}
         </span>
       `;
     }
 
+    function hydrateAccountPhotoNode(node, account) {
+      if (!node || !account) return;
 
-    function maskedPassword(password) {
-      const length = Math.max(
-        8,
-        Math.min(14, String(password || '').length)
-      );
+      const dataUrl = accountAvatarDataUrl(account);
+      if (!dataUrl) {
+        node.classList.remove('is-custom', 'is-pending');
+        node.classList.add('is-default');
+        return;
+      }
 
-      return '•'.repeat(length);
+      const image = document.createElement('img');
+      image.alt = `Foto ${String(account.nama || account.username || '')}`;
+      image.loading = 'lazy';
+      image.decoding = 'async';
+      image.draggable = false;
+
+      image.addEventListener('load', () => {
+        if (!node.isConnected) return;
+        node.replaceChildren(image);
+        node.classList.remove('is-pending', 'is-default');
+        node.classList.add('is-custom');
+      }, { once: true });
+
+      image.addEventListener('error', () => {
+        if (!node.isConnected) return;
+        node.classList.remove('is-custom', 'is-pending');
+        node.classList.add('is-default');
+      }, { once: true });
+
+      image.src = dataUrl;
+    }
+
+    function scheduleAccountPhotoHydration() {
+      const generation = ++accountPhotoPaintGeneration;
+
+      const hydrate = () => {
+        if (
+          generation !== accountPhotoPaintGeneration ||
+          state.appSection !== 'accounts'
+        ) {
+          return;
+        }
+
+        $$('[data-account-avatar-username]').forEach(node => {
+          const username = node.dataset.accountAvatarUsername || '';
+          const account = state.accounts.rows.find(
+            item => String(item.username || '') === username
+          );
+
+          if (account) {
+            hydrateAccountPhotoNode(node, account);
+          }
+        });
+      };
+
+      if (typeof window.requestIdleCallback === 'function') {
+        window.requestIdleCallback(hydrate, { timeout: 220 });
+      } else {
+        window.setTimeout(hydrate, 0);
+      }
+    }
+
+
+    function maskedPassword() {
+      // Revisi 013: panjang password asli tidak ditunjukkan dari jumlah bullet.
+      return '••••••••';
     }
 
     function renderAccountsTable() {
@@ -20901,14 +21291,14 @@
           <table class="accounts-table">
             <thead>
               <tr>
-                <th>Nama</th>
+                <th class="account-name-head">Nama</th>
                 <th class="account-photo-head">Foto</th>
-                <th>Username</th>
-                <th>Password</th>
-                <th>Role</th>
-                <th>Kelas Perwalian</th>
-                <th>Status</th>
-                <th style="text-align:right">Aksi</th>
+                <th class="account-username-head">Username</th>
+                <th class="account-password-head">Password</th>
+                <th class="account-role-head">Role</th>
+                <th class="account-class-head">Kelas</th>
+                <th class="account-status-head">Status</th>
+                <th class="account-actions-head">Aksi</th>
               </tr>
             </thead>
             <tbody>
@@ -20927,7 +21317,7 @@
                     ${accountPhotoHtml(account)}
                   </td>
 
-                  <td data-label="Username"><strong>${escapeHtml(account.username)}</strong></td>
+                  <td class="account-username-cell" data-label="Username"><strong>${escapeHtml(account.username)}</strong></td>
 
                   <td class="account-password-cell" data-label="Password">
                     <div class="account-password-view">
@@ -20945,19 +21335,19 @@
                     </div>
                   </td>
 
-                  <td data-label="Role">
+                  <td class="account-role-cell" data-label="Role">
                     <span class="account-role-badge ${accountRoleClass(account.role)}">
                       ${escapeHtml(accountRoleLabel(account.role))}
                     </span>
                   </td>
 
-                  <td data-label="Kelas">
+                  <td class="account-class-cell" data-label="Kelas">
                     ${account.role === 'WALI_KELAS'
                       ? `<span class="metric-chip">${escapeHtml(account.kelasPerwalian || '—')}</span>`
                       : '—'}
                   </td>
 
-                  <td data-label="Status">
+                  <td class="account-status-cell" data-label="Status">
                     <span class="account-status-badge ${account.statusAktif ? 'active' : 'inactive'}">
                       <i class="ti ${account.statusAktif ? 'ti-check' : 'ti-x'}"></i>
                       ${account.statusAktif ? 'Aktif' : 'Nonaktif'}
@@ -20994,6 +21384,8 @@
           </table>
         </div>
       `;
+
+      scheduleAccountPhotoHydration();
 
       $$('[data-toggle-account-password]').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -22574,11 +22966,31 @@
       $('#appPageSubtitle').textContent = `${currentRoleScope()} · ${sessionSubtitle()}`;
 
       if (section === 'dashboard') {
-        restoreDashboardSessionCache();
+        let dashboardRestored = restoreDashboardSessionCache();
+
+        // Pada login pertama, public dashboard yang sudah selesai dimuat dapat
+        // langsung menjadi snapshot awal sesi. Tidak perlu request kedua hanya
+        // untuk menggambar kartu yang sama.
+        if (!dashboardRestored && state.dashboard) {
+          captureDashboardSessionCache();
+          dashboardRestored = Boolean(state.sessionCache?.dashboard?.data);
+        }
+
         renderDashboardShell();
 
         if (!restoreOverviewSessionCache()) {
           loadAppOverview();
+        }
+
+        if (!dashboardRestored) {
+          // Benar-benar belum ada data: lakukan first load. Render shell tetap
+          // tersedia sehingga navigasi tidak diblokir.
+          loadDashboard(true, false);
+        } else {
+          // Stale-while-revalidate: cache tampil sekarang, refresh otoritatif
+          // hanya bila snapshot cukup lama. Jika request sudah berjalan, fungsi
+          // loadDashboard akan bergabung ke Promise yang sama.
+          revalidateDashboardInBackground(false);
         }
       } else if (section === 'students') {
         renderStudentsModule();
