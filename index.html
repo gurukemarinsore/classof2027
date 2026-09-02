@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <link rel="icon" type="image/svg+xml" href="logo.svg" />
   <title>Data Siswa Kelas 9 2026-2027</title>
-  <!-- CLASSOF2027 Revisi 008 · Background In-Flight Cache + Grade Cache Persistence + Semester UI Consistency · Versi 1.36 -->
+  <!-- CLASSOF2027 Revisi 009 · Semester Status Immediate + Role Grade Table Consistency · Versi 1.37 -->
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2263,6 +2263,18 @@
       cursor: default;
       background: transparent;
       border-color: transparent;
+    }
+
+    /* Revisi 009: mode baca tetap memakai shell input 32px agar tinggi
+       baris identik dengan mode edit Super Admin. */
+    .grade-input.grade-input-readonly:disabled {
+      opacity: 1;
+      color: var(--text);
+      -webkit-text-fill-color: var(--text);
+      background: transparent;
+      border-color: transparent;
+      cursor: default;
+      pointer-events: none;
     }
 
     .grade-average {
@@ -5184,6 +5196,19 @@
     .grade-row-action-btn:disabled {
       opacity: .45;
       cursor: default;
+    }
+
+    /* Revisi 009: tombol Edit Wali Kelas pada semester terkunci tetap
+       menjaga ukuran baris/kolom, tetapi benar-benar nonaktif dan netral. */
+    .grade-row-action-btn.grade-action-disabled,
+    .grade-row-action-btn.grade-action-disabled:hover {
+      opacity: 1;
+      color: var(--muted);
+      border-color: var(--border);
+      background: var(--surface-2);
+      box-shadow: none;
+      cursor: default;
+      pointer-events: none;
     }
 
     .grade-input.row-locked {
@@ -8390,7 +8415,7 @@
   <footer class="footer app-shell">
     <div><strong>SMP NEGERI 3 JAYAPURA</strong> · Sistem Pendataan Terpadu Murid & Nilai</div>
     <div style="margin-top:6px">Dikembangkan oleh gurukemarinsore</div>
-    <div style="margin-top:3px">Versi 1.36</div>
+    <div style="margin-top:3px">Versi 1.37</div>
     <div class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</div>
   </footer>
   </div>
@@ -8415,7 +8440,7 @@
         <div class="sidebar-footer">
           <div class="sidebar-footer-copy">
             <small>Dikembangkan oleh gurukemarinsore</small>
-            <small class="app-version-label">Versi 1.36</small>
+            <small class="app-version-label">Versi 1.37</small>
           </div>
           <small class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</small>
         </div>
@@ -15318,6 +15343,17 @@
       $('#toggleSemesterLockBtn')?.addEventListener('click', toggleCurrentSemesterLock);
     }
 
+    function hasCompleteSemesterLockState() {
+      const seen = new Set(
+        (state.semesterLocks || [])
+          .map(item => Number(item?.semester))
+          .filter(value => Number.isInteger(value) && value >= 1 && value <= 6)
+      );
+
+      return [1,2,3,4,5,6].every(semester => seen.has(semester));
+    }
+
+
     function gradeSemesterLockMeta(semester) {
       const normalized = Number(semester);
 
@@ -15883,6 +15919,14 @@
 
       const students = state.grades.students || [];
       const subjects = state.grades.subjects || [];
+      const role = state.user?.role || '';
+      const isSuper = role === 'SUPER_ADMIN';
+      const isWali = role === 'WALI_KELAS';
+      const isAdminTu = role === 'ADMIN_TU';
+
+      // Kolom Aksi hanya milik Super Admin dan Wali Kelas.
+      // ADMIN_TU benar-benar tidak menerima header/sel Aksi.
+      const showActionColumn = isSuper || isWali;
 
       if (!students.length) {
         area.innerHTML = `
@@ -15901,7 +15945,7 @@
 
       area.innerHTML = `
         <div class="grades-table-wrap">
-          <table class="grades-table">
+          <table class="grades-table ${isAdminTu ? 'grades-table-admin-tu' : ''}">
             <thead>
               <tr>
                 <th class="sticky-no">No</th>
@@ -15909,7 +15953,7 @@
                 ${subjects.map(subject => `<th class="grade-subject-head" title="${escapeHtml(subject)}">${gradeSubjectHeaderHtml(subject)}</th>`).join('')}
                 <th class="grade-average-head">Rata-rata<br>Semester</th>
                 <th class="grade-average-head">Rata-rata<br>Keseluruhan</th>
-                <th class="grade-action-head">Aksi</th>
+                ${showActionColumn ? '<th class="grade-action-head">Aksi</th>' : ''}
               </tr>
             </thead>
             <tbody>
@@ -15939,20 +15983,32 @@
                       !semesterStatus.complete &&
                       isGradeBlank(value);
 
+                    const rowEditing =
+                      state.grades.editingRows.has(rowIndex);
+
+                    // Semua role memakai shell input yang sama tingginya.
+                    // Pada mode baca input disabled dan tidak interaktif.
                     if (!state.grades.canEdit) {
+                      const shown = value === ''
+                        ? '—'
+                        : gradeDisplayValue(value);
+
                       return `
                         <td class="grade-value-cell ${partialEmpty ? 'partial-empty' : ''}"
                           data-grade-value-cell
                           data-row-index="${rowIndex}"
                           data-grade-index="${gradeIndex}"
                           style="text-align:center">
-                          ${value === '' ? '—' : escapeHtml(String(value))}
+                          <input
+                            class="grade-input grade-input-readonly row-locked"
+                            type="text"
+                            tabindex="-1"
+                            value="${escapeHtml(String(shown))}"
+                            disabled
+                            aria-label="${escapeHtml(subject)} untuk ${escapeHtml(student.namaLengkap)} · hanya lihat">
                         </td>
                       `;
                     }
-
-                    const rowEditing =
-                      state.grades.editingRows.has(rowIndex);
 
                     return `
                       <td class="grade-value-cell ${partialEmpty ? 'partial-empty' : ''}"
@@ -15994,19 +16050,33 @@
                     ${formatAverage2(student.overallAverage)}
                   </td>
 
-                  ${state.grades.canEdit ? `
-                    <td class="grade-row-actions">
-                      <button type="button"
-                        class="grade-row-action-btn ${state.grades.editingRows.has(rowIndex) ? 'editing' : ''}"
-                        data-grade-row-action="${rowIndex}"
-                        title="${state.grades.editingRows.has(rowIndex) ? 'Simpan nilai murid' : 'Edit nilai murid'}">
-                        <i class="ti ${state.grades.editingRows.has(rowIndex) ? 'ti-device-floppy' : 'ti-edit'}"></i>
-                        <span>${state.grades.editingRows.has(rowIndex) ? 'Simpan' : 'Edit'}</span>
-                      </button>
-                    </td>
-                  ` : `
-                    <td class="grade-row-actions grade-row-actions-readonly" aria-label="Aksi tidak tersedia"></td>
-                  `}
+                  ${showActionColumn ? (
+                    state.grades.canEdit
+                      ? `
+                        <td class="grade-row-actions">
+                          <button type="button"
+                            class="grade-row-action-btn ${state.grades.editingRows.has(rowIndex) ? 'editing' : ''}"
+                            data-grade-row-action="${rowIndex}"
+                            title="${state.grades.editingRows.has(rowIndex) ? 'Simpan nilai murid' : 'Edit nilai murid'}">
+                            <i class="ti ${state.grades.editingRows.has(rowIndex) ? 'ti-device-floppy' : 'ti-edit'}"></i>
+                            <span>${state.grades.editingRows.has(rowIndex) ? 'Simpan' : 'Edit'}</span>
+                          </button>
+                        </td>
+                      `
+                      : `
+                        <td class="grade-row-actions">
+                          <button type="button"
+                            class="grade-row-action-btn grade-action-disabled"
+                            disabled
+                            tabindex="-1"
+                            aria-disabled="true"
+                            title="Semester terkunci · Wali Kelas hanya dapat melihat">
+                            <i class="ti ti-edit"></i>
+                            <span>Edit</span>
+                          </button>
+                        </td>
+                      `
+                  ) : ''}
                 </tr>
               `).join('')}
             </tbody>
@@ -22526,7 +22596,10 @@
           loadGradeGrid();
         }
 
-        if (!overviewRestored && !state.semesterLocks.length) {
+        // Revisi 009: status warna/ikon 1–6 harus lengkap sejak awal.
+        // Snapshot parsial (misalnya hanya semester yang pernah diklik)
+        // tidak dianggap cukup; overview tetap dilanjutkan di background.
+        if (!overviewRestored || !hasCompleteSemesterLockState()) {
           loadAppOverview();
         }
       } else if (section === 'documents') {
