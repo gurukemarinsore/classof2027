@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <link rel="icon" type="image/svg+xml" href="logo.svg" />
   <title>Data Siswa Kelas 9 2026-2027</title>
-  <!-- CLASSOF2027 Revisi 007 · Session Cache + Unified Live Sync + Incremental Refresh + Conflict Guard · Versi 1.35 -->
+  <!-- CLASSOF2027 Revisi 008 · Background In-Flight Cache + Grade Cache Persistence + Semester UI Consistency · Versi 1.36 -->
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2272,9 +2272,16 @@
       white-space: nowrap;
     }
 
-    .grade-row-actions {
-      min-width: 64px;
-      
+    .grade-row-actions,
+    .grade-action-head {
+      width: 123px;
+      min-width: 123px;
+      max-width: 123px;
+      text-align: center;
+    }
+
+    .grade-row-actions-readonly {
+      padding-inline: 0 !important;
     }
 
     .unsaved-indicator {
@@ -8383,7 +8390,7 @@
   <footer class="footer app-shell">
     <div><strong>SMP NEGERI 3 JAYAPURA</strong> · Sistem Pendataan Terpadu Murid & Nilai</div>
     <div style="margin-top:6px">Dikembangkan oleh gurukemarinsore</div>
-    <div style="margin-top:3px">Versi 1.35</div>
+    <div style="margin-top:3px">Versi 1.36</div>
     <div class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</div>
   </footer>
   </div>
@@ -8408,7 +8415,7 @@
         <div class="sidebar-footer">
           <div class="sidebar-footer-copy">
             <small>Dikembangkan oleh gurukemarinsore</small>
-            <small class="app-version-label">Versi 1.35</small>
+            <small class="app-version-label">Versi 1.36</small>
           </div>
           <small class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</small>
         </div>
@@ -8777,6 +8784,94 @@
 
     state.sessionCache = createSessionCache();
 
+    // ===== Revisi 008 · Background In-Flight Request Registry =====
+    // Request yang sudah dimulai tetap berjalan saat pengguna pindah menu.
+    // Jika pengguna kembali sebelum selesai, frontend menunggu Promise yang
+    // sama (tidak membuat request duplikat). Hasil stabil tetap masuk cache.
+    function createSessionRequestRegistry() {
+      return {
+        dashboard: null,
+        overview: null,
+        students: new Map(),
+        grades: new Map(),
+        documents: new Map(),
+        accounts: null,
+        settings: null
+      };
+    }
+
+    state.sessionRequests = createSessionRequestRegistry();
+
+    function cancelRequestEntry(entry) {
+      if (entry && typeof entry === 'object') {
+        entry.cancelled = true;
+      }
+    }
+
+    function resetSessionRequests() {
+      const current = state.sessionRequests;
+
+      if (current) {
+        cancelRequestEntry(current.dashboard);
+        cancelRequestEntry(current.overview);
+        cancelRequestEntry(current.accounts);
+        cancelRequestEntry(current.settings);
+
+        ['students','grades','documents'].forEach(name => {
+          const map = current[name];
+          if (!(map instanceof Map)) return;
+          map.forEach(cancelRequestEntry);
+          map.clear();
+        });
+      }
+
+      state.sessionRequests = createSessionRequestRegistry();
+    }
+
+    function sharedMapRequest(map, key, factory) {
+      if (!(map instanceof Map)) {
+        return Promise.resolve().then(() => factory({ cancelled: false }));
+      }
+
+      const existing = map.get(key);
+      if (existing && !existing.cancelled && existing.promise) {
+        return existing.promise;
+      }
+
+      const entry = { cancelled: false, promise: null };
+      entry.promise = Promise.resolve()
+        .then(() => factory(entry))
+        .finally(() => {
+          if (map.get(key) === entry) {
+            map.delete(key);
+          }
+        });
+
+      map.set(key, entry);
+      return entry.promise;
+    }
+
+    function sharedSingleRequest(slot, factory) {
+      const registry = state.sessionRequests;
+      const existing = registry?.[slot];
+
+      if (existing && !existing.cancelled && existing.promise) {
+        return existing.promise;
+      }
+
+      const entry = { cancelled: false, promise: null };
+      entry.promise = Promise.resolve()
+        .then(() => factory(entry))
+        .finally(() => {
+          if (registry?.[slot] === entry) {
+            registry[slot] = null;
+          }
+        });
+
+      if (registry) registry[slot] = entry;
+      return entry.promise;
+    }
+
     function resetSessionCache() {
       state.sessionCache = createSessionCache();
     }
@@ -9028,6 +9123,7 @@
       state.students.limit = Number(snapshot.limit || 20);
       state.students.rows = plainClone(snapshot.rows || []);
       state.students.activeSemesters = plainClone(snapshot.activeSemesters || []);
+      state.students.loading = false;
 
       renderStudentsTable();
       renderStudentsPagination();
@@ -9054,20 +9150,8 @@
 
       if (!snapshot) return false;
 
-      state.grades.subjects = plainClone(snapshot.subjects || []);
-      state.grades.students = plainClone(snapshot.students || []);
-      state.grades.classReferenceSemester = Number(snapshot.classReferenceSemester || 0);
-      state.grades.locked = snapshot.locked === true;
-      state.grades.canEdit = snapshot.canEdit === true;
-      state.grades.dirtyRows = new Set();
-      state.grades.editingRows = new Set();
-      state.grades.lastSavedAt = snapshot.lastSavedAt || '';
-
-      syncCurrentGradeSemesterLock();
-      renderGradeStatus();
-      renderGradeSummary();
-      renderGradeTable();
-      startGradeAutosaveTimer();
+      state.grades.loading = false;
+      applyGradeSessionSnapshot(snapshot);
       return true;
     }
 
@@ -9083,6 +9167,7 @@
       state.documents.page = Number(snapshot.page || 1);
       state.documents.limit = Number(snapshot.limit || 20);
       state.documents.students = plainClone(snapshot.students || []);
+      state.documents.loading = false;
 
       renderDocumentStudentList();
       renderDocumentPagination();
@@ -9368,64 +9453,88 @@
       });
     }
 
+    function cancelSearchRequestsForClass(map, kelas) {
+      if (!(map instanceof Map)) return;
+      const normalized = String(kelas || '').trim().toUpperCase();
+
+      [...map.entries()].forEach(([key, entry]) => {
+        const requestClass = sessionCacheClassFromKey(key).toUpperCase();
+        if (
+          !normalized ||
+          requestClass === 'SEMUA' ||
+          requestClass === normalized
+        ) {
+          cancelRequestEntry(entry);
+          map.delete(key);
+        }
+      });
+    }
+
     function invalidateGradeSessionCache(kelas, semester = null) {
       const map = state.sessionCache?.grades;
-      if (!(map instanceof Map)) return;
-
+      const requestMap = state.sessionRequests?.grades;
       const normalizedClass = String(kelas || '').trim().toUpperCase();
       const normalizedSemester = Number(semester || 0);
 
-      if (!normalizedClass) {
-        if (!normalizedSemester) {
-          map.clear();
-          return;
-        }
-
-        [...map.keys()].forEach(key => {
-          const parts = String(key).split('|');
-          if (Number(parts[1]) === normalizedSemester) {
-            map.delete(key);
-          }
-        });
-        return;
-      }
-
-      [...map.keys()].forEach(key => {
+      const matches = key => {
         const parts = String(key).split('|');
         const cachedClass = String(parts[0] || '').toUpperCase();
         const cachedSemester = Number(parts[1] || 0);
 
-        if (
+        if (!normalizedClass && !normalizedSemester) return true;
+        if (!normalizedClass) return cachedSemester === normalizedSemester;
+
+        return (
           cachedClass === normalizedClass &&
           (!normalizedSemester || cachedSemester === normalizedSemester)
-        ) {
-          map.delete(key);
-        }
-      });
+        );
+      };
+
+      if (map instanceof Map) {
+        [...map.keys()].forEach(key => {
+          if (matches(key)) map.delete(key);
+        });
+      }
+
+      if (requestMap instanceof Map) {
+        [...requestMap.entries()].forEach(([key, entry]) => {
+          if (!matches(key)) return;
+          cancelRequestEntry(entry);
+          requestMap.delete(key);
+        });
+      }
     }
 
     function invalidateDashboardSessionCache() {
       if (state.sessionCache) {
         state.sessionCache.dashboard = null;
       }
+      cancelRequestEntry(state.sessionRequests?.dashboard);
+      if (state.sessionRequests) state.sessionRequests.dashboard = null;
     }
 
     function invalidateOverviewSessionCache() {
       if (state.sessionCache) {
         state.sessionCache.overview = null;
       }
+      cancelRequestEntry(state.sessionRequests?.overview);
+      if (state.sessionRequests) state.sessionRequests.overview = null;
     }
 
     function invalidateAccountsSessionCache() {
       if (state.sessionCache) {
         state.sessionCache.accounts = null;
       }
+      cancelRequestEntry(state.sessionRequests?.accounts);
+      if (state.sessionRequests) state.sessionRequests.accounts = null;
     }
 
     function invalidateSettingsSessionCache() {
       if (state.sessionCache) {
         state.sessionCache.settings = null;
       }
+      cancelRequestEntry(state.sessionRequests?.settings);
+      if (state.sessionRequests) state.sessionRequests.settings = null;
     }
 
     function applyLiveSyncChanges(changes) {
@@ -9444,8 +9553,16 @@
             state.sessionCache?.students,
             kelas
           );
+          cancelSearchRequestsForClass(
+            state.sessionRequests?.students,
+            kelas
+          );
           invalidateSearchSessionCacheForClass(
             state.sessionCache?.documents,
+            kelas
+          );
+          cancelSearchRequestsForClass(
+            state.sessionRequests?.documents,
             kelas
           );
           invalidateGradeSessionCache(kelas);
@@ -9472,8 +9589,16 @@
             state.sessionCache?.students,
             kelas
           );
+          cancelSearchRequestsForClass(
+            state.sessionRequests?.students,
+            kelas
+          );
           invalidateSearchSessionCacheForClass(
             state.sessionCache?.documents,
+            kelas
+          );
+          cancelSearchRequestsForClass(
+            state.sessionRequests?.documents,
             kelas
           );
 
@@ -9504,8 +9629,16 @@
             state.sessionCache?.documents,
             kelas
           );
+          cancelSearchRequestsForClass(
+            state.sessionRequests?.documents,
+            kelas
+          );
           invalidateSearchSessionCacheForClass(
             state.sessionCache?.students,
+            kelas
+          );
+          cancelSearchRequestsForClass(
+            state.sessionRequests?.students,
             kelas
           );
 
@@ -9931,6 +10064,7 @@
       // Bila user sedang mengedit, cache boleh dibuang sekarang tetapi
       // rerender ditahan sampai save/cancel agar input lokal tidak tertimpa.
       resetSessionCache();
+      resetSessionRequests();
 
       if (
         options.ignoreProtection !== true &&
@@ -12282,13 +12416,29 @@
     }
 
     async function loadStudents(showRefreshToast = false, background = false) {
-      if (!state.sessionToken || state.appSection !== 'students') return;
-      if (background && state.students.loading) return;
+      if (!state.sessionToken) return;
 
-      state.students.loading = true;
+      const request = {
+        kelas: state.students.kelas,
+        query: state.students.query,
+        page: state.students.page,
+        limit: state.students.limit
+      };
+      const key = studentSessionCacheKey(request);
+      const requestToken = state.sessionToken;
+      const isCurrentKey = () =>
+        state.sessionToken === requestToken &&
+        studentSessionCacheKey() === key;
+      const isCurrentView = () =>
+        isCurrentKey() &&
+        state.appSection === 'students';
+
+      if (isCurrentView()) {
+        state.students.loading = true;
+      }
 
       const tableArea = $('#studentsTableArea');
-      if (!background && tableArea) {
+      if (!background && isCurrentView() && tableArea) {
         tableArea.innerHTML = `
           <div class="students-loading">
             <span class="app-loading-line"><span class="mini-spinner"></span> memuat data murid</span>
@@ -12297,23 +12447,54 @@
       }
 
       try {
-        const data = await apiPost('searchstudents', {
-          token: state.sessionToken,
-          kelas: state.students.kelas,
-          query: state.students.query,
-          page: state.students.page,
-          limit: state.students.limit
-        });
+        const snapshot = await sharedMapRequest(
+          state.sessionRequests.students,
+          key,
+          async entry => {
+            const data = await apiPost('searchstudents', {
+              token: requestToken,
+              kelas: request.kelas,
+              query: request.query,
+              page: request.page,
+              limit: request.limit
+            });
 
-        state.students.rows = data.students || [];
-        state.students.total = Number(data.pagination?.total || 0);
-        state.students.totalPages = Number(data.pagination?.totalPages || 0);
-        state.students.page = Number(data.pagination?.page || 1);
-        state.students.activeSemesters = data.filter?.activeSemesters || [];
+            if (entry.cancelled || state.sessionToken !== requestToken) {
+              return null;
+            }
+
+            const next = {
+              cachedAt: Date.now(),
+              query: request.query,
+              kelas: request.kelas,
+              page: Number(data.pagination?.page || request.page || 1),
+              limit: Number(request.limit || 20),
+              total: Number(data.pagination?.total || 0),
+              totalPages: Number(data.pagination?.totalPages || 0),
+              rows: plainClone(data.students || []),
+              activeSemesters: plainClone(data.filter?.activeSemesters || [])
+            };
+
+            setBoundedSessionCache(
+              state.sessionCache.students,
+              key,
+              next,
+              24
+            );
+
+            return next;
+          }
+        );
+
+        if (!snapshot || !isCurrentView()) return;
+
+        state.students.total = snapshot.total;
+        state.students.totalPages = snapshot.totalPages;
+        state.students.page = snapshot.page;
+        state.students.limit = snapshot.limit;
+        state.students.rows = plainClone(snapshot.rows || []);
+        state.students.activeSemesters = plainClone(snapshot.activeSemesters || []);
         state.students.loading = false;
-        captureStudentsSessionCache();
-
-        if (state.appSection !== 'students') return;
 
         renderStudentsTable();
         renderStudentsPagination();
@@ -12335,8 +12516,8 @@
       } catch (error) {
         if (await handleSessionError(error)) return;
 
-        if (background) {
-          console.warn('Live Sync Data Murid:', error?.message || error);
+        if (background || !isCurrentView()) {
+          console.warn('Background Data Murid:', error?.message || error);
         } else if (tableArea) {
           tableArea.innerHTML = `
             <div class="students-empty">
@@ -12349,7 +12530,9 @@
           `;
         }
       } finally {
-        state.students.loading = false;
+        if (isCurrentKey()) {
+          state.students.loading = false;
+        }
       }
     }
 
@@ -15075,6 +15258,7 @@
       `;
 
       bindGradesModuleEvents();
+      renderGradeSemesterTabs();
     }
 
     function bindGradesModuleEvents() {
@@ -15098,7 +15282,11 @@
         state.grades.kelas = event.target.value;
         state.grades.dirtyRows = new Set();
         state.grades.editingRows = new Set();
-        await loadGradeGrid();
+
+        renderGradeSemesterTabs();
+        if (!restoreGradesSessionCache()) {
+          await loadGradeGrid();
+        }
       });
 
       $$('[data-grade-semester]').forEach(btn => {
@@ -15112,14 +15300,11 @@
           state.grades.dirtyRows = new Set();
           state.grades.editingRows = new Set();
 
-          $$('[data-grade-semester]').forEach(item => {
-            item.classList.toggle(
-              'active',
-              Number(item.dataset.gradeSemester) === next
-            );
-          });
+          renderGradeSemesterTabs();
 
-          await loadGradeGrid();
+          if (!restoreGradesSessionCache()) {
+            await loadGradeGrid();
+          }
         });
       });
 
@@ -15286,19 +15471,105 @@
       return saved !== false;
     }
 
+    function buildGradeSessionSnapshot(data, request) {
+      const students = (data.students || []).map(student => {
+        const normalized = { ...student };
+
+        if (student?.overallContext) {
+          normalized.overallContext = {
+            otherSemesterSum:
+              Number(student.overallContext.otherSemesterSum) || 0,
+            otherStartedSemesterCount:
+              Number(student.overallContext.otherStartedSemesterCount) || 0,
+            otherHasPartialSemester:
+              student.overallContext.otherHasPartialSemester === true
+          };
+        }
+
+        if (
+          student?.overallLiveBase &&
+          Number.isFinite(Number(student.overallLiveBase.sum)) &&
+          Number.isFinite(Number(student.overallLiveBase.count))
+        ) {
+          normalized.overallBaseSum = Number(student.overallLiveBase.sum);
+          normalized.overallBaseCount = Number(student.overallLiveBase.count);
+        }
+
+        if (
+          !Number.isFinite(Number(normalized.overallBaseSum)) ||
+          !Number.isFinite(Number(normalized.overallBaseCount))
+        ) {
+          if (
+            Number.isFinite(Number(student.overallGradeSum)) &&
+            Number.isFinite(Number(student.overallGradeCount)) &&
+            Number.isFinite(Number(student.currentSemesterStoredSum)) &&
+            Number.isFinite(Number(student.currentSemesterStoredCount))
+          ) {
+            normalized.overallBaseSum =
+              Number(student.overallGradeSum) -
+              Number(student.currentSemesterStoredSum);
+
+            normalized.overallBaseCount =
+              Number(student.overallGradeCount) -
+              Number(student.currentSemesterStoredCount);
+          }
+        }
+
+        return normalized;
+      });
+
+      return {
+        cachedAt: Date.now(),
+        kelas: request.kelas,
+        semester: request.semester,
+        subjects: plainClone(data.subjects || []),
+        students: plainClone(students),
+        classReferenceSemester: Number(data.classReferenceSemester || 0),
+        locked: data.locked === true,
+        canEdit: data.canEdit === true,
+        lastSavedAt: ''
+      };
+    }
+
+    function applyGradeSessionSnapshot(snapshot) {
+      if (!snapshot) return false;
+
+      state.grades.subjects = plainClone(snapshot.subjects || []);
+      state.grades.students = plainClone(snapshot.students || []);
+      state.grades.classReferenceSemester = Number(snapshot.classReferenceSemester || 0);
+      state.grades.locked = snapshot.locked === true;
+      state.grades.canEdit = snapshot.canEdit === true;
+      state.grades.dirtyRows = new Set();
+      state.grades.editingRows = new Set();
+      state.grades.lastSavedAt = snapshot.lastSavedAt || '';
+
+      syncCurrentGradeSemesterLock();
+      renderGradeStatus();
+      renderGradeSummary();
+      renderGradeTable();
+      startGradeAutosaveTimer();
+      return true;
+    }
+
     async function loadGradeGrid(showToastAfter = false, background = false) {
-      if (
-        !state.sessionToken ||
-        state.appSection !== 'grades' ||
-        !state.grades.kelas
-      ) {
-        return;
-      }
+      if (!state.sessionToken || !state.grades.kelas) return;
+
+      const request = {
+        kelas: state.grades.kelas,
+        semester: Number(state.grades.semester || 1)
+      };
+      const key = gradeSessionCacheKey(request);
+      const requestToken = state.sessionToken;
+      const isCurrentKey = () =>
+        state.sessionToken === requestToken &&
+        gradeSessionCacheKey() === key;
+      const isCurrentView = () =>
+        isCurrentKey() &&
+        state.appSection === 'grades';
 
       if (
-        background &&
+        isCurrentView() &&
         (
-          state.grades.loading ||
           state.grades.saving ||
           state.grades.dirtyRows?.size ||
           state.grades.editingRows?.size
@@ -15307,109 +15578,59 @@
         return;
       }
 
-      state.grades.loading = true;
+      if (isCurrentView()) {
+        state.grades.loading = true;
+      }
 
       const area = $('#gradesTableArea');
-      if (!background && area) {
+      if (!background && isCurrentView() && area) {
         area.innerHTML = `
           <div class="students-loading">
             <span class="app-loading-line">
-              <span class="mini-spinner"></span> memuat nilai kelas ${escapeHtml(state.grades.kelas)}
+              <span class="mini-spinner"></span> memuat nilai kelas ${escapeHtml(request.kelas)}
             </span>
           </div>
         `;
       }
 
       try {
-        const data = await apiPost('getgradegrid', {
-          token: state.sessionToken,
-          kelas: state.grades.kelas,
-          semester: state.grades.semester
-        });
+        const snapshot = await sharedMapRequest(
+          state.sessionRequests.grades,
+          key,
+          async entry => {
+            const data = await apiPost('getgradegrid', {
+              token: requestToken,
+              kelas: request.kelas,
+              semester: request.semester
+            });
 
-        state.grades.subjects = data.subjects || [];
-
-        state.grades.students = (data.students || []).map(student => {
-          const normalized = { ...student };
-
-          if (student?.overallContext) {
-            normalized.overallContext = {
-              otherSemesterSum:
-                Number(
-                  student.overallContext
-                    .otherSemesterSum
-                ) || 0,
-
-              otherStartedSemesterCount:
-                Number(
-                  student.overallContext
-                    .otherStartedSemesterCount
-                ) || 0,
-
-              otherHasPartialSemester:
-                student.overallContext
-                  .otherHasPartialSemester === true
-            };
-          }
-
-          // Prioritas metadata nested dari backend terbaru.
-          if (
-            student?.overallLiveBase &&
-            Number.isFinite(Number(student.overallLiveBase.sum)) &&
-            Number.isFinite(Number(student.overallLiveBase.count))
-          ) {
-            normalized.overallBaseSum =
-              Number(student.overallLiveBase.sum);
-
-            normalized.overallBaseCount =
-              Number(student.overallLiveBase.count);
-          }
-
-          // Fallback dari total keseluruhan dikurangi semester aktif
-          // bila backend mengirim metadata bentuk lain.
-          if (
-            !Number.isFinite(Number(normalized.overallBaseSum)) ||
-            !Number.isFinite(Number(normalized.overallBaseCount))
-          ) {
-            if (
-              Number.isFinite(Number(student.overallGradeSum)) &&
-              Number.isFinite(Number(student.overallGradeCount)) &&
-              Number.isFinite(Number(student.currentSemesterStoredSum)) &&
-              Number.isFinite(Number(student.currentSemesterStoredCount))
-            ) {
-              normalized.overallBaseSum =
-                Number(student.overallGradeSum) -
-                Number(student.currentSemesterStoredSum);
-
-              normalized.overallBaseCount =
-                Number(student.overallGradeCount) -
-                Number(student.currentSemesterStoredCount);
+            if (entry.cancelled || state.sessionToken !== requestToken) {
+              return null;
             }
+
+            const next = buildGradeSessionSnapshot(data, request);
+            setBoundedSessionCache(
+              state.sessionCache.grades,
+              key,
+              next,
+              32
+            );
+            return next;
           }
+        );
 
-          return normalized;
-        });
+        if (!snapshot || !isCurrentView()) return;
 
-        state.grades.classReferenceSemester = Number(data.classReferenceSemester || 0);
-        state.grades.locked = data.locked === true;
-        state.grades.canEdit = data.canEdit === true;
-        state.grades.dirtyRows = new Set();
         state.grades.loading = false;
-        captureGradesSessionCache();
-
-        syncCurrentGradeSemesterLock();
-        renderGradeStatus();
-        renderGradeSummary();
-        renderGradeTable();
-        startGradeAutosaveTimer();
+        applyGradeSessionSnapshot(snapshot);
 
         if (showToastAfter) showToast('Data nilai diperbarui.');
 
       } catch (error) {
         if (await handleSessionError(error)) return;
 
-        if (background) {
-          console.warn('Live Sync Nilai:', error?.message || error);
+        if (background || !isCurrentView()) {
+          console.warn('Background Nilai:', error?.message || error);
         } else if (area) {
           area.innerHTML = `
             <div class="grades-empty">
@@ -15422,7 +15643,9 @@
           `;
         }
       } finally {
-        state.grades.loading = false;
+        if (isCurrentKey()) {
+          state.grades.loading = false;
+        }
         scheduleDeferredLiveSyncFlush();
       }
     }
@@ -15686,7 +15909,7 @@
                 ${subjects.map(subject => `<th class="grade-subject-head" title="${escapeHtml(subject)}">${gradeSubjectHeaderHtml(subject)}</th>`).join('')}
                 <th class="grade-average-head">Rata-rata<br>Semester</th>
                 <th class="grade-average-head">Rata-rata<br>Keseluruhan</th>
-                ${state.grades.canEdit ? '<th class="grade-action-head">Aksi</th>' : ''}
+                <th class="grade-action-head">Aksi</th>
               </tr>
             </thead>
             <tbody>
@@ -15781,7 +16004,9 @@
                         <span>${state.grades.editingRows.has(rowIndex) ? 'Simpan' : 'Edit'}</span>
                       </button>
                     </td>
-                  ` : ''}
+                  ` : `
+                    <td class="grade-row-actions grade-row-actions-readonly" aria-label="Aksi tidak tersedia"></td>
+                  `}
                 </tr>
               `).join('')}
             </tbody>
@@ -18455,20 +18680,29 @@
     }
 
     async function loadDocumentStudents(showToastAfter = false, background = false) {
-      if (
-        !state.sessionToken ||
-        state.appSection !== 'documents'
-      ) {
-        return;
+      if (!state.sessionToken) return;
+
+      const request = {
+        kelas: state.documents.kelas,
+        query: state.documents.query,
+        page: state.documents.page,
+        limit: state.documents.limit
+      };
+      const key = documentSessionCacheKey(request);
+      const requestToken = state.sessionToken;
+      const isCurrentKey = () =>
+        state.sessionToken === requestToken &&
+        documentSessionCacheKey() === key;
+      const isCurrentView = () =>
+        isCurrentKey() &&
+        state.appSection === 'documents';
+
+      if (isCurrentView()) {
+        state.documents.loading = true;
       }
 
-      if (background && state.documents.loading) return;
-
-      state.documents.loading = true;
-
       const area = $('#documentStudentListArea');
-
-      if (!background && area) {
+      if (!background && isCurrentView() && area) {
         area.innerHTML = `
           <div class="students-loading">
             <span class="app-loading-line">
@@ -18479,22 +18713,51 @@
       }
 
       try {
-        const data = await apiPost('searchstudents', {
-          token: state.sessionToken,
-          kelas: state.documents.kelas,
-          query: state.documents.query,
-          page: state.documents.page,
-          limit: state.documents.limit
-        });
+        const snapshot = await sharedMapRequest(
+          state.sessionRequests.documents,
+          key,
+          async entry => {
+            const data = await apiPost('searchstudents', {
+              token: requestToken,
+              kelas: request.kelas,
+              query: request.query,
+              page: request.page,
+              limit: request.limit
+            });
 
-        state.documents.students = data.students || [];
-        state.documents.total = Number(data.pagination?.total || 0);
-        state.documents.totalPages = Number(data.pagination?.totalPages || 0);
-        state.documents.page = Number(data.pagination?.page || 1);
+            if (entry.cancelled || state.sessionToken !== requestToken) {
+              return null;
+            }
+
+            const next = {
+              cachedAt: Date.now(),
+              kelas: request.kelas,
+              query: request.query,
+              page: Number(data.pagination?.page || request.page || 1),
+              limit: Number(request.limit || 20),
+              total: Number(data.pagination?.total || 0),
+              totalPages: Number(data.pagination?.totalPages || 0),
+              students: plainClone(data.students || [])
+            };
+
+            setBoundedSessionCache(
+              state.sessionCache.documents,
+              key,
+              next,
+              24
+            );
+            return next;
+          }
+        );
+
+        if (!snapshot || !isCurrentView()) return;
+
+        state.documents.students = plainClone(snapshot.students || []);
+        state.documents.total = snapshot.total;
+        state.documents.totalPages = snapshot.totalPages;
+        state.documents.page = snapshot.page;
+        state.documents.limit = snapshot.limit;
         state.documents.loading = false;
-        captureDocumentsSessionCache();
-
-        if (state.appSection !== 'documents') return;
 
         renderDocumentStudentList();
         renderDocumentPagination();
@@ -18511,8 +18774,8 @@
       } catch (error) {
         if (await handleSessionError(error)) return;
 
-        if (background) {
-          console.warn('Live Sync Dokumen:', error?.message || error);
+        if (background || !isCurrentView()) {
+          console.warn('Background Dokumen:', error?.message || error);
         } else if (area) {
           area.innerHTML = `
             <div class="students-empty">
@@ -18525,7 +18788,9 @@
           `;
         }
       } finally {
-        state.documents.loading = false;
+        if (isCurrentKey()) {
+          state.documents.loading = false;
+        }
       }
     }
 
@@ -20248,23 +20513,21 @@
     }
 
     async function loadAccounts(showToastAfter = false, background = false) {
-      if (
-        !state.sessionToken ||
-        state.appSection !== 'accounts' ||
-        state.user?.role !== 'SUPER_ADMIN'
-      ) {
-        return;
-      }
+      if (!state.sessionToken || state.user?.role !== 'SUPER_ADMIN') return;
 
-      if (background && state.accounts.loading) return;
-      state.accounts.loading = true;
+      const requestToken = state.sessionToken;
+      const isCurrentView = () =>
+        state.sessionToken === requestToken &&
+        state.appSection === 'accounts';
+
+      if (isCurrentView()) state.accounts.loading = true;
 
       const area = $('#accountsTableArea');
       const refreshButton = $('#refreshAccountsBtn');
       const refreshButtonOriginal = refreshButton?.innerHTML;
       const hadData = state.accounts.loaded === true;
 
-      if (!background && !hadData && area) {
+      if (!background && isCurrentView() && !hadData && area) {
         area.innerHTML = `
           <div class="students-loading">
             <span class="app-loading-line">
@@ -20274,21 +20537,41 @@
         `;
       }
 
-      if (!background && hadData && refreshButton) {
+      if (!background && isCurrentView() && hadData && refreshButton) {
         refreshButton.disabled = true;
         refreshButton.innerHTML =
           '<span class="mini-spinner"></span> Memuat';
       }
 
       try {
-        const data = await apiPost('listaccounts', {
-          token: state.sessionToken
-        });
+        const snapshot = await sharedSingleRequest(
+          'accounts',
+          async entry => {
+            const data = await apiPost('listaccounts', {
+              token: requestToken
+            });
 
-        state.accounts.rows = data.accounts || [];
+            if (entry.cancelled || state.sessionToken !== requestToken) {
+              return null;
+            }
+
+            return {
+              cachedAt: Date.now(),
+              rows: plainClone(data.accounts || []),
+              roles: plainClone(data.roles || state.accounts.roles),
+              classes: plainClone(data.classes || state.accounts.classes),
+              max: Number(data.maxAccounts || data.max || state.accounts.max || 20)
+            };
+          }
+        );
+
+        if (!snapshot || state.sessionToken !== requestToken) return;
+
+        state.accounts.rows = plainClone(snapshot.rows || []);
         state.accounts.loaded = true;
-        state.accounts.roles = data.roles || state.accounts.roles;
-        state.accounts.classes = data.classes || state.accounts.classes;
+        state.accounts.roles = plainClone(snapshot.roles || state.accounts.roles);
+        state.accounts.classes = plainClone(snapshot.classes || state.accounts.classes);
+        state.accounts.max = Number(snapshot.max || 20);
 
         const active = state.accounts.rows.filter(
           item => item.statusAktif === true
@@ -20301,8 +20584,9 @@
 
         state.accounts.loading = false;
         captureAccountsSessionCache();
+        captureOverviewSessionCache();
 
-        if (state.appSection !== 'accounts') return;
+        if (!isCurrentView()) return;
 
         renderAccountSummary();
         renderAccountsTable();
@@ -20315,8 +20599,8 @@
       } catch (error) {
         if (await handleSessionError(error)) return;
 
-        if (background) {
-          console.warn('Live Sync Akun:', error?.message || error);
+        if (background || !isCurrentView()) {
+          console.warn('Background Akun:', error?.message || error);
         } else if (!hadData && area) {
           area.innerHTML = `
             <div class="students-empty">
@@ -20331,10 +20615,11 @@
           showToast(error.message || 'Gagal memperbarui daftar akun.');
         }
       } finally {
-        state.accounts.loading = false;
+        if (isCurrentView()) state.accounts.loading = false;
 
         if (
           !background &&
+          isCurrentView() &&
           hadData &&
           refreshButton &&
           refreshButtonOriginal
@@ -21762,28 +22047,38 @@
     }
 
     async function loadSettingsModule(showToastAfter = false, background = false) {
-      if (
-        !state.sessionToken ||
-        state.appSection !== 'settings' ||
-        state.user?.role !== 'SUPER_ADMIN'
-      ) {
-        return;
-      }
+      if (!state.sessionToken || state.user?.role !== 'SUPER_ADMIN') return;
 
-      if (background && state.settings.loading) return;
-      state.settings.loading = true;
+      const requestToken = state.sessionToken;
+      const isCurrentView = () =>
+        state.sessionToken === requestToken &&
+        state.appSection === 'settings';
+
+      if (isCurrentView()) state.settings.loading = true;
 
       try {
-        // Tahap 7: satu request menggantikan empat request Pengaturan lama.
-        // Preview + dashboard memakai snapshot 10 kelas yang sama.
-        const bundle = await apiPost('getsettingsbundle', {
-          token: state.sessionToken
-        });
+        const bundle = await sharedSingleRequest(
+          'settings',
+          async entry => {
+            // Satu request menggantikan empat request Pengaturan lama.
+            // Request tetap hidup di background bila pengguna pindah menu.
+            const data = await apiPost('getsettingsbundle', {
+              token: requestToken
+            });
+
+            if (entry.cancelled || state.sessionToken !== requestToken) {
+              return null;
+            }
+            return data;
+          }
+        );
+
+        if (!bundle || state.sessionToken !== requestToken) return;
 
         applySettingsBundleData(bundle, true);
         state.settings.loading = false;
 
-        if (state.appSection !== 'settings') return;
+        if (!isCurrentView()) return;
 
         renderDashboardSemesterOptions();
         updateSaveDashboardSemestersButton();
@@ -21798,8 +22093,8 @@
       } catch (error) {
         if (await handleSessionError(error)) return;
 
-        if (background) {
-          console.warn('Live Sync Pengaturan:', error?.message || error);
+        if (background || !isCurrentView()) {
+          console.warn('Background Pengaturan:', error?.message || error);
         } else {
           const status = $('#dashboardSemesterStatus');
 
@@ -21811,7 +22106,7 @@
         }
 
       } finally {
-        state.settings.loading = false;
+        if (isCurrentView()) state.settings.loading = false;
       }
     }
 
@@ -22224,11 +22519,14 @@
       } else if (section === 'grades') {
         renderGradesModule();
 
+        const overviewRestored = restoreOverviewSessionCache();
+        renderGradeSemesterTabs();
+
         if (!restoreGradesSessionCache()) {
           loadGradeGrid();
         }
 
-        if (!state.semesterLocks.length && !restoreOverviewSessionCache()) {
+        if (!overviewRestored && !state.semesterLocks.length) {
           loadAppOverview();
         }
       } else if (section === 'documents') {
@@ -22241,7 +22539,24 @@
         renderAccountsModule();
 
         if (!restoreAccountsSessionCache()) {
-          loadAccounts();
+          const overviewInFlight = state.sessionRequests?.overview?.promise;
+          if (overviewInFlight) {
+            const continueAccountsLoad = () => {
+              if (
+                state.appSection === 'accounts' &&
+                !restoreAccountsSessionCache()
+              ) {
+                loadAccounts();
+              }
+            };
+
+            overviewInFlight.then(
+              continueAccountsLoad,
+              continueAccountsLoad
+            );
+          } else {
+            loadAccounts();
+          }
         }
       } else if (section === 'settings') {
         renderSettingsModule();
@@ -22260,25 +22575,59 @@
     async function loadAppOverview() {
       if (!state.sessionToken || !state.user) return;
 
+      const requestToken = state.sessionToken;
+      const requestRole = state.user.role;
+
       try {
-        const tasks = [
-          apiPost('getsemesterlocks', { token: state.sessionToken })
-        ];
+        const result = await sharedSingleRequest(
+          'overview',
+          async entry => {
+            const tasks = [
+              apiPost('getsemesterlocks', { token: requestToken })
+            ];
 
-        if (state.user.role === 'SUPER_ADMIN') {
-          tasks.push(apiPost('listaccounts', { token: state.sessionToken }));
-        }
+            if (requestRole === 'SUPER_ADMIN') {
+              tasks.push(apiPost('listaccounts', { token: requestToken }));
+            }
 
-        const results = await Promise.all(tasks);
-        const lockData = results[0];
-        state.semesterLocks = lockData?.semesters || [];
+            const results = await Promise.all(tasks);
 
-        if (state.user.role === 'SUPER_ADMIN' && results[1]) {
-          const accounts = results[1].accounts || [];
+            if (entry.cancelled || state.sessionToken !== requestToken) {
+              return null;
+            }
+
+            return {
+              lockData: results[0] || null,
+              accountsData:
+                requestRole === 'SUPER_ADMIN'
+                  ? (results[1] || null)
+                  : null
+            };
+          }
+        );
+
+        if (!result || state.sessionToken !== requestToken) return;
+
+        state.semesterLocks = result.lockData?.semesters || [];
+
+        if (requestRole === 'SUPER_ADMIN' && result.accountsData) {
+          const data = result.accountsData;
+          const accounts = data.accounts || [];
+
+          // listaccounts memang sudah dibaca untuk overview; gunakan hasil yang
+          // sama untuk cache menu Akun agar tidak meminta data kedua kali.
+          state.accounts.rows = plainClone(accounts);
+          state.accounts.loaded = true;
+          state.accounts.roles = plainClone(data.roles || state.accounts.roles);
+          state.accounts.classes = plainClone(data.classes || state.accounts.classes);
+          state.accounts.max = Number(data.maxAccounts || data.max || state.accounts.max || 20);
+
           state.accountsSummary = {
             total: accounts.length,
             active: accounts.filter(item => item.statusAktif === true).length
           };
+
+          captureAccountsSessionCache();
         }
 
         captureOverviewSessionCache();
@@ -22287,7 +22636,11 @@
           renderDashboardShell();
           renderSemesterLocks();
         } else if (state.appSection === 'grades') {
+          // Status warna + ikon Semester 1–6 langsung diperbarui begitu
+          // overview selesai, tanpa perlu klik semester sebagai pemicu.
           renderGradeSemesterTabs();
+        } else if (state.appSection === 'accounts') {
+          restoreAccountsSessionCache();
         }
       } catch (error) {
         if (['SESSION_TIDAK_VALID','SESSION_SUDAH_LOGOUT','SESSION_KEDALUWARSA','SESSION_DICABUT'].includes(error.code)) {
@@ -22298,7 +22651,7 @@
         if ($('#lockLoadStatus')) {
           $('#lockLoadStatus').textContent = 'gagal memuat';
         }
-        showToast(error.message || 'Gagal memuat ringkasan akun.');
+        console.warn('Background overview:', error?.message || error);
       }
     }
 
@@ -22332,6 +22685,7 @@
       stopGlobalFontSync();
       state.appSection = 'dashboard';
       resetSessionCache();
+      resetSessionRequests();
       resetStudentsStateForRole();
       resetGradesStateForRole();
       resetDocumentsStateForRole();
@@ -22362,6 +22716,7 @@
       stopUnifiedLiveSync();
       stopGlobalFontSync();
       resetSessionCache();
+      resetSessionRequests();
       state.sessionToken = '';
       state.user = null;
       closeAppDialog();
