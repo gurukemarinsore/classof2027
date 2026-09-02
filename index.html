@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <link rel="icon" type="image/svg+xml" href="logo.svg" />
   <title>Data Siswa Kelas 9 2026-2027</title>
-  <!-- CLASSOF2027 Revisi 004 · Direct Docs + Blue Circle Spinner + Ganti Nama + Sidebar Alignment · Versi 1.33 -->
+  <!-- CLASSOF2027 Revisi 006 · Simple Delete + ChatGPT Preview Guard + Replace Icon + Image Rotation · Versi 1.34 -->
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1922,6 +1922,13 @@
     .dialog-status.error { color: var(--danger); }
     .dialog-status.success { color: var(--success); }
 
+    .simple-confirm-message {
+      padding: 18px 4px 8px;
+      color: var(--text);
+      font-size: 1rem;
+      line-height: 1.55;
+    }
+
     .dialog-actions {
       margin-top: 16px;
       display: flex;
@@ -2931,7 +2938,15 @@
       justify-content: center;
     }
 
+    .fullscreen-image-rotator {
+      position: relative;
+      flex: 0 0 auto;
+    }
+
     .fullscreen-preview-image {
+      position: absolute;
+      left: 50%;
+      top: 50%;
       display: block;
       flex: 0 0 auto;
       width: auto;
@@ -2944,6 +2959,7 @@
       user-select: none;
       -webkit-user-drag: none;
       cursor: inherit;
+      transform-origin: center center;
     }
 
     .fullscreen-preview-pdf {
@@ -8097,13 +8113,13 @@
 
 
     /* ============================================================
-       CLASSOF2027 Revisi 005 — Versi 1.33
+       CLASSOF2027 Revisi 005 — Versi 1.34
        - Edit Massal Data Murid fullscreen.
        - Grid Data Murid menyamai selection/focus spreadsheet Nilai.
        - Bar petunjuk Edit Massal Nilai dihapus tanpa menonaktifkan shortcut.
        ============================================================ */
     /* ============================================================
-       CLASSOF2027 Revisi 005 — Versi 1.33
+       CLASSOF2027 Revisi 005 — Versi 1.34
        Stable Sidebar Rail
        - Mengembalikan mekanisme rail Revisi 003 yang sudah stabil.
        - Padding/alignment tombol identik saat sidebar buka/tutup.
@@ -8367,7 +8383,7 @@
   <footer class="footer app-shell">
     <div><strong>SMP NEGERI 3 JAYAPURA</strong> · Sistem Pendataan Terpadu Murid & Nilai</div>
     <div style="margin-top:6px">Dikembangkan oleh gurukemarinsore</div>
-    <div style="margin-top:3px">Versi 1.33</div>
+    <div style="margin-top:3px">Versi 1.34</div>
     <div class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</div>
   </footer>
   </div>
@@ -8392,7 +8408,7 @@
         <div class="sidebar-footer">
           <div class="sidebar-footer-copy">
             <small>Dikembangkan oleh gurukemarinsore</small>
-            <small class="app-version-label">Versi 1.33</small>
+            <small class="app-version-label">Versi 1.34</small>
           </div>
           <small class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</small>
         </div>
@@ -8533,6 +8549,112 @@
 
   <script>
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbwbXIVdM4PcLxQFvCn5d5N1OU6BGE1pp54KXcFVbT8DvEcucqc4YgRiatfovy9278Pd/exec';
+
+    function detectChatGPTPreviewEnvironment() {
+      const values = [];
+
+      try {
+        values.push(window.location.hostname || '');
+        values.push(window.location.href || '');
+      } catch (_) {}
+
+      try {
+        values.push(document.referrer || '');
+      } catch (_) {}
+
+      try {
+        values.push(
+          ...Array.from(window.location.ancestorOrigins || [])
+        );
+      } catch (_) {}
+
+      const joined = values
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+
+      return (
+        joined.includes('chatgpt.com') ||
+        joined.includes('chat.openai.com') ||
+        joined.includes('openai.com') ||
+        joined.includes('oaiusercontent.com') ||
+        joined.includes('openaiusercontent.com') ||
+        joined.includes('chatgptusercontent.com') ||
+        joined.includes('oaistatic.com')
+      );
+    }
+
+    const RUNTIME_ENV = Object.freeze({
+      chatgptPreview: detectChatGPTPreviewEnvironment()
+    });
+
+    function previewNetworkBlockedError() {
+      const error = new Error(
+        'Mode Preview ChatGPT: koneksi backend dinonaktifkan.'
+      );
+      error.code = 'CHATGPT_PREVIEW_OFFLINE';
+      return error;
+    }
+
+    function buildChatGPTPreviewDashboard() {
+      const classes = [
+        '9A','9B','9C','9D','9E',
+        '9F','9G','9H','9I','9J'
+      ];
+
+      const emptyMetric = () => ({
+        wajib: 0,
+        terisi: 0,
+        persentase: null,
+        status: 'BELUM_ADA_MURID',
+        muridLengkap: 0
+      });
+
+      return {
+        public: true,
+        requiresLogin: false,
+        identitas: {
+          namaInstansi: 'SMP NEGERI 3 JAYAPURA',
+          deskripsi: 'Sistem Pendataan Terpadu Murid & Nilai',
+          slogan: 'Satu Pintu. Cepat, Aman, dan Terpusat.'
+        },
+        privasi: {
+          dataAgregatSaja: true,
+          containsPersonalStudentData: false
+        },
+        tampilan: {
+          fontKey: 'GOOGLE_SANS_FLEX',
+          fontLabel: 'Google Sans Flex',
+          fontSource: 'Preview lokal',
+          appVersion: '1.34',
+          backendRevision: 'MASTER_002',
+          schemaVersion: 2
+        },
+        semesterNilai: {
+          semesters: [1,2,3,4,5,6].map(semester => ({
+            semester,
+            active: semester <= 4
+          })),
+          activeSemesters: [1,2,3,4],
+          hasActiveSemester: true,
+          status: 'AKTIF'
+        },
+        totalSekolah: {
+          label: 'TOTAL SEKOLAH',
+          jumlahMurid: 0,
+          dokumen: emptyMetric(),
+          nilai: emptyMetric()
+        },
+        perKelas: classes.map(kelas => ({
+          kelas,
+          jumlahMurid: 0,
+          dokumen: emptyMetric(),
+          nilai: emptyMetric()
+        })),
+        kelasDipilih: null,
+        generatedAt: new Date().toISOString()
+      };
+    }
 
     const state = {
       dashboard: null,
@@ -8740,6 +8862,10 @@
     }
 
     async function fetchPublicAppConfig() {
+      if (RUNTIME_ENV.chatgptPreview) {
+        return null;
+      }
+
       const response = await fetch(
         `${GAS_URL}?action=appconfig&_=${Date.now()}`,
         {
@@ -8767,6 +8893,11 @@
     async function syncGlobalFontFromBackend(showChangeToast = false) {
       try {
         const config = await fetchPublicAppConfig();
+
+        if (!config) {
+          return null;
+        }
+
         const nextKey = normalizeFrontendFontKey(config.fontKey);
         const changed = nextKey !== state.appFontKey;
 
@@ -8791,6 +8922,10 @@
     }
 
     function startGlobalFontSync() {
+      if (RUNTIME_ENV.chatgptPreview) {
+        return;
+      }
+
       if (state.appFontSyncTimer) {
         clearInterval(state.appFontSyncTimer);
       }
@@ -8842,6 +8977,10 @@
     }
 
     async function fetchDashboard() {
+      if (RUNTIME_ENV.chatgptPreview) {
+        return buildChatGPTPreviewDashboard();
+      }
+
       const response = await fetch(`${GAS_URL}?action=dashboard&_=${Date.now()}`, {
         method: 'GET',
         cache: 'no-store'
@@ -9055,6 +9194,10 @@
     }
 
     async function apiPost(action, payload = {}) {
+      if (RUNTIME_ENV.chatgptPreview) {
+        throw previewNetworkBlockedError();
+      }
+
       const response = await fetch(GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -17086,7 +17229,7 @@
                   <button class="doc-action"
                     type="button"
                     data-upload-doc="${escapeHtml(doc.type)}">
-                    <i class="ti ti-upload"></i>
+                    <i class="${doc.uploaded ? 'ti ti-arrows-exchange' : 'ti ti-upload'}"></i>
                     ${doc.uploaded ? 'Ganti' : 'Upload'}
                   </button>
 
@@ -17175,6 +17318,7 @@
         kind: '',
         mode: '',
         scale: 1,
+        rotation: 0,
         naturalWidth: 0,
         naturalHeight: 0,
         imageDataUrl: '',
@@ -17208,6 +17352,22 @@
               title="Download gambar">
               <i class="ti ti-download"></i>
               <span>Download</span>
+            </button>
+
+            <button id="previewRotateLeft"
+              class="preview-tool-btn"
+              type="button"
+              title="Rotasi 90° ke kiri"
+              aria-label="Rotasi 90 derajat ke kiri">
+              <i class="ti ti-rotate-2"></i>
+            </button>
+
+            <button id="previewRotateRight"
+              class="preview-tool-btn"
+              type="button"
+              title="Rotasi 90° ke kanan"
+              aria-label="Rotasi 90 derajat ke kanan">
+              <i class="ti ti-rotate-clockwise-2"></i>
             </button>
 
             <button id="previewZoomOut"
@@ -17286,6 +17446,16 @@
       $('#previewImageDownload')?.addEventListener(
         'click',
         downloadFullscreenPreviewImage
+      );
+
+      $('#previewRotateLeft')?.addEventListener(
+        'click',
+        () => rotateFullscreenImage(-90)
+      );
+
+      $('#previewRotateRight')?.addEventListener(
+        'click',
+        () => rotateFullscreenImage(90)
       );
 
       $('#previewZoomOut')?.addEventListener(
@@ -17474,7 +17644,25 @@
     }
 
 
-    function setFullscreenImageScale(scale, mode = 'manual') {
+    function normalizeFullscreenRotation(value) {
+      const normalized =
+        ((Number(value) || 0) % 360 + 360) % 360;
+
+      return normalized;
+    }
+
+    function fullscreenRotationSwapsAxes() {
+      if (!fullscreenPreviewState) return false;
+
+      const rotation =
+        normalizeFullscreenRotation(
+          fullscreenPreviewState.rotation
+        );
+
+      return rotation === 90 || rotation === 270;
+    }
+
+    function applyFullscreenImageGeometry() {
       if (
         !fullscreenPreviewState ||
         fullscreenPreviewState.kind !== 'image'
@@ -17483,9 +17671,84 @@
       }
 
       const image = $('#fullscreenPreviewImage');
+      const rotator = $('#fullscreenImageRotator');
 
       if (
         !image ||
+        !rotator ||
+        !fullscreenPreviewState.naturalWidth ||
+        !fullscreenPreviewState.naturalHeight
+      ) {
+        return;
+      }
+
+      const scale =
+        fullscreenPreviewState.scale || 1;
+
+      const width =
+        fullscreenPreviewState.naturalWidth * scale;
+
+      const height =
+        fullscreenPreviewState.naturalHeight * scale;
+
+      const rotation =
+        normalizeFullscreenRotation(
+          fullscreenPreviewState.rotation
+        );
+
+      const swapAxes =
+        rotation === 90 || rotation === 270;
+
+      image.style.width =
+        Math.round(width) + 'px';
+
+      image.style.height =
+        Math.round(height) + 'px';
+
+      image.style.transform =
+        `translate(-50%, -50%) rotate(${rotation}deg)`;
+
+      rotator.style.width =
+        Math.round(swapAxes ? height : width) + 'px';
+
+      rotator.style.height =
+        Math.round(swapAxes ? width : height) + 'px';
+
+      updateFullscreenZoomLabel();
+      updateFullscreenImagePanState();
+    }
+
+    function centerFullscreenImageScroll() {
+      const scroll = $('#fullscreenImageScroll');
+
+      if (!scroll) return;
+
+      requestAnimationFrame(() => {
+        scroll.scrollLeft =
+          Math.max(
+            0,
+            (scroll.scrollWidth - scroll.clientWidth) / 2
+          );
+
+        scroll.scrollTop =
+          Math.max(
+            0,
+            (scroll.scrollHeight - scroll.clientHeight) / 2
+          );
+
+        updateFullscreenImagePanState();
+      });
+    }
+
+    function setFullscreenImageScale(scale, mode = 'manual') {
+      if (
+        !fullscreenPreviewState ||
+        fullscreenPreviewState.kind !== 'image'
+      ) {
+        return;
+      }
+
+      if (
         !fullscreenPreviewState.naturalWidth ||
         !fullscreenPreviewState.naturalHeight
       ) {
@@ -17500,21 +17763,32 @@
       fullscreenPreviewState.scale = nextScale;
       fullscreenPreviewState.mode = mode;
 
-      image.style.width =
-        Math.round(
-          fullscreenPreviewState.naturalWidth *
-          nextScale
-        ) + 'px';
-
-      image.style.height =
-        Math.round(
-          fullscreenPreviewState.naturalHeight *
-          nextScale
-        ) + 'px';
-
-      updateFullscreenZoomLabel();
-      updateFullscreenImagePanState();
+      applyFullscreenImageGeometry();
     }
+
+    function rotateFullscreenImage(deltaDegrees) {
+      if (
+        !fullscreenPreviewState ||
+        fullscreenPreviewState.kind !== 'image'
+      ) {
+        return;
+      }
+
+      fullscreenPreviewState.rotation =
+        normalizeFullscreenRotation(
+          (fullscreenPreviewState.rotation || 0) +
+          Number(deltaDegrees || 0)
+        );
+
+      if (fullscreenPreviewState.mode === 'fit') {
+        applyFullscreenImageFit();
+        return;
+      }
+
+      applyFullscreenImageGeometry();
+      centerFullscreenImageScroll();
+    }
+
 
     function changeFullscreenImageZoom(multiplier) {
       if (
@@ -17588,11 +17862,19 @@
           scroll.clientHeight - verticalPadding
         );
 
+      const rotatedWidth =
+        fullscreenRotationSwapsAxes()
+          ? fullscreenPreviewState.naturalHeight
+          : fullscreenPreviewState.naturalWidth;
+
+      const rotatedHeight =
+        fullscreenRotationSwapsAxes()
+          ? fullscreenPreviewState.naturalWidth
+          : fullscreenPreviewState.naturalHeight;
+
       const fitScale = Math.min(
-        availableWidth /
-          fullscreenPreviewState.naturalWidth,
-        availableHeight /
-          fullscreenPreviewState.naturalHeight
+        availableWidth / rotatedWidth,
+        availableHeight / rotatedHeight
       );
 
       setFullscreenImageScale(
@@ -17600,21 +17882,7 @@
         'fit'
       );
 
-      requestAnimationFrame(() => {
-        scroll.scrollLeft =
-          Math.max(
-            0,
-            (scroll.scrollWidth - scroll.clientWidth) / 2
-          );
-
-        scroll.scrollTop =
-          Math.max(
-            0,
-            (scroll.scrollHeight - scroll.clientHeight) / 2
-          );
-
-        updateFullscreenImagePanState();
-      });
+      centerFullscreenImageScroll();
     }
 
     function showFullscreenImagePreview(data, doc) {
@@ -17639,9 +17907,12 @@
         <div id="fullscreenImageScroll"
           class="fullscreen-image-scroll">
           <div class="fullscreen-image-stage">
-            <img id="fullscreenPreviewImage"
-              class="fullscreen-preview-image"
-              alt="${escapeHtml(data.fileName || doc.label)}">
+            <div id="fullscreenImageRotator"
+              class="fullscreen-image-rotator">
+              <img id="fullscreenPreviewImage"
+                class="fullscreen-preview-image"
+                alt="${escapeHtml(data.fileName || doc.label)}">
+            </div>
           </div>
         </div>
       `;
@@ -17655,6 +17926,7 @@
         if (!fullscreenPreviewState) return;
 
         fullscreenPreviewState.kind = 'image';
+        fullscreenPreviewState.rotation = 0;
         fullscreenPreviewState.naturalWidth =
           image.naturalWidth || 1;
         fullscreenPreviewState.naturalHeight =
@@ -18050,33 +18322,25 @@
             <h3>Hapus ${escapeHtml(doc.label)}</h3>
             <p>${escapeHtml(detail.namaLengkap)} · Kelas ${escapeHtml(detail.kelas)}</p>
           </div>
-          <button class="dialog-close" id="closeDeleteDocument" type="button">
-            <i class="ti ti-x"></i>
-          </button>
         </div>
 
-        <div class="danger-confirm">
-          File <strong>${escapeHtml(doc.fileName || doc.label)}</strong>
-          akan dihapus <strong>PERMANEN</strong> dari Google Drive, bukan dipindahkan ke Trash.
-          Tindakan ini tidak dapat dibatalkan.
-          <br><br>
-          Ketik <strong>HAPUS PERMANEN</strong> untuk melanjutkan.
+        <div class="simple-confirm-message">
+          Apakah Anda yakin ingin menghapus dokumen ini?
         </div>
-
-        <input id="deleteDocumentConfirmation"
-          class="delete-confirm-input"
-          autocomplete="off"
-          placeholder="HAPUS PERMANEN">
 
         <div id="deleteDocumentStatus" class="dialog-status"></div>
 
         <div class="dialog-actions">
-          <button id="cancelDeleteDocument" class="action-small" type="button">
-            Batal
+          <button id="cancelDeleteDocument"
+            class="action-small"
+            type="button">
+            Tidak
           </button>
-          <button id="confirmDeleteDocument" class="action-small danger" type="button" disabled>
-            <i class="ti ti-trash"></i>
-            Hapus Permanen
+
+          <button id="confirmDeleteDocument"
+            class="action-small danger"
+            type="button">
+            Ya
           </button>
         </div>
       `);
@@ -18086,33 +18350,27 @@
         reopenDocumentsAfterNestedDialog();
       };
 
-      $('#closeDeleteDocument')?.addEventListener(
-        'click',
-        closeAndReturn
-      );
-
       $('#cancelDeleteDocument')?.addEventListener(
         'click',
         closeAndReturn
-      );
-
-      $('#deleteDocumentConfirmation')?.addEventListener(
-        'input',
-        event => {
-          $('#confirmDeleteDocument').disabled =
-            event.target.value.trim().toUpperCase() !==
-            'HAPUS PERMANEN';
-        }
       );
 
       $('#confirmDeleteDocument')?.addEventListener(
         'click',
         async () => {
           const button = $('#confirmDeleteDocument');
+          const cancel = $('#cancelDeleteDocument');
           const status = $('#deleteDocumentStatus');
 
           button.disabled = true;
-          status.textContent = 'Menghapus permanen…';
+          if (cancel) cancel.disabled = true;
+
+          button.innerHTML = `
+            <span class="mini-spinner"></span>
+            Menghapus
+          `;
+
+          status.textContent = '';
           status.className = 'dialog-status';
 
           try {
@@ -18121,23 +18379,20 @@
               kelas: detail.kelas,
               nisn: detail.nisn,
               documentType: type,
+
+              // Konfirmasi keamanan backend tetap dikirim internal.
               confirmation: 'HAPUS PERMANEN'
             });
 
-            status.textContent =
-              result.message || 'Dokumen berhasil dihapus permanen.';
-            status.className = 'dialog-status success';
-
             await refreshDocumentDataAfterChange();
 
-            setTimeout(() => {
-              closeAppDialog();
-              reopenDocumentsAfterNestedDialog();
-              showToast(
-                result.message ||
-                'Dokumen berhasil dihapus permanen.'
-              );
-            }, 350);
+            closeAppDialog();
+            reopenDocumentsAfterNestedDialog();
+
+            showToast(
+              result.message ||
+              'Dokumen berhasil dihapus.'
+            );
 
           } catch (error) {
             if (await handleSessionError(error)) return;
@@ -18145,11 +18400,15 @@
             status.textContent =
               error.message || 'Penghapusan gagal.';
             status.className = 'dialog-status error';
+
             button.disabled = false;
+            if (cancel) cancel.disabled = false;
+            button.textContent = 'Ya';
           }
         }
       );
     }
+
 
     async function refreshDocumentDataAfterChange() {
       const student = state.documents.selectedStudent;
@@ -20536,6 +20795,10 @@
     }
 
     async function restoreSession() {
+      if (RUNTIME_ENV.chatgptPreview) {
+        return;
+      }
+
       const token = sessionStorage.getItem('smp3_session_token') || '';
       if (!token) return;
 
@@ -20604,6 +20867,14 @@
 
     $('#loginForm').addEventListener('submit', async (event) => {
       event.preventDefault();
+
+      if (RUNTIME_ENV.chatgptPreview) {
+        const status = $('#loginStatus');
+        status.textContent =
+          'Preview ChatGPT: login/backend dinonaktifkan. File tetap aktif saat dijalankan lokal, GitHub Pages, atau hosting lain.';
+        status.className = 'form-status';
+        return;
+      }
 
       const username = $('#username').value.trim();
       const password = $('#password').value;
