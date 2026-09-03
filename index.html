@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <link rel="icon" type="image/svg+xml" href="logo.svg" />
   <title>Data Siswa Kelas 9 2026-2027</title>
-  <!-- CLASSOF2027 Revisi 016 · Unified Dashboard One-Shot Render · Versi 1.44 -->
+  <!-- CLASSOF2027 Revisi 017 · Perbaikan Hydration Foto Akun · Versi 1.45 -->
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -8488,7 +8488,7 @@
   <footer class="footer app-shell">
     <div><strong>SMP NEGERI 3 JAYAPURA</strong> · Sistem Pendataan Terpadu Murid & Nilai</div>
     <div style="margin-top:6px">Dikembangkan oleh gurukemarinsore</div>
-    <div style="margin-top:3px">Versi 1.44</div>
+    <div style="margin-top:3px">Versi 1.45</div>
     <div class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</div>
   </footer>
   </div>
@@ -8513,7 +8513,7 @@
         <div class="sidebar-footer">
           <div class="sidebar-footer-copy">
             <small>Dikembangkan oleh gurukemarinsore</small>
-            <small class="app-version-label">Versi 1.44</small>
+            <small class="app-version-label">Versi 1.45</small>
           </div>
           <small class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</small>
         </div>
@@ -21382,7 +21382,10 @@
 
       const image = document.createElement('img');
       image.alt = `Foto ${String(account.nama || account.username || '')}`;
-      image.loading = 'lazy';
+      // Revisi 017: avatar berupa data URL sudah tersedia dari listaccounts.
+      // Jangan gunakan lazy-load pada <img> yang masih detached dari DOM,
+      // karena sebagian browser dapat menunda load tanpa batas sehingga
+      // event load tidak pernah terpanggil dan inisial tetap tampil.
       image.decoding = 'async';
       image.draggable = false;
 
