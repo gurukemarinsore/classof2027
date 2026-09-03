@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <link rel="icon" type="image/svg+xml" href="logo.svg" />
   <title>Data Siswa Kelas 9 2026-2027</title>
-  <!-- CLASSOF2027 Revisi 019 · Keseragaman Tabel Nilai Admin TU · Versi 1.47 -->
+  <!-- CLASSOF2027 Revisi 020 · Dokumen Tahap 1 Fast Preview + Progress Nyata · Versi 1.48 -->
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -3051,6 +3051,63 @@
       text-align: center;
       padding: 28px;
       font-size: .73rem;
+    }
+
+    /* Revisi 020 · Progress preview dokumen.
+       Persentase berasal dari byte respons yang benar-benar diterima browser.
+       Selama backend/Drive belum mulai mengirim data, progress tetap 0%. */
+    .fullscreen-preview-progress-card {
+      width: min(430px, calc(100vw - 56px));
+      display: grid;
+      gap: 10px;
+      padding: 18px 20px 17px;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 18px;
+      background: rgba(10,18,30,.46);
+      box-shadow: 0 18px 48px rgba(0,0,0,.2);
+      backdrop-filter: blur(12px);
+    }
+
+    .fullscreen-preview-progress-percent {
+      color: #f4f9ff;
+      font-size: .94rem;
+      font-weight: 800;
+      line-height: 1;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .fullscreen-preview-progress-track {
+      width: 100%;
+      height: 12px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(255,255,255,.13);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.05);
+    }
+
+    .fullscreen-preview-progress-bar {
+      width: 0%;
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #1687f8 0%, #46a7ff 52%, #9edcff 100%);
+      background-size: 160% 100%;
+      transition: width .16s linear;
+      animation: fullscreenPreviewProgressGlow 1.15s linear infinite;
+      box-shadow: 0 0 16px rgba(88,184,255,.38);
+    }
+
+    .fullscreen-preview-progress-status {
+      min-height: 1.35em;
+      color: #cbd7e7;
+      font-size: .67rem;
+      line-height: 1.35;
+      text-align: center;
+    }
+
+    @keyframes fullscreenPreviewProgressGlow {
+      from { background-position: 100% 0; }
+      to { background-position: 0 0; }
     }
 
     .fullscreen-preview-error {
@@ -8540,7 +8597,7 @@
   <footer class="footer app-shell">
     <div><strong>SMP NEGERI 3 JAYAPURA</strong> · Sistem Pendataan Terpadu Murid & Nilai</div>
     <div style="margin-top:6px">Dikembangkan oleh gurukemarinsore</div>
-    <div style="margin-top:3px">Versi 1.47</div>
+    <div style="margin-top:3px">Versi 1.48</div>
     <div class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</div>
   </footer>
   </div>
@@ -8565,7 +8622,7 @@
         <div class="sidebar-footer">
           <div class="sidebar-footer-copy">
             <small>Dikembangkan oleh gurukemarinsore</small>
-            <small class="app-version-label">Versi 1.47</small>
+            <small class="app-version-label">Versi 1.48</small>
           </div>
           <small class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</small>
         </div>
@@ -8928,6 +8985,7 @@
         studentDirectory: new Map(),
         grades: new Map(),
         documents: new Map(),
+        documentPreviews: new Map(),
         accountAvatars: new Map(),
         accounts: null,
         settings: null
@@ -8948,6 +9006,7 @@
         studentDirectory: new Map(),
         grades: new Map(),
         documents: new Map(),
+        documentPreviews: new Map(),
         accounts: null,
         settings: null
       };
@@ -8958,6 +9017,10 @@
     function cancelRequestEntry(entry) {
       if (entry && typeof entry === 'object') {
         entry.cancelled = true;
+
+        if (typeof entry.abort === 'function') {
+          try { entry.abort(); } catch (err) {}
+        }
       }
     }
 
@@ -8970,7 +9033,7 @@
         cancelRequestEntry(current.accounts);
         cancelRequestEntry(current.settings);
 
-        ['students','studentDirectory','grades','documents'].forEach(name => {
+        ['students','studentDirectory','grades','documents','documentPreviews'].forEach(name => {
           const map = current[name];
           if (!(map instanceof Map)) return;
           map.forEach(cancelRequestEntry);
@@ -9962,6 +10025,7 @@
         const semester = Number(change?.semester || 0);
 
         if (type.startsWith('STUDENT_') || type.startsWith('STUDENTS_')) {
+          clearDocumentPreviewCache();
           invalidateSearchSessionCacheForClass(
             state.sessionCache?.students,
             kelas
@@ -10054,6 +10118,7 @@
         }
 
         if (type.startsWith('DOCUMENT_')) {
+          clearDocumentPreviewCache();
           invalidateSearchSessionCacheForClass(
             state.sessionCache?.documents,
             kelas
@@ -19919,12 +19984,25 @@
 
           <div id="fullscreenPreviewLoading"
             class="fullscreen-preview-loading">
-            <div>
-              <span class="app-loading-line"
-                style="color:#e9eef5">
-                <span class="mini-spinner"></span>
-                mengambil file dari Google Drive
-              </span>
+            <div class="fullscreen-preview-progress-card">
+              <div id="fullscreenPreviewProgressPercent"
+                class="fullscreen-preview-progress-percent">0%</div>
+
+              <div id="fullscreenPreviewProgressTrack"
+                class="fullscreen-preview-progress-track"
+                role="progressbar"
+                aria-label="Progress preview dokumen"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="0">
+                <div id="fullscreenPreviewProgressBar"
+                  class="fullscreen-preview-progress-bar"></div>
+              </div>
+
+              <div id="fullscreenPreviewProgressStatus"
+                class="fullscreen-preview-progress-status">
+                Menyiapkan dokumen dari server…
+              </div>
             </div>
           </div>
         </div>
@@ -19981,6 +20059,336 @@
         'resize',
         fullscreenPreviewResizeHandler
       );
+    }
+
+    function updateFullscreenPreviewProgress(percent, statusText = '') {
+      const value = Math.max(
+        0,
+        Math.min(100, Math.round(Number(percent) || 0))
+      );
+
+      const percentNode = $('#fullscreenPreviewProgressPercent');
+      const bar = $('#fullscreenPreviewProgressBar');
+      const track = $('#fullscreenPreviewProgressTrack');
+      const status = $('#fullscreenPreviewProgressStatus');
+
+      if (percentNode) {
+        percentNode.textContent = value + '%';
+      }
+
+      if (bar) {
+        bar.style.width = value + '%';
+      }
+
+      if (track) {
+        track.setAttribute('aria-valuenow', String(value));
+      }
+
+      if (status && statusText) {
+        status.textContent = statusText;
+      }
+    }
+
+    function documentPreviewCacheKey(detail, doc, type) {
+      const fileId = String(doc?.fileId || '').trim();
+      if (fileId) return fileId;
+
+      return [
+        String(detail?.kelas || ''),
+        String(detail?.nisn || ''),
+        String(type || '')
+      ].join('|');
+    }
+
+    function clearDocumentPreviewCache(fileId = '') {
+      const map = state.sessionCache?.documentPreviews;
+      if (!(map instanceof Map)) return;
+
+      const cleanId = String(fileId || '').trim();
+      if (!cleanId) {
+        map.clear();
+        return;
+      }
+
+      [...map.entries()].forEach(([key, entry]) => {
+        if (
+          key === cleanId ||
+          String(entry?.data?.fileId || '').trim() === cleanId
+        ) {
+          map.delete(key);
+        }
+      });
+    }
+
+    function estimatedPreviewResponseBytes(fileBytes) {
+      const size = Number(fileBytes || 0);
+      if (!Number.isFinite(size) || size <= 0) return 0;
+
+      // Base64 = 4 * ceil(n / 3), ditambah envelope JSON/metadata kecil.
+      return (4 * Math.ceil(size / 3)) + 4096;
+    }
+
+    function normalizeDocumentPreviewPayload(data) {
+      const payload = data && typeof data === 'object'
+        ? { ...data }
+        : {};
+
+      const mimeType = String(
+        payload.mimeType || 'application/octet-stream'
+      );
+      const base64 = String(payload.base64 || '');
+
+      if (!payload.dataUrl && base64) {
+        payload.dataUrl =
+          `data:${mimeType};base64,${base64}`;
+      }
+
+      // Setelah dataUrl terbentuk, jangan simpan salinan Base64 kedua
+      // di cache frontend agar penggunaan memori tetap terkendali.
+      payload.base64 = '';
+      return payload;
+    }
+
+    function apiPostDocumentPreviewWithProgress(
+      detail,
+      doc,
+      type,
+      onProgress
+    ) {
+      if (RUNTIME_ENV.chatgptPreview) {
+        return Promise.reject(previewNetworkBlockedError());
+      }
+
+      const expectedBytes =
+        estimatedPreviewResponseBytes(doc?.sizeBytes);
+
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        let downloadStarted = false;
+
+        const report = (percent, status, extra = {}) => {
+          if (typeof onProgress === 'function') {
+            onProgress({
+              percent,
+              status,
+              ...extra
+            });
+          }
+        };
+
+        report(0, 'Menyiapkan dokumen dari server…');
+
+        xhr.open('POST', GAS_URL, true);
+        xhr.setRequestHeader(
+          'Content-Type',
+          'text/plain;charset=utf-8'
+        );
+
+        xhr.onprogress = event => {
+          const loaded = Number(event.loaded || 0);
+          if (loaded <= 0) return;
+
+          downloadStarted = true;
+
+          const total =
+            event.lengthComputable && Number(event.total) > 0
+              ? Number(event.total)
+              : expectedBytes;
+
+          let percent = 1;
+          if (total > 0) {
+            percent = Math.floor((loaded / total) * 100);
+          }
+
+          // 100% hanya diberikan setelah response selesai dan valid.
+          percent = Math.max(1, Math.min(99, percent));
+
+          report(
+            percent,
+            'Mengunduh dokumen…',
+            {
+              loadedBytes: loaded,
+              totalBytes: total,
+              lengthComputable: event.lengthComputable === true
+            }
+          );
+        };
+
+        xhr.onerror = () => {
+          const error = new Error(
+            downloadStarted
+              ? 'Koneksi terputus saat mengunduh dokumen.'
+              : 'Backend tidak dapat dihubungi saat menyiapkan dokumen.'
+          );
+          error.code = 'PREVIEW_NETWORK_ERROR';
+          reject(error);
+        };
+
+        xhr.onabort = () => {
+          const error = new Error('Preview dokumen dibatalkan.');
+          error.code = 'PREVIEW_ABORTED';
+          reject(error);
+        };
+
+        xhr.onload = () => {
+          try {
+            if (xhr.status < 200 || xhr.status >= 300) {
+              throw new Error(
+                `Permintaan preview gagal (HTTP ${xhr.status}).`
+              );
+            }
+
+            const result = JSON.parse(xhr.responseText || '{}');
+
+            if (!result.ok) {
+              const error = new Error(
+                result?.error?.message ||
+                'Permintaan preview ke backend gagal.'
+              );
+              error.code = result?.error?.code || 'API_ERROR';
+              throw error;
+            }
+
+            const normalized =
+              normalizeDocumentPreviewPayload(result.data);
+
+            report(100, 'Menyiapkan preview…');
+            resolve(normalized);
+
+          } catch (error) {
+            reject(error);
+          }
+        };
+
+        xhr.send(JSON.stringify({
+          action: 'previewdocument',
+          token: state.sessionToken,
+          kelas: detail.kelas,
+          nisn: detail.nisn,
+          documentType: type
+        }));
+
+        // Dipakai resetSessionRequests() ketika logout/session berganti.
+        const registry = state.sessionRequests?.documentPreviews;
+        const key = documentPreviewCacheKey(detail, doc, type);
+        const entry = registry instanceof Map ? registry.get(key) : null;
+        if (entry) {
+          entry.abort = () => xhr.abort();
+        }
+      });
+    }
+
+    function getDocumentPreviewFast(detail, doc, type, onProgress) {
+      const cache = state.sessionCache?.documentPreviews;
+      const registry = state.sessionRequests?.documentPreviews;
+      const key = documentPreviewCacheKey(detail, doc, type);
+
+      const cached = cache instanceof Map
+        ? cache.get(key)
+        : null;
+
+      if (
+        cached?.data &&
+        String(cached.data.fileId || '') ===
+          String(doc?.fileId || '')
+      ) {
+        if (typeof onProgress === 'function') {
+          onProgress({
+            percent: 100,
+            status: 'Tersedia dari cache.'
+          });
+        }
+        return Promise.resolve(cached.data);
+      }
+
+      if (!(registry instanceof Map)) {
+        return apiPostDocumentPreviewWithProgress(
+          detail,
+          doc,
+          type,
+          onProgress
+        );
+      }
+
+      const existing = registry.get(key);
+      if (existing && !existing.cancelled && existing.promise) {
+        if (typeof onProgress === 'function') {
+          existing.listeners.add(onProgress);
+          onProgress({
+            percent: existing.percent || 0,
+            status:
+              existing.status ||
+              'Menyiapkan dokumen dari server…'
+          });
+        }
+
+        return existing.promise.finally(() => {
+          if (typeof onProgress === 'function') {
+            existing.listeners.delete(onProgress);
+          }
+        });
+      }
+
+      const entry = {
+        cancelled: false,
+        abort: null,
+        promise: null,
+        listeners: new Set(),
+        percent: 0,
+        status: 'Menyiapkan dokumen dari server…'
+      };
+
+      if (typeof onProgress === 'function') {
+        entry.listeners.add(onProgress);
+      }
+
+      const broadcastProgress = info => {
+        entry.percent = Math.max(
+          0,
+          Math.min(100, Number(info?.percent || 0))
+        );
+        entry.status = String(
+          info?.status || entry.status || ''
+        );
+
+        entry.listeners.forEach(listener => {
+          try { listener(info); } catch (err) {}
+        });
+      };
+
+      registry.set(key, entry);
+
+      entry.promise = apiPostDocumentPreviewWithProgress(
+        detail,
+        doc,
+        type,
+        broadcastProgress
+      )
+        .then(data => {
+          if (cache instanceof Map) {
+            setBoundedSessionCache(
+              cache,
+              key,
+              {
+                data,
+                cachedAt: Date.now()
+              },
+              4
+            );
+          }
+          return data;
+        })
+        .finally(() => {
+          if (registry.get(key) === entry) {
+            registry.delete(key);
+          }
+        });
+
+      return entry.promise.finally(() => {
+        if (typeof onProgress === 'function') {
+          entry.listeners.delete(onProgress);
+        }
+      });
     }
 
     function downloadFullscreenPreviewImage() {
@@ -20477,12 +20885,35 @@
 
       openFullscreenPreviewShell(detail, doc);
 
+      const onProgress = info => {
+        if (!$('#fullscreenDocumentPreview')) return;
+        updateFullscreenPreviewProgress(
+          info?.percent || 0,
+          info?.status || ''
+        );
+      };
+
       try {
-        const data = await apiPost('previewdocument', {
-          token: state.sessionToken,
-          kelas: detail.kelas,
-          nisn: detail.nisn,
-          documentType: type
+        const data = await getDocumentPreviewFast(
+          detail,
+          doc,
+          type,
+          onProgress
+        );
+
+        if (!$('#fullscreenDocumentPreview')) {
+          return;
+        }
+
+        updateFullscreenPreviewProgress(
+          100,
+          'Menyiapkan preview…'
+        );
+
+        // Beri browser satu frame untuk benar-benar mengecat 100%
+        // sebelum konten preview menggantikan progress bar.
+        await new Promise(resolve => {
+          requestAnimationFrame(() => resolve());
         });
 
         if (!$('#fullscreenDocumentPreview')) {
@@ -20757,6 +21188,8 @@
           if (bar) bar.style.width = '90%';
           status.textContent = 'Mengirim ke Google Drive…';
 
+          const previousFileId = String(doc.fileId || '').trim();
+
           const result = await apiPost('uploaddocument', {
             token: state.sessionToken,
             kelas: detail.kelas,
@@ -20768,6 +21201,8 @@
               base64
             }
           });
+
+          clearDocumentPreviewCache(previousFileId);
 
           if (bar) bar.style.width = '100%';
           status.textContent =
@@ -20868,6 +21303,8 @@
           status.className = 'dialog-status';
 
           try {
+            const previousFileId = String(doc.fileId || '').trim();
+
             const result = await apiPost('deletedocument', {
               token: state.sessionToken,
               kelas: detail.kelas,
@@ -20878,6 +21315,7 @@
               confirmation: 'HAPUS PERMANEN'
             });
 
+            clearDocumentPreviewCache(previousFileId);
             await refreshDocumentDataAfterChange();
 
             closeAppDialog();
