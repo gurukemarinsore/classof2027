@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <link rel="icon" type="image/svg+xml" href="logo.svg" />
   <title>Data Siswa Kelas 9 2026-2027</title>
-  <!-- CLASSOF2027 Revisi 022 · Dokumen Tahap 3 Signed Preview Fast Path · Versi 1.50 -->
+  <!-- CLASSOF2027 Revisi 023 · Custom PDF.js Viewer · Versi 1.51 -->
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -3033,6 +3033,9 @@
       transform-origin: center center;
     }
 
+    /* Revisi 023 · Custom PDF.js Viewer.
+       PDF tidak lagi diserahkan ke iframe/viewer bawaan browser.
+       Hanya halaman aktif yang dirender ke canvas. */
     .fullscreen-preview-pdf {
       position: absolute;
       inset: 0;
@@ -3040,6 +3043,89 @@
       height: 100%;
       border: 0;
       background: #fff;
+    }
+
+    .fullscreen-pdf-scroll {
+      position: absolute;
+      inset: 0;
+      overflow: auto;
+      padding: 24px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-start;
+      overscroll-behavior: contain;
+      user-select: none;
+    }
+
+    .fullscreen-pdf-scroll.pannable {
+      cursor: grab;
+      touch-action: none;
+    }
+
+    .fullscreen-pdf-scroll.pannable.dragging {
+      cursor: grabbing;
+    }
+
+    .fullscreen-pdf-stage {
+      flex: 0 0 auto;
+      min-width: 100%;
+      min-height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .fullscreen-preview-pdf-canvas {
+      display: block;
+      flex: 0 0 auto;
+      max-width: none;
+      max-height: none;
+      background: #fff;
+      box-shadow: 0 18px 55px rgba(0,0,0,.32);
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    .preview-page-controls {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .preview-page-label {
+      min-width: 62px;
+      text-align: center;
+      color: var(--muted);
+      font-size: .65rem;
+      font-weight: 750;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .fullscreen-pdf-rendering {
+      position: absolute;
+      right: 16px;
+      bottom: 16px;
+      z-index: 2;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 32px;
+      padding: 0 11px;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 999px;
+      background: rgba(10,18,30,.72);
+      color: #eaf3ff;
+      font-size: .62rem;
+      font-weight: 700;
+      box-shadow: 0 10px 28px rgba(0,0,0,.2);
+      backdrop-filter: blur(10px);
+      pointer-events: none;
+    }
+
+    .fullscreen-pdf-rendering.view-hidden {
+      display: none !important;
     }
 
     .fullscreen-preview-loading {
@@ -3119,6 +3205,8 @@
       line-height: 1.55;
     }
 
+    /* Legacy selector dipertahankan untuk kompatibilitas markup lama.
+       Revisi 023 tidak lagi memakai native PDF viewer browser. */
     .pdf-native-note {
       color: var(--muted);
       font-size: .61rem;
@@ -3145,7 +3233,8 @@
         white-space: normal;
       }
 
-      .fullscreen-image-scroll {
+      .fullscreen-image-scroll,
+      .fullscreen-pdf-scroll {
         padding: 12px;
       }
 
@@ -8597,7 +8686,7 @@
   <footer class="footer app-shell">
     <div><strong>SMP NEGERI 3 JAYAPURA</strong> · Sistem Pendataan Terpadu Murid & Nilai</div>
     <div style="margin-top:6px">Dikembangkan oleh gurukemarinsore</div>
-    <div style="margin-top:3px">Versi 1.50</div>
+    <div style="margin-top:3px">Versi 1.51</div>
     <div class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</div>
   </footer>
   </div>
@@ -8622,7 +8711,7 @@
         <div class="sidebar-footer">
           <div class="sidebar-footer-copy">
             <small>Dikembangkan oleh gurukemarinsore</small>
-            <small class="app-version-label">Versi 1.50</small>
+            <small class="app-version-label">Versi 1.51</small>
           </div>
           <small class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</small>
         </div>
@@ -20055,7 +20144,29 @@
     let fullscreenPreviewState = null;
 
     function closeFullscreenDocumentPreview() {
+      const stateBeforeClose = fullscreenPreviewState;
       const overlay = $('#fullscreenDocumentPreview');
+
+      if (stateBeforeClose?.pdfRenderTask?.cancel) {
+        try {
+          stateBeforeClose.pdfRenderTask.cancel();
+        } catch (err) {}
+      }
+
+      if (stateBeforeClose?.pdfLoadingTask?.destroy) {
+        try {
+          stateBeforeClose.pdfLoadingTask.destroy();
+        } catch (err) {}
+      }
+
+      if (stateBeforeClose?.pdfDocument?.destroy) {
+        try {
+          const destroyResult = stateBeforeClose.pdfDocument.destroy();
+          if (destroyResult?.catch) {
+            destroyResult.catch(() => {});
+          }
+        } catch (err) {}
+      }
 
       if (overlay) {
         overlay.remove();
@@ -20072,7 +20183,12 @@
       );
 
       document.body.style.overflow =
-        fullscreenPreviewState?.previousBodyOverflow || '';
+        stateBeforeClose?.previousBodyOverflow || '';
+
+      if (fullscreenPdfFitTimer) {
+        clearTimeout(fullscreenPdfFitTimer);
+        fullscreenPdfFitTimer = null;
+      }
 
       fullscreenPreviewState = null;
     }
@@ -20089,6 +20205,14 @@
         fullscreenPreviewState?.mode === 'fit'
       ) {
         applyFullscreenImageFit();
+        return;
+      }
+
+      if (
+        fullscreenPreviewState?.kind === 'pdf' &&
+        fullscreenPreviewState?.mode === 'fit'
+      ) {
+        scheduleFullscreenPdfFit();
       }
     }
 
@@ -20104,6 +20228,18 @@
         naturalHeight: 0,
         imageDataUrl: '',
         imageFileName: '',
+
+        // Revisi 023 · state khusus PDF.js.
+        pdfDataUrl: '',
+        pdfFileName: '',
+        pdfDocument: null,
+        pdfLoadingTask: null,
+        pdfRenderTask: null,
+        pdfRenderGeneration: 0,
+        pdfPageNumber: 1,
+        pdfPageCount: 0,
+        pdfJsReady: false,
+
         previousBodyOverflow: document.body.style.overflow
       };
 
@@ -20187,9 +20323,91 @@
             </button>
           </div>
 
-          <div id="fullscreenPdfNote"
-            class="pdf-native-note view-hidden">
-            Kontrol PDF memakai viewer browser
+          <div id="fullscreenPdfControls"
+            class="fullscreen-preview-controls view-hidden">
+
+            <button id="previewPdfDownload"
+              class="preview-tool-btn preview-download-btn"
+              type="button"
+              title="Download PDF">
+              <i class="ti ti-download"></i>
+              <span>Download</span>
+            </button>
+
+            <button id="previewPdfRotateLeft"
+              class="preview-tool-btn"
+              type="button"
+              title="Rotasi PDF 90° ke kiri"
+              aria-label="Rotasi PDF 90 derajat ke kiri">
+              <i class="ti ti-rotate-2"></i>
+            </button>
+
+            <button id="previewPdfRotateRight"
+              class="preview-tool-btn"
+              type="button"
+              title="Rotasi PDF 90° ke kanan"
+              aria-label="Rotasi PDF 90 derajat ke kanan">
+              <i class="ti ti-rotate-clockwise-2"></i>
+            </button>
+
+            <button id="previewPdfZoomOut"
+              class="preview-tool-btn"
+              type="button"
+              title="Zoom out PDF">
+              <i class="ti ti-minus"></i>
+            </button>
+
+            <span id="previewPdfZoomLabel"
+              class="preview-zoom-label">
+              100%
+            </span>
+
+            <button id="previewPdfZoomIn"
+              class="preview-tool-btn"
+              type="button"
+              title="Zoom in PDF">
+              <i class="ti ti-plus"></i>
+            </button>
+
+            <button id="previewPdfActualSize"
+              class="preview-tool-btn"
+              type="button"
+              title="Ukuran PDF 100%">
+              <i class="ti ti-focus-2"></i>
+              <span>100%</span>
+            </button>
+
+            <button id="previewPdfFitScreen"
+              class="preview-tool-btn"
+              type="button"
+              title="Sesuaikan halaman PDF ke layar">
+              <i class="ti ti-arrows-maximize"></i>
+              <span>Fit to Screen</span>
+            </button>
+
+            <div id="previewPdfPageControls"
+              class="preview-page-controls view-hidden">
+              <button id="previewPdfPrevPage"
+                class="preview-tool-btn"
+                type="button"
+                title="Halaman sebelumnya"
+                aria-label="Halaman PDF sebelumnya">
+                <i class="ti ti-chevron-left"></i>
+              </button>
+
+              <span id="previewPdfPageLabel"
+                class="preview-page-label">
+                1 / 1
+              </span>
+
+              <button id="previewPdfNextPage"
+                class="preview-tool-btn"
+                type="button"
+                title="Halaman berikutnya"
+                aria-label="Halaman PDF berikutnya">
+                <i class="ti ti-chevron-right"></i>
+              </button>
+            </div>
           </div>
 
           <button id="closeFullscreenPreview"
@@ -20270,6 +20488,51 @@
       $('#previewFitScreen')?.addEventListener(
         'click',
         applyFullscreenImageFit
+      );
+
+      $('#previewPdfDownload')?.addEventListener(
+        'click',
+        downloadFullscreenPreviewPdf
+      );
+
+      $('#previewPdfRotateLeft')?.addEventListener(
+        'click',
+        () => rotateFullscreenPdf(-90)
+      );
+
+      $('#previewPdfRotateRight')?.addEventListener(
+        'click',
+        () => rotateFullscreenPdf(90)
+      );
+
+      $('#previewPdfZoomOut')?.addEventListener(
+        'click',
+        () => changeFullscreenPdfZoom(1 / 1.25)
+      );
+
+      $('#previewPdfZoomIn')?.addEventListener(
+        'click',
+        () => changeFullscreenPdfZoom(1.25)
+      );
+
+      $('#previewPdfActualSize')?.addEventListener(
+        'click',
+        () => setFullscreenPdfScale(1, 'actual')
+      );
+
+      $('#previewPdfFitScreen')?.addEventListener(
+        'click',
+        () => scheduleFullscreenPdfFit()
+      );
+
+      $('#previewPdfPrevPage')?.addEventListener(
+        'click',
+        () => changeFullscreenPdfPage(-1)
+      );
+
+      $('#previewPdfNextPage')?.addEventListener(
+        'click',
+        () => changeFullscreenPdfPage(1)
       );
 
       document.addEventListener(
@@ -20664,6 +20927,660 @@
         }
       });
     }
+
+    // ============================================================
+    // Revisi 023 · CUSTOM PDF.JS VIEWER
+    // - PDF.js dimuat hanya saat PDF pertama kali dipreview.
+    // - Resource lokal/repository: ./pdfjs/pdf.mjs + pdf.worker.mjs
+    // - Hanya halaman aktif yang dirender.
+    // ============================================================
+    const PDFJS_MAIN_MODULE_URL = './pdfjs/pdf.mjs';
+    const PDFJS_WORKER_MODULE_URL = './pdfjs/pdf.worker.mjs';
+    const PDFJS_MAX_CANVAS_PIXELS = 16 * 1024 * 1024;
+    let pdfJsModulePromise = null;
+    let fullscreenPdfFitTimer = null;
+
+    async function loadPdfJsModule() {
+      if (pdfJsModulePromise) {
+        return pdfJsModulePromise;
+      }
+
+      pdfJsModulePromise = import(PDFJS_MAIN_MODULE_URL)
+        .then(pdfjsLib => {
+          if (
+            !pdfjsLib ||
+            typeof pdfjsLib.getDocument !== 'function' ||
+            !pdfjsLib.GlobalWorkerOptions
+          ) {
+            throw new Error(
+              'File pdf.mjs ditemukan tetapi API PDF.js tidak valid.'
+            );
+          }
+
+          pdfjsLib.GlobalWorkerOptions.workerSrc =
+            new URL(
+              PDFJS_WORKER_MODULE_URL,
+              document.baseURI
+            ).href;
+
+          return pdfjsLib;
+        })
+        .catch(error => {
+          pdfJsModulePromise = null;
+
+          const wrapped = new Error(
+            'Mesin PDF.js tidak dapat dimuat. ' +
+            'Pastikan folder pdfjs berisi pdf.mjs dan pdf.worker.mjs, ' +
+            'lalu jalankan aplikasi melalui GitHub Pages atau localhost.'
+          );
+          wrapped.code = 'PDFJS_LOAD_FAILED';
+          wrapped.cause = error;
+          throw wrapped;
+        });
+
+      return pdfJsModulePromise;
+    }
+
+    function dataUrlToUint8Array(dataUrl) {
+      const source = String(dataUrl || '');
+      const commaIndex = source.indexOf(',');
+
+      if (
+        commaIndex < 0 ||
+        !source.slice(0, commaIndex).toLowerCase().includes(';base64')
+      ) {
+        throw new Error('Data PDF tidak menggunakan format Base64 yang valid.');
+      }
+
+      const base64 = source.slice(commaIndex + 1);
+      const binary = atob(base64);
+      const bytes = new Uint8Array(binary.length);
+
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+
+      return bytes;
+    }
+
+    function fullscreenPdfBase64() {
+      const dataUrl =
+        fullscreenPreviewState?.pdfDataUrl || '';
+
+      const commaIndex = dataUrl.indexOf(',');
+      if (commaIndex < 0) return '';
+
+      return dataUrl.slice(commaIndex + 1);
+    }
+
+    function downloadFullscreenPreviewPdf() {
+      if (
+        !fullscreenPreviewState ||
+        fullscreenPreviewState.kind !== 'pdf' ||
+        !fullscreenPreviewState.pdfDataUrl
+      ) {
+        return;
+      }
+
+      try {
+        const base64 = fullscreenPdfBase64();
+        if (!base64) {
+          throw new Error('Data PDF tidak tersedia.');
+        }
+
+        const blob = base64ToBlob(
+          base64,
+          'application/pdf'
+        );
+
+        downloadBlob(
+          blob,
+          fullscreenPreviewState.pdfFileName || 'dokumen.pdf'
+        );
+      } catch (error) {
+        showToast(
+          error.message || 'PDF tidak dapat diunduh.'
+        );
+      }
+    }
+
+    function setFullscreenPdfRendering(active, label = 'Merender halaman…') {
+      const indicator = $('#fullscreenPdfRendering');
+      if (!indicator) return;
+
+      indicator.classList.toggle(
+        'view-hidden',
+        active !== true
+      );
+
+      const textNode =
+        indicator.querySelector('[data-pdf-render-label]');
+
+      if (textNode && label) {
+        textNode.textContent = label;
+      }
+    }
+
+    function updateFullscreenPdfControls() {
+      const state = fullscreenPreviewState;
+      if (!state || state.kind !== 'pdf') return;
+
+      const zoomLabel = $('#previewPdfZoomLabel');
+      if (zoomLabel) {
+        zoomLabel.textContent =
+          Math.round((state.scale || 1) * 100) + '%';
+      }
+
+      const pageLabel = $('#previewPdfPageLabel');
+      if (pageLabel) {
+        pageLabel.textContent =
+          `${state.pdfPageNumber || 1} / ${state.pdfPageCount || 1}`;
+      }
+
+      const prevButton = $('#previewPdfPrevPage');
+      const nextButton = $('#previewPdfNextPage');
+
+      if (prevButton) {
+        prevButton.disabled =
+          (state.pdfPageNumber || 1) <= 1;
+      }
+
+      if (nextButton) {
+        nextButton.disabled =
+          (state.pdfPageNumber || 1) >=
+          (state.pdfPageCount || 1);
+      }
+
+      const pageControls = $('#previewPdfPageControls');
+      if (pageControls) {
+        pageControls.classList.toggle(
+          'view-hidden',
+          (state.pdfPageCount || 1) <= 1
+        );
+      }
+    }
+
+    function updateFullscreenPdfPanState() {
+      const scroll = $('#fullscreenPdfScroll');
+      if (!scroll) return;
+
+      requestAnimationFrame(() => {
+        const canPan =
+          scroll.scrollWidth > scroll.clientWidth + 2 ||
+          scroll.scrollHeight > scroll.clientHeight + 2;
+
+        scroll.classList.toggle('pannable', canPan);
+
+        if (!canPan) {
+          scroll.classList.remove('dragging');
+        }
+      });
+    }
+
+    function centerFullscreenPdfScroll() {
+      const scroll = $('#fullscreenPdfScroll');
+      if (!scroll) return;
+
+      requestAnimationFrame(() => {
+        scroll.scrollLeft =
+          Math.max(
+            0,
+            (scroll.scrollWidth - scroll.clientWidth) / 2
+          );
+
+        scroll.scrollTop =
+          Math.max(
+            0,
+            (scroll.scrollHeight - scroll.clientHeight) / 2
+          );
+
+        updateFullscreenPdfPanState();
+      });
+    }
+
+    async function renderFullscreenPdfPage(options = {}) {
+      const state = fullscreenPreviewState;
+
+      if (
+        !state ||
+        state.kind !== 'pdf' ||
+        !state.pdfDocument
+      ) {
+        return;
+      }
+
+      const canvas = $('#fullscreenPreviewPdfCanvas');
+      if (!canvas) return;
+
+      const generation =
+        (state.pdfRenderGeneration || 0) + 1;
+
+      state.pdfRenderGeneration = generation;
+
+      if (state.pdfRenderTask?.cancel) {
+        try {
+          state.pdfRenderTask.cancel();
+        } catch (err) {}
+      }
+
+      setFullscreenPdfRendering(
+        true,
+        options.label || 'Merender halaman…'
+      );
+
+      try {
+        const page = await state.pdfDocument.getPage(
+          state.pdfPageNumber || 1
+        );
+
+        if (
+          fullscreenPreviewState !== state ||
+          state.pdfRenderGeneration !== generation
+        ) {
+          return;
+        }
+
+        const viewport = page.getViewport({
+          scale: state.scale || 1,
+          rotation: normalizeFullscreenRotation(
+            state.rotation || 0
+          )
+        });
+
+        const requestedOutputScale = Math.min(
+          Math.max(Number(window.devicePixelRatio) || 1, 1),
+          2
+        );
+
+        // Batasi jumlah pixel canvas agar PDF scan beresolusi tinggi
+        // tidak membuat browser kehabisan memori ketika zoom besar.
+        const cssPixels =
+          Math.max(1, viewport.width * viewport.height);
+
+        const pixelBudgetScale =
+          Math.sqrt(
+            PDFJS_MAX_CANVAS_PIXELS / cssPixels
+          );
+
+        const outputScale = Math.max(
+          0.25,
+          Math.min(
+            requestedOutputScale,
+            pixelBudgetScale
+          )
+        );
+
+        const context = canvas.getContext('2d', {
+          alpha: false
+        });
+
+        canvas.width = Math.max(
+          1,
+          Math.floor(viewport.width * outputScale)
+        );
+
+        canvas.height = Math.max(
+          1,
+          Math.floor(viewport.height * outputScale)
+        );
+
+        canvas.style.width =
+          Math.max(1, Math.round(viewport.width)) + 'px';
+
+        canvas.style.height =
+          Math.max(1, Math.round(viewport.height)) + 'px';
+
+        const renderContext = {
+          canvasContext: context,
+          viewport
+        };
+
+        if (outputScale !== 1) {
+          renderContext.transform = [
+            outputScale,
+            0,
+            0,
+            outputScale,
+            0,
+            0
+          ];
+        }
+
+        const renderTask =
+          page.render(renderContext);
+
+        state.pdfRenderTask = renderTask;
+
+        await renderTask.promise;
+
+        if (
+          fullscreenPreviewState !== state ||
+          state.pdfRenderGeneration !== generation
+        ) {
+          return;
+        }
+
+        state.pdfRenderTask = null;
+        updateFullscreenPdfControls();
+
+        if (options.center !== false) {
+          centerFullscreenPdfScroll();
+        } else {
+          updateFullscreenPdfPanState();
+        }
+
+      } catch (error) {
+        if (
+          error?.name === 'RenderingCancelledException' ||
+          error?.message === 'Rendering cancelled, page 1'
+        ) {
+          return;
+        }
+
+        throw error;
+
+      } finally {
+        if (
+          fullscreenPreviewState === state &&
+          state.pdfRenderGeneration === generation
+        ) {
+          setFullscreenPdfRendering(false);
+        }
+      }
+    }
+
+    async function applyFullscreenPdfFit() {
+      const state = fullscreenPreviewState;
+      const scroll = $('#fullscreenPdfScroll');
+
+      if (
+        !state ||
+        state.kind !== 'pdf' ||
+        !state.pdfDocument ||
+        !scroll
+      ) {
+        return;
+      }
+
+      const page = await state.pdfDocument.getPage(
+        state.pdfPageNumber || 1
+      );
+
+      if (fullscreenPreviewState !== state) return;
+
+      const baseViewport = page.getViewport({
+        scale: 1,
+        rotation: normalizeFullscreenRotation(
+          state.rotation || 0
+        )
+      });
+
+      const horizontalPadding = 48;
+      const verticalPadding = 48;
+
+      const availableWidth =
+        Math.max(
+          1,
+          scroll.clientWidth - horizontalPadding
+        );
+
+      const availableHeight =
+        Math.max(
+          1,
+          scroll.clientHeight - verticalPadding
+        );
+
+      const fitScale = Math.min(
+        availableWidth / Math.max(1, baseViewport.width),
+        availableHeight / Math.max(1, baseViewport.height)
+      );
+
+      state.scale = Math.min(
+        5,
+        Math.max(0.1, fitScale)
+      );
+
+      state.mode = 'fit';
+      updateFullscreenPdfControls();
+
+      await renderFullscreenPdfPage({
+        center: true,
+        label: 'Menyesuaikan halaman…'
+      });
+    }
+
+    function scheduleFullscreenPdfFit() {
+      if (fullscreenPdfFitTimer) {
+        clearTimeout(fullscreenPdfFitTimer);
+      }
+
+      fullscreenPdfFitTimer = setTimeout(() => {
+        fullscreenPdfFitTimer = null;
+
+        applyFullscreenPdfFit().catch(error => {
+          console.warn('PDF fit:', error);
+        });
+      }, 60);
+    }
+
+    async function setFullscreenPdfScale(scale, mode = 'manual') {
+      const state = fullscreenPreviewState;
+
+      if (
+        !state ||
+        state.kind !== 'pdf' ||
+        !state.pdfDocument
+      ) {
+        return;
+      }
+
+      state.scale = Math.min(
+        5,
+        Math.max(0.1, Number(scale) || 1)
+      );
+
+      state.mode = mode;
+      updateFullscreenPdfControls();
+
+      try {
+        await renderFullscreenPdfPage({
+          center: true,
+          label: 'Merender zoom…'
+        });
+      } catch (error) {
+        showFullscreenPdfViewerError(error);
+      }
+    }
+
+    async function changeFullscreenPdfZoom(multiplier) {
+      const state = fullscreenPreviewState;
+      const scroll = $('#fullscreenPdfScroll');
+
+      if (
+        !state ||
+        state.kind !== 'pdf' ||
+        !state.pdfDocument
+      ) {
+        return;
+      }
+
+      const oldScale = state.scale || 1;
+
+      const beforeCenterX = scroll
+        ? scroll.scrollLeft + (scroll.clientWidth / 2)
+        : 0;
+
+      const beforeCenterY = scroll
+        ? scroll.scrollTop + (scroll.clientHeight / 2)
+        : 0;
+
+      const nextScale = Math.min(
+        5,
+        Math.max(
+          0.1,
+          oldScale * Number(multiplier || 1)
+        )
+      );
+
+      state.scale = nextScale;
+      state.mode = 'manual';
+      updateFullscreenPdfControls();
+
+      try {
+        await renderFullscreenPdfPage({
+          center: false,
+          label: 'Merender zoom…'
+        });
+
+        if (
+          scroll &&
+          fullscreenPreviewState === state &&
+          oldScale > 0
+        ) {
+          const ratio = nextScale / oldScale;
+
+          scroll.scrollLeft =
+            (beforeCenterX * ratio) -
+            (scroll.clientWidth / 2);
+
+          scroll.scrollTop =
+            (beforeCenterY * ratio) -
+            (scroll.clientHeight / 2);
+
+          updateFullscreenPdfPanState();
+        }
+      } catch (error) {
+        showFullscreenPdfViewerError(error);
+      }
+    }
+
+    async function rotateFullscreenPdf(deltaDegrees) {
+      const state = fullscreenPreviewState;
+
+      if (
+        !state ||
+        state.kind !== 'pdf' ||
+        !state.pdfDocument
+      ) {
+        return;
+      }
+
+      state.rotation =
+        normalizeFullscreenRotation(
+          (state.rotation || 0) +
+          Number(deltaDegrees || 0)
+        );
+
+      try {
+        if (state.mode === 'fit') {
+          await applyFullscreenPdfFit();
+        } else {
+          await renderFullscreenPdfPage({
+            center: true,
+            label: 'Merender rotasi…'
+          });
+        }
+      } catch (error) {
+        showFullscreenPdfViewerError(error);
+      }
+    }
+
+    async function changeFullscreenPdfPage(delta) {
+      const state = fullscreenPreviewState;
+
+      if (
+        !state ||
+        state.kind !== 'pdf' ||
+        !state.pdfDocument
+      ) {
+        return;
+      }
+
+      const nextPage = Math.min(
+        state.pdfPageCount || 1,
+        Math.max(
+          1,
+          (state.pdfPageNumber || 1) +
+          Number(delta || 0)
+        )
+      );
+
+      if (nextPage === state.pdfPageNumber) {
+        return;
+      }
+
+      state.pdfPageNumber = nextPage;
+      updateFullscreenPdfControls();
+
+      try {
+        if (state.mode === 'fit') {
+          await applyFullscreenPdfFit();
+        } else {
+          await renderFullscreenPdfPage({
+            center: true,
+            label: `Merender halaman ${nextPage}…`
+          });
+        }
+      } catch (error) {
+        showFullscreenPdfViewerError(error);
+      }
+    }
+
+    function showFullscreenPdfViewerError(error) {
+      const body = $('#fullscreenPreviewBody');
+      const controls = $('#fullscreenPdfControls');
+
+      if (!body) return;
+
+      setFullscreenPdfRendering(false);
+      controls?.classList.remove('view-hidden');
+
+      [
+        '#previewPdfRotateLeft',
+        '#previewPdfRotateRight',
+        '#previewPdfZoomOut',
+        '#previewPdfZoomIn',
+        '#previewPdfActualSize',
+        '#previewPdfFitScreen',
+        '#previewPdfPrevPage',
+        '#previewPdfNextPage'
+      ].forEach(selector => {
+        const button = $(selector);
+        if (button) button.disabled = true;
+      });
+
+      const message =
+        error?.message ||
+        'PDF tidak dapat dirender oleh mesin PDF.js.';
+
+      body.innerHTML = `
+        <div class="fullscreen-preview-loading">
+          <div class="fullscreen-preview-error">
+            <i class="ti ti-file-type-pdf"
+              style="font-size:2rem;color:#ff7777"></i>
+            <div style="margin-top:9px;font-weight:800">
+              PDF tidak dapat ditampilkan
+            </div>
+            <div style="margin-top:6px;color:#cbd7e7">
+              ${escapeHtml(message)}
+            </div>
+            <button id="previewPdfFallbackDownload"
+              class="preview-tool-btn"
+              type="button"
+              style="margin:14px auto 0">
+              <i class="ti ti-download"></i>
+              <span>Download PDF</span>
+            </button>
+          </div>
+        </div>
+      `;
+
+      $('#previewPdfFallbackDownload')?.addEventListener(
+        'click',
+        downloadFullscreenPreviewPdf
+      );
+    }
+
 
     function downloadFullscreenPreviewImage() {
       if (
@@ -21064,12 +21981,12 @@
     function showFullscreenImagePreview(data, doc) {
       const body = $('#fullscreenPreviewBody');
       const controls = $('#fullscreenImageControls');
-      const pdfNote = $('#fullscreenPdfNote');
+      const pdfControls = $('#fullscreenPdfControls');
 
       if (!body) return;
 
       controls?.classList.remove('view-hidden');
-      pdfNote?.classList.add('view-hidden');
+      pdfControls?.classList.add('view-hidden');
 
       if (fullscreenPreviewState) {
         fullscreenPreviewState.kind = 'image';
@@ -21128,27 +22045,122 @@
       image.src = data.dataUrl;
     }
 
-    function showFullscreenPdfPreview(data, doc) {
+    async function showFullscreenPdfPreview(data, doc) {
       const body = $('#fullscreenPreviewBody');
-      const controls = $('#fullscreenImageControls');
-      const pdfNote = $('#fullscreenPdfNote');
+      const imageControls = $('#fullscreenImageControls');
+      const pdfControls = $('#fullscreenPdfControls');
 
       if (!body) return;
 
-      if (fullscreenPreviewState) {
-        fullscreenPreviewState.kind = 'pdf';
+      const state = fullscreenPreviewState;
+      if (!state) return;
+
+      state.kind = 'pdf';
+      state.mode = 'fit';
+      state.scale = 1;
+      state.rotation = 0;
+      state.pdfDataUrl = data.dataUrl || '';
+      state.pdfFileName =
+        data.fileName || doc.label || 'dokumen.pdf';
+      state.pdfPageNumber = 1;
+      state.pdfPageCount = 0;
+      state.pdfJsReady = false;
+      state.pdfDocument = null;
+      state.pdfLoadingTask = null;
+      state.pdfRenderTask = null;
+      state.pdfRenderGeneration = 0;
+
+      imageControls?.classList.add('view-hidden');
+      pdfControls?.classList.add('view-hidden');
+
+      updateFullscreenPreviewProgress(
+        100,
+        'Memuat mesin PDF…'
+      );
+
+      try {
+        const pdfjsLib = await loadPdfJsModule();
+
+        if (
+          fullscreenPreviewState !== state ||
+          !$('#fullscreenDocumentPreview')
+        ) {
+          return;
+        }
+
+        updateFullscreenPreviewProgress(
+          100,
+          'Memproses PDF…'
+        );
+
+        const bytes =
+          dataUrlToUint8Array(state.pdfDataUrl);
+
+        const loadingTask =
+          pdfjsLib.getDocument({
+            data: bytes
+          });
+
+        state.pdfLoadingTask = loadingTask;
+
+        const pdfDocument =
+          await loadingTask.promise;
+
+        if (
+          fullscreenPreviewState !== state ||
+          !$('#fullscreenDocumentPreview')
+        ) {
+          try {
+            pdfDocument.destroy();
+          } catch (err) {}
+          return;
+        }
+
+        state.pdfLoadingTask = null;
+        state.pdfDocument = pdfDocument;
+        state.pdfPageCount =
+          Math.max(1, Number(pdfDocument.numPages) || 1);
+        state.pdfPageNumber = 1;
+        state.pdfJsReady = true;
+
+        body.innerHTML = `
+          <div id="fullscreenPdfScroll"
+            class="fullscreen-pdf-scroll">
+            <div class="fullscreen-pdf-stage">
+              <canvas id="fullscreenPreviewPdfCanvas"
+                class="fullscreen-preview-pdf-canvas"
+                aria-label="${escapeHtml(data.fileName || doc.label)}"></canvas>
+            </div>
+          </div>
+
+          <div id="fullscreenPdfRendering"
+            class="fullscreen-pdf-rendering view-hidden">
+            <span class="mini-spinner"></span>
+            <span data-pdf-render-label>
+              Merender halaman…
+            </span>
+          </div>
+        `;
+
+        const scroll = $('#fullscreenPdfScroll');
+        setupFullscreenImagePan(scroll);
+
+        pdfControls?.classList.remove('view-hidden');
+        updateFullscreenPdfControls();
+
+        await applyFullscreenPdfFit();
+
+      } catch (error) {
+        if (
+          fullscreenPreviewState !== state ||
+          !$('#fullscreenDocumentPreview')
+        ) {
+          return;
+        }
+
+        console.warn('PDF.js viewer:', error);
+        showFullscreenPdfViewerError(error);
       }
-
-      controls?.classList.add('view-hidden');
-      pdfNote?.classList.remove('view-hidden');
-
-      const iframe = document.createElement('iframe');
-      iframe.className = 'fullscreen-preview-pdf';
-      iframe.title = data.fileName || doc.label;
-      iframe.src = data.dataUrl;
-
-      body.innerHTML = '';
-      body.appendChild(iframe);
     }
 
     function mergePreviewMetadataIntoDocumentDetail(type, previewData) {
@@ -21228,7 +22240,7 @@
         }
 
         if (data.mimeType === 'application/pdf') {
-          showFullscreenPdfPreview(data, doc);
+          await showFullscreenPdfPreview(data, doc);
         } else {
           showFullscreenImagePreview(data, doc);
         }
