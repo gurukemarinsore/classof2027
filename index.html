@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <link rel="icon" type="image/svg+xml" href="logo.svg" />
   <title>Data Siswa Kelas 9 2026-2027</title>
-  <!-- CLASSOF2027 Revisi 017 · Perbaikan Hydration Foto Akun · Versi 1.45 -->
+  <!-- CLASSOF2027 Revisi 019 · Keseragaman Tabel Nilai Admin TU · Versi 1.47 -->
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1649,9 +1649,18 @@
     .students-table {
       width: 100%;
       border-collapse: collapse;
+      table-layout: fixed;
       min-width: 900px;
       font-size: .72rem;
     }
+
+    /* Revisi 018: grid kolom Data Murid dikunci sama untuk semua role. */
+    .students-table-compact col.student-col-no { width: 5%; }
+    .students-table-compact col.student-col-name { width: 49%; }
+    .students-table-compact col.student-col-documents { width: 13%; }
+    .students-table-compact col.student-col-grades { width: 14%; }
+    .students-table-compact col.student-col-average { width: 11%; }
+    .students-table-compact col.student-col-actions { width: 8%; }
 
     .students-table th,
     .students-table td {
@@ -1665,12 +1674,30 @@
       position: sticky;
       top: 0;
       z-index: 3;
+      height: 50px;
       background: var(--surface-2);
       color: var(--muted);
       font-size: .65rem;
       text-transform: uppercase;
       letter-spacing: .035em;
       white-space: nowrap;
+    }
+
+    .students-table tbody tr {
+      height: 72px;
+    }
+
+    .students-table-compact .student-no-col,
+    .students-table-compact .student-documents-col,
+    .students-table-compact .student-grades-col,
+    .students-table-compact .student-average-col,
+    .students-table-compact .student-actions-col {
+      text-align: center !important;
+    }
+
+    .students-table-compact .student-name-col,
+    .students-table-compact .student-name-cell {
+      text-align: left !important;
     }
 
     .students-table tr:last-child td {
@@ -1731,7 +1758,13 @@
       display: flex;
       align-items: center;
       gap: 5px;
-      justify-content: flex-end;
+      justify-content: center;
+    }
+
+    .student-readonly-action {
+      display: inline-block;
+      color: var(--muted);
+      font-weight: 650;
     }
 
     .row-icon-btn {
@@ -2158,6 +2191,13 @@
       background: var(--surface);
     }
 
+    /* Revisi 019: tinggi header dan baris Nilai dikunci sama untuk
+       SUPER_ADMIN, WALI_KELAS, dan ADMIN_TU. */
+    .grades-table thead th,
+    .grades-table tbody td {
+      height: 46px;
+    }
+
     .grades-table th {
       position: sticky;
       top: 0;
@@ -2294,6 +2334,18 @@
 
     .grade-row-actions-readonly {
       padding-inline: 0 !important;
+    }
+
+    /* ADMIN_TU tetap memakai slot Aksi 123px agar grid tabel identik
+       dengan SUPER_ADMIN/WALI_KELAS, tetapi tetap view-only. */
+    .grade-action-placeholder {
+      display: inline-flex;
+      width: 100%;
+      height: 32px;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-weight: 700;
     }
 
     .unsaved-indicator {
@@ -8488,7 +8540,7 @@
   <footer class="footer app-shell">
     <div><strong>SMP NEGERI 3 JAYAPURA</strong> · Sistem Pendataan Terpadu Murid & Nilai</div>
     <div style="margin-top:6px">Dikembangkan oleh gurukemarinsore</div>
-    <div style="margin-top:3px">Versi 1.45</div>
+    <div style="margin-top:3px">Versi 1.47</div>
     <div class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</div>
   </footer>
   </div>
@@ -8513,7 +8565,7 @@
         <div class="sidebar-footer">
           <div class="sidebar-footer-copy">
             <small>Dikembangkan oleh gurukemarinsore</small>
-            <small class="app-version-label">Versi 1.45</small>
+            <small class="app-version-label">Versi 1.47</small>
           </div>
           <small class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</small>
         </div>
@@ -13105,39 +13157,47 @@
       area.innerHTML = `
         <div class="table-wrap">
           <table class="students-table students-table-compact">
+            <colgroup>
+              <col class="student-col-no">
+              <col class="student-col-name">
+              <col class="student-col-documents">
+              <col class="student-col-grades">
+              <col class="student-col-average">
+              <col class="student-col-actions">
+            </colgroup>
             <thead>
               <tr>
-                <th class="student-no-col" style="width:52px">No</th>
-                <th>Nama Lengkap</th>
-                <th style="width:135px">Dokumen</th>
-                <th style="width:155px">Nilai</th>
-                <th class="student-average-col" style="width:100px">Rata-rata</th>
-                ${canEdit ? '<th style="width:104px;text-align:right">Aksi</th>' : ''}
+                <th class="student-no-col">No</th>
+                <th class="student-name-col">Nama Lengkap</th>
+                <th class="student-documents-col">Dokumen</th>
+                <th class="student-grades-col">Nilai</th>
+                <th class="student-average-col">Rata-rata</th>
+                <th class="student-actions-col">Aksi</th>
               </tr>
             </thead>
             <tbody>
               ${rows.map((student, index) => `
                 <tr>
                   <td class="student-no-col">${((state.students.page - 1) * state.students.limit) + index + 1}</td>
-                  <td class="student-name-cell">
+                  <td class="student-name-cell student-name-col">
                     <strong>${escapeHtml(student.namaLengkap)}</strong>
                     <span>${escapeHtml(student.kelas)} · NIS ${escapeHtml(student.nis || '—')} · NISN ${escapeHtml(student.nisn)}</span>
                   </td>
-                  <td>
+                  <td class="student-documents-col">
                     <span class="metric-chip ${studentMetricClass(student.dokumen)}">
                       <i class="ti ti-files"></i>
                       ${escapeHtml(studentMetricText(student.dokumen, 'dokumen'))}
                     </span>
                   </td>
-                  <td>
+                  <td class="student-grades-col">
                     <span class="metric-chip ${studentMetricClass(student.nilai)}">
                       <i class="ti ti-report-analytics"></i>
                       ${escapeHtml(studentMetricText(student.nilai, 'nilai'))}
                     </span>
                   </td>
                   <td class="student-average-col">${formatAverage2(student.rataRata)}</td>
-                  ${canEdit ? `
-                    <td>
+                  <td class="student-actions-col">
+                    ${canEdit ? `
                       <div class="row-actions">
                         <button class="row-icon-btn" type="button"
                           data-edit-student="${escapeHtml(student.nisn)}"
@@ -13153,7 +13213,8 @@
                             <i class="ti ti-trash"></i>
                           </button>` : ''}
                       </div>
-                    </td>` : ''}
+                    ` : '<span class="student-readonly-action">—</span>'}
+                  </td>
                 </tr>`).join('')}
             </tbody>
           </table>
@@ -16434,9 +16495,9 @@
       const isWali = role === 'WALI_KELAS';
       const isAdminTu = role === 'ADMIN_TU';
 
-      // Kolom Aksi hanya milik Super Admin dan Wali Kelas.
-      // ADMIN_TU benar-benar tidak menerima header/sel Aksi.
-      const showActionColumn = isSuper || isWali;
+      // Revisi 019: ketiga role memakai grid kolom yang sama.
+      // ADMIN_TU tetap memiliki slot Aksi 123px, tetapi hanya berisi tanda em dash.
+      const showActionColumn = true;
 
       if (!students.length) {
         area.innerHTML = `
@@ -16561,31 +16622,39 @@
                   </td>
 
                   ${showActionColumn ? (
-                    state.grades.canEdit
+                    isAdminTu
                       ? `
-                        <td class="grade-row-actions">
-                          <button type="button"
-                            class="grade-row-action-btn ${state.grades.editingRows.has(rowIndex) ? 'editing' : ''}"
-                            data-grade-row-action="${rowIndex}"
-                            title="${state.grades.editingRows.has(rowIndex) ? 'Simpan nilai murid' : 'Edit nilai murid'}">
-                            <i class="ti ${state.grades.editingRows.has(rowIndex) ? 'ti-device-floppy' : 'ti-edit'}"></i>
-                            <span>${state.grades.editingRows.has(rowIndex) ? 'Simpan' : 'Edit'}</span>
-                          </button>
+                        <td class="grade-row-actions grade-row-actions-readonly">
+                          <span class="grade-action-placeholder" aria-label="Tidak ada aksi">—</span>
                         </td>
                       `
-                      : `
-                        <td class="grade-row-actions">
-                          <button type="button"
-                            class="grade-row-action-btn grade-action-disabled"
-                            disabled
-                            tabindex="-1"
-                            aria-disabled="true"
-                            title="Semester terkunci · Wali Kelas hanya dapat melihat">
-                            <i class="ti ti-edit"></i>
-                            <span>Edit</span>
-                          </button>
-                        </td>
-                      `
+                      : (
+                        state.grades.canEdit
+                          ? `
+                            <td class="grade-row-actions">
+                              <button type="button"
+                                class="grade-row-action-btn ${state.grades.editingRows.has(rowIndex) ? 'editing' : ''}"
+                                data-grade-row-action="${rowIndex}"
+                                title="${state.grades.editingRows.has(rowIndex) ? 'Simpan nilai murid' : 'Edit nilai murid'}">
+                                <i class="ti ${state.grades.editingRows.has(rowIndex) ? 'ti-device-floppy' : 'ti-edit'}"></i>
+                                <span>${state.grades.editingRows.has(rowIndex) ? 'Simpan' : 'Edit'}</span>
+                              </button>
+                            </td>
+                          `
+                          : `
+                            <td class="grade-row-actions">
+                              <button type="button"
+                                class="grade-row-action-btn grade-action-disabled"
+                                disabled
+                                tabindex="-1"
+                                aria-disabled="true"
+                                title="Semester terkunci · Wali Kelas hanya dapat melihat">
+                                <i class="ti ti-edit"></i>
+                                <span>Edit</span>
+                              </button>
+                            </td>
+                          `
+                      )
                   ) : ''}
                 </tr>
               `).join('')}
