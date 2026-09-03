@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <link rel="icon" type="image/svg+xml" href="logo.svg" />
   <title>Data Siswa Kelas 9 2026-2027</title>
-  <!-- CLASSOF2027 Revisi 023 · Custom PDF.js Viewer · Versi 1.51 -->
+  <!-- CLASSOF2027 Revisi 024 · Predownload Kelola + Toolbar Preview HP · Versi 1.52 -->
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -3213,20 +3213,108 @@
       white-space: nowrap;
     }
 
+    /* Revisi 024 · Toolbar preview HP dibagi atas + bawah.
+       Toolbar bawah menjadi baris kontrol kedua dan hanya aktif pada HP. */
+    .fullscreen-preview-mobile-bottom {
+      display: none;
+      flex: 0 0 auto;
+      min-height: 56px;
+      align-items: center;
+      justify-content: center;
+      padding: 7px 10px calc(7px + env(safe-area-inset-bottom, 0px));
+      border-top: 1px solid var(--border);
+      background: color-mix(in srgb, var(--surface) 97%, transparent);
+      box-shadow: 0 -5px 18px rgba(20, 45, 75, .06);
+      backdrop-filter: blur(16px);
+    }
+
+    .fullscreen-preview-mobile-bottom-controls {
+      width: 100%;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-inline: auto;
+    }
+
+    .preview-mobile-actual-size {
+      min-width: 58px;
+      font-variant-numeric: tabular-nums;
+    }
+
     @media (max-width: 780px) {
       .fullscreen-preview-toolbar {
         min-height: auto;
         grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px 10px;
         padding: 8px 9px 8px 12px;
       }
 
       .fullscreen-preview-controls {
         grid-column: 1 / -1;
         grid-row: 2;
-        justify-content: flex-start;
-        overflow-x: auto;
+        width: 100%;
+        min-width: 0;
+        justify-content: center;
+        overflow: hidden;
         flex-wrap: nowrap;
-        padding-bottom: 1px;
+        gap: 5px;
+        padding: 0;
+        margin-inline: auto;
+      }
+
+      /* Baris atas HP: Download + rotasi + zoom saja. */
+      .fullscreen-preview-controls #previewActualSize,
+      .fullscreen-preview-controls #previewFitScreen,
+      .fullscreen-preview-controls #previewPdfActualSize,
+      .fullscreen-preview-controls #previewPdfFitScreen,
+      .fullscreen-preview-controls #previewPdfPageControls {
+        display: none !important;
+      }
+
+      .fullscreen-preview-controls .preview-tool-btn {
+        width: 42px;
+        min-width: 42px;
+        height: 42px;
+        min-height: 42px;
+        padding: 0;
+        flex: 0 0 42px;
+      }
+
+      /* Download HP icon-only. */
+      .fullscreen-preview-controls .preview-download-btn span {
+        display: none;
+      }
+
+      .fullscreen-preview-controls .preview-zoom-label {
+        min-width: 46px;
+        flex: 0 0 46px;
+      }
+
+      .fullscreen-preview-mobile-bottom:not(.view-hidden) {
+        display: flex;
+      }
+
+      .fullscreen-preview-mobile-bottom .preview-tool-btn {
+        min-height: 42px;
+        height: 42px;
+        min-width: 42px;
+        padding: 0 10px;
+        flex: 0 0 auto;
+      }
+
+      .fullscreen-preview-mobile-bottom .preview-mobile-fit {
+        width: 42px;
+        padding: 0;
+      }
+
+      .fullscreen-preview-mobile-bottom .preview-page-controls {
+        gap: 5px;
+      }
+
+      .fullscreen-preview-mobile-bottom .preview-page-label {
+        min-width: 58px;
       }
 
       .fullscreen-preview-info span {
@@ -3237,7 +3325,43 @@
       .fullscreen-pdf-scroll {
         padding: 12px;
       }
+    }
 
+    @media (max-width: 360px) {
+      .fullscreen-preview-controls {
+        gap: 4px;
+      }
+
+      .fullscreen-preview-controls .preview-tool-btn {
+        width: 39px;
+        min-width: 39px;
+        height: 40px;
+        min-height: 40px;
+        flex-basis: 39px;
+      }
+
+      .fullscreen-preview-controls .preview-zoom-label {
+        min-width: 42px;
+        flex-basis: 42px;
+      }
+
+      .fullscreen-preview-mobile-bottom-controls {
+        gap: 6px;
+      }
+
+      .fullscreen-preview-mobile-bottom .preview-tool-btn {
+        min-height: 40px;
+        height: 40px;
+        min-width: 39px;
+      }
+
+      .fullscreen-preview-mobile-bottom .preview-mobile-fit {
+        width: 39px;
+      }
+
+      .fullscreen-preview-mobile-bottom .preview-page-label {
+        min-width: 52px;
+      }
     }
 
     /* ============================================================
@@ -8686,7 +8810,7 @@
   <footer class="footer app-shell">
     <div><strong>SMP NEGERI 3 JAYAPURA</strong> · Sistem Pendataan Terpadu Murid & Nilai</div>
     <div style="margin-top:6px">Dikembangkan oleh gurukemarinsore</div>
-    <div style="margin-top:3px">Versi 1.51</div>
+    <div style="margin-top:3px">Versi 1.52</div>
     <div class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</div>
   </footer>
   </div>
@@ -8711,7 +8835,7 @@
         <div class="sidebar-footer">
           <div class="sidebar-footer-copy">
             <small>Dikembangkan oleh gurukemarinsore</small>
-            <small class="app-version-label">Versi 1.51</small>
+            <small class="app-version-label">Versi 1.52</small>
           </div>
           <small class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</small>
         </div>
@@ -13575,6 +13699,13 @@
     }
 
     function closeAppDialog() {
+      // Revisi 024: bila dialog Kelola Dokumen ditutup/diganti,
+      // hentikan antrean predownload dan batalkan request aktifnya.
+      // File yang sudah selesai tetap berada di cache sesi.
+      if ($('#studentDocumentsContent')) {
+        stopDocumentPredownloadQueue({ cancelActive: false });
+      }
+
       const old = $('#appDialogOverlay');
       if (old) old.remove();
 
@@ -19825,6 +19956,10 @@
       if (cached) {
         renderStudentDocumentDetail();
 
+        // Revisi 024: klik Kelola langsung memulai predownload
+        // berurutan untuk dokumen murid ini saja.
+        startDocumentPredownloadQueue(state.documents.detail);
+
         if (cached.metadataComplete !== true) {
           scheduleStudentDocumentMetadataEnrichment(student);
         }
@@ -19897,9 +20032,30 @@
 
       clearTimeout(documentMetadataEnrichmentTimer);
 
-      // Fast path sudah dicat lebih dulu. Validasi Drive baru dimulai
-      // sedikit setelahnya agar tiga kartu tidak menunggu Drive.
-      documentMetadataEnrichmentTimer = setTimeout(async () => {
+      const runEnrichment = async () => {
+        const detailKey = studentDocumentDetailCacheKey(student);
+        const cachedDetail =
+          state.sessionCache?.documentDetails instanceof Map
+            ? state.sessionCache.documentDetails.get(detailKey)
+            : null;
+
+        // Jika seluruh metadata sudah tervalidasi melalui predownload yang
+        // berhasil, enrichment terpisah tidak perlu membuat request lagi.
+        if (cachedDetail?.metadataComplete === true) {
+          documentMetadataEnrichmentTimer = null;
+          return;
+        }
+
+        // Revisi 024: jangan biarkan enrichment metadata Drive
+        // berebut jalur backend dengan predownload aktif.
+        if (isDocumentPredownloadBusyForStudent(student)) {
+          documentMetadataEnrichmentTimer = setTimeout(
+            runEnrichment,
+            850
+          );
+          return;
+        }
+
         documentMetadataEnrichmentTimer = null;
 
         try {
@@ -19929,7 +20085,14 @@
             error?.message || error
           );
         }
-      }, 220);
+      };
+
+      // Beri fast detail waktu untuk dicat. Jika predownload sedang aktif,
+      // runEnrichment akan menunggu sampai antrean selesai/berhenti.
+      documentMetadataEnrichmentTimer = setTimeout(
+        runEnrichment,
+        300
+      );
     }
 
     async function loadStudentDocumentDetail(student) {
@@ -19946,6 +20109,10 @@
 
         state.documents.detail = plainClone(data);
         renderStudentDocumentDetail();
+
+        // Revisi 024: predownload dimulai segera setelah detail cepat
+        // tersedia; tidak menunggu enrichment metadata Drive.
+        startDocumentPredownloadQueue(state.documents.detail);
 
         if (data.metadataComplete !== true) {
           scheduleStudentDocumentMetadataEnrichment(student);
@@ -20266,7 +20433,8 @@
             <button id="previewImageDownload"
               class="preview-tool-btn preview-download-btn"
               type="button"
-              title="Download gambar">
+              title="Download gambar"
+              aria-label="Download gambar">
               <i class="ti ti-download"></i>
               <span>Download</span>
             </button>
@@ -20317,7 +20485,8 @@
             <button id="previewFitScreen"
               class="preview-tool-btn"
               type="button"
-              title="Sesuaikan seluruh gambar ke layar">
+              title="Sesuaikan seluruh gambar ke layar"
+              aria-label="Sesuaikan gambar ke layar">
               <i class="ti ti-arrows-maximize"></i>
               <span>Fit to Screen</span>
             </button>
@@ -20329,7 +20498,8 @@
             <button id="previewPdfDownload"
               class="preview-tool-btn preview-download-btn"
               type="button"
-              title="Download PDF">
+              title="Download PDF"
+              aria-label="Download PDF">
               <i class="ti ti-download"></i>
               <span>Download</span>
             </button>
@@ -20380,7 +20550,8 @@
             <button id="previewPdfFitScreen"
               class="preview-tool-btn"
               type="button"
-              title="Sesuaikan halaman PDF ke layar">
+              title="Sesuaikan halaman PDF ke layar"
+              aria-label="Sesuaikan PDF ke layar">
               <i class="ti ti-arrows-maximize"></i>
               <span>Fit to Screen</span>
             </button>
@@ -20446,6 +20617,70 @@
             </div>
           </div>
         </div>
+
+        <div id="fullscreenPreviewMobileBottom"
+          class="fullscreen-preview-mobile-bottom view-hidden">
+
+          <div id="fullscreenImageMobileBottomControls"
+            class="fullscreen-preview-mobile-bottom-controls view-hidden">
+            <button id="previewImageActualSizeMobile"
+              class="preview-tool-btn preview-mobile-actual-size"
+              type="button"
+              title="Ukuran gambar 100%"
+              aria-label="Ukuran gambar 100 persen">
+              <span>100%</span>
+            </button>
+
+            <button id="previewImageFitScreenMobile"
+              class="preview-tool-btn preview-mobile-fit"
+              type="button"
+              title="Sesuaikan seluruh gambar ke layar"
+              aria-label="Sesuaikan gambar ke layar">
+              <i class="ti ti-arrows-maximize"></i>
+            </button>
+          </div>
+
+          <div id="fullscreenPdfMobileBottomControls"
+            class="fullscreen-preview-mobile-bottom-controls view-hidden">
+            <button id="previewPdfActualSizeMobile"
+              class="preview-tool-btn preview-mobile-actual-size"
+              type="button"
+              title="Ukuran PDF 100%"
+              aria-label="Ukuran PDF 100 persen">
+              <span>100%</span>
+            </button>
+
+            <button id="previewPdfFitScreenMobile"
+              class="preview-tool-btn preview-mobile-fit"
+              type="button"
+              title="Sesuaikan halaman PDF ke layar"
+              aria-label="Sesuaikan PDF ke layar">
+              <i class="ti ti-arrows-maximize"></i>
+            </button>
+
+            <div id="previewPdfPageControlsMobile"
+              class="preview-page-controls view-hidden">
+              <button id="previewPdfPrevPageMobile"
+                class="preview-tool-btn"
+                type="button"
+                title="Halaman sebelumnya"
+                aria-label="Halaman PDF sebelumnya">
+                <i class="ti ti-chevron-left"></i>
+              </button>
+
+              <span id="previewPdfPageLabelMobile"
+                class="preview-page-label">1 / 1</span>
+
+              <button id="previewPdfNextPageMobile"
+                class="preview-tool-btn"
+                type="button"
+                title="Halaman berikutnya"
+                aria-label="Halaman PDF berikutnya">
+                <i class="ti ti-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
       `;
 
       document.body.appendChild(overlay);
@@ -20486,6 +20721,16 @@
       );
 
       $('#previewFitScreen')?.addEventListener(
+        'click',
+        applyFullscreenImageFit
+      );
+
+      $('#previewImageActualSizeMobile')?.addEventListener(
+        'click',
+        () => setFullscreenImageScale(1, 'actual')
+      );
+
+      $('#previewImageFitScreenMobile')?.addEventListener(
         'click',
         applyFullscreenImageFit
       );
@@ -20531,6 +20776,26 @@
       );
 
       $('#previewPdfNextPage')?.addEventListener(
+        'click',
+        () => changeFullscreenPdfPage(1)
+      );
+
+      $('#previewPdfActualSizeMobile')?.addEventListener(
+        'click',
+        () => setFullscreenPdfScale(1, 'actual')
+      );
+
+      $('#previewPdfFitScreenMobile')?.addEventListener(
+        'click',
+        () => scheduleFullscreenPdfFit()
+      );
+
+      $('#previewPdfPrevPageMobile')?.addEventListener(
+        'click',
+        () => changeFullscreenPdfPage(-1)
+      );
+
+      $('#previewPdfNextPageMobile')?.addEventListener(
         'click',
         () => changeFullscreenPdfPage(1)
       );
@@ -20587,22 +20852,34 @@
 
     function clearDocumentPreviewCache(fileId = '') {
       const map = state.sessionCache?.documentPreviews;
-      if (!(map instanceof Map)) return;
-
+      const registry = state.sessionRequests?.documentPreviews;
       const cleanId = String(fileId || '').trim();
-      if (!cleanId) {
-        map.clear();
-        return;
+
+      if (map instanceof Map) {
+        if (!cleanId) {
+          map.clear();
+        } else {
+          [...map.entries()].forEach(([key, entry]) => {
+            if (
+              key === cleanId ||
+              String(entry?.data?.fileId || '').trim() === cleanId
+            ) {
+              map.delete(key);
+            }
+          });
+        }
       }
 
-      [...map.entries()].forEach(([key, entry]) => {
-        if (
-          key === cleanId ||
-          String(entry?.data?.fileId || '').trim() === cleanId
-        ) {
-          map.delete(key);
-        }
-      });
+      // Revisi 024: mutasi/Live Sync juga membatalkan predownload/preview
+      // in-flight terkait agar respons file lama tidak masuk kembali ke cache.
+      if (registry instanceof Map) {
+        [...registry.entries()].forEach(([key, entry]) => {
+          if (!cleanId || key === cleanId) {
+            cancelRequestEntry(entry);
+            registry.delete(key);
+          }
+        });
+      }
     }
 
     function estimatedPreviewResponseBytes(fileBytes) {
@@ -20929,6 +21206,239 @@
     }
 
     // ============================================================
+    // Revisi 024 · PREDOWNLOAD SAAT KELOLA DOKUMEN
+    // - Hanya murid yang sedang dibuka melalui Kelola.
+    // - Maksimal satu preview request aktif pada satu waktu.
+    // - Urutan normal mengikuti KK → AKTE → IJAZAH.
+    // - Preview memakai Promise in-flight yang sama atau cache yang sudah ada.
+    // ============================================================
+    const documentPredownloadState = {
+      generation: 0,
+      studentKey: '',
+      queue: [],
+      running: false,
+      activeType: '',
+      activeKey: ''
+    };
+
+    function documentPreviewAlreadyCached(detail, doc, type) {
+      const cache = state.sessionCache?.documentPreviews;
+      if (!(cache instanceof Map)) return false;
+
+      const key = documentPreviewCacheKey(detail, doc, type);
+      const cached = cache.get(key);
+
+      return !!(
+        cached?.data &&
+        String(cached.data.fileId || '') ===
+          String(doc?.fileId || '')
+      );
+    }
+
+    function stopDocumentPredownloadQueue({ cancelActive = false } = {}) {
+      const activeKey = documentPredownloadState.activeKey;
+
+      documentPredownloadState.generation += 1;
+      documentPredownloadState.studentKey = '';
+      documentPredownloadState.queue = [];
+      documentPredownloadState.running = false;
+
+      // Saat Kelola hanya ditutup, request yang sudah telanjur aktif boleh
+      // menyelesaikan dirinya dan masuk cache; dokumen berikutnya tidak mulai.
+      // Saat Kelola murid lain dibuka, start queue baru memakai cancelActive
+      // agar maksimal tetap satu request background aktif.
+      if (cancelActive && activeKey) {
+        const registry = state.sessionRequests?.documentPreviews;
+        const entry = registry instanceof Map
+          ? registry.get(activeKey)
+          : null;
+
+        if (entry) {
+          cancelRequestEntry(entry);
+          registry.delete(activeKey);
+        }
+
+        documentPredownloadState.activeType = '';
+        documentPredownloadState.activeKey = '';
+      }
+    }
+
+    function isDocumentPredownloadBusyForStudent(student) {
+      if (!documentPredownloadState.running) return false;
+
+      return documentPredownloadState.studentKey ===
+        studentDocumentDetailCacheKey(student);
+    }
+
+    function prioritizeDocumentPredownload(type) {
+      const detail = state.documents.detail;
+      if (!detail) return;
+
+      const key = studentDocumentDetailCacheKey(detail);
+      if (documentPredownloadState.studentKey !== key) return;
+
+      const normalizedType = String(type || '').trim().toUpperCase();
+      if (!normalizedType) return;
+
+      // Dokumen yang diklik dipindahkan ke depan antrean.
+      documentPredownloadState.queue = [
+        normalizedType,
+        ...documentPredownloadState.queue.filter(
+          item => item !== normalizedType
+        )
+      ];
+
+      // Jika request background yang aktif berbeda, batalkan agar Preview
+      // yang benar-benar dipilih user menjadi prioritas. Request berikutnya
+      // tetap akan memakai registry/cache yang sama sehingga tidak duplikat.
+      if (
+        documentPredownloadState.activeType &&
+        documentPredownloadState.activeType !== normalizedType &&
+        documentPredownloadState.activeKey
+      ) {
+        const registry = state.sessionRequests?.documentPreviews;
+        const entry = registry instanceof Map
+          ? registry.get(documentPredownloadState.activeKey)
+          : null;
+
+        if (entry) {
+          cancelRequestEntry(entry);
+          registry.delete(documentPredownloadState.activeKey);
+        }
+      }
+    }
+
+    function startDocumentPredownloadQueue(detail) {
+      if (!detail || !state.sessionToken) return;
+
+      // Setiap pembukaan Kelola adalah sesi antrean baru.
+      stopDocumentPredownloadQueue({ cancelActive: true });
+
+      const documents = Array.isArray(detail.documents)
+        ? detail.documents
+        : [];
+
+      const queue = documents
+        .filter(doc =>
+          doc?.uploaded === true &&
+          !doc?.locationMismatch &&
+          !doc?.missing &&
+          String(doc?.fileId || '').trim()
+        )
+        .map(doc => String(doc.type || '').trim().toUpperCase())
+        .filter(Boolean);
+
+      if (!queue.length) return;
+
+      const generation = documentPredownloadState.generation + 1;
+      documentPredownloadState.generation = generation;
+      documentPredownloadState.studentKey =
+        studentDocumentDetailCacheKey(detail);
+      documentPredownloadState.queue = queue;
+      documentPredownloadState.running = true;
+
+      Promise.resolve().then(async () => {
+        try {
+          while (
+            documentPredownloadState.generation === generation &&
+            documentPredownloadState.queue.length
+          ) {
+            const currentDetail = state.documents.detail;
+            if (
+              !currentDetail ||
+              studentDocumentDetailCacheKey(currentDetail) !==
+                documentPredownloadState.studentKey
+            ) {
+              break;
+            }
+
+            const type = documentPredownloadState.queue.shift();
+            const doc = (currentDetail.documents || [])
+              .find(item => item.type === type);
+
+            if (
+              !doc ||
+              !doc.uploaded ||
+              doc.locationMismatch ||
+              doc.missing ||
+              !String(doc.fileId || '').trim() ||
+              documentPreviewAlreadyCached(currentDetail, doc, type)
+            ) {
+              continue;
+            }
+
+            const previewKey =
+              documentPreviewCacheKey(currentDetail, doc, type);
+
+            documentPredownloadState.activeType = type;
+            documentPredownloadState.activeKey = previewKey;
+
+            try {
+              const data = await getDocumentPreviewFast(
+                currentDetail,
+                doc,
+                type,
+                null
+              );
+
+              if (documentPredownloadState.generation !== generation) {
+                return;
+              }
+
+              // Payload preview juga membawa metadata terbaru. Simpan ke detail
+              // agar enrichment Drive terpisah tidak perlu mengejar data yang
+              // sudah diketahui dari predownload.
+              mergePreviewMetadataIntoDocumentDetail(type, data);
+
+              const refreshedDetail = state.documents.detail;
+              if (
+                refreshedDetail &&
+                (refreshedDetail.documents || []).every(item =>
+                  item.uploaded !== true ||
+                  item.metadataPending !== true
+                )
+              ) {
+                refreshedDetail.metadataComplete = true;
+                cacheStudentDocumentDetail(refreshedDetail);
+              }
+
+              if (
+                $('#studentDocumentsContent') &&
+                !$('#fullscreenDocumentPreview')
+              ) {
+                renderStudentDocumentDetail();
+              }
+
+            } catch (error) {
+              if (error?.code === 'PREVIEW_ABORTED') {
+                // Abort karena user memprioritaskan dokumen lain atau dialog
+                // ditutup bukanlah kegagalan yang perlu ditampilkan.
+              } else if (await handleSessionError(error, true)) {
+                return;
+              } else {
+                console.warn(
+                  `Predownload ${type} gagal:`,
+                  error?.message || error
+                );
+              }
+            } finally {
+              if (documentPredownloadState.activeKey === previewKey) {
+                documentPredownloadState.activeType = '';
+                documentPredownloadState.activeKey = '';
+              }
+            }
+          }
+        } finally {
+          if (documentPredownloadState.generation === generation) {
+            documentPredownloadState.running = false;
+            documentPredownloadState.activeType = '';
+            documentPredownloadState.activeKey = '';
+          }
+        }
+      });
+    }
+
+    // ============================================================
     // Revisi 023 · CUSTOM PDF.JS VIEWER
     // - PDF.js dimuat hanya saat PDF pertama kali dipreview.
     // - Resource lokal/repository: ./pdfjs/pdf.mjs + pdf.worker.mjs
@@ -21071,33 +21581,40 @@
           Math.round((state.scale || 1) * 100) + '%';
       }
 
-      const pageLabel = $('#previewPdfPageLabel');
-      if (pageLabel) {
-        pageLabel.textContent =
-          `${state.pdfPageNumber || 1} / ${state.pdfPageCount || 1}`;
-      }
+      const pageText =
+        `${state.pdfPageNumber || 1} / ${state.pdfPageCount || 1}`;
 
-      const prevButton = $('#previewPdfPrevPage');
-      const nextButton = $('#previewPdfNextPage');
+      ['#previewPdfPageLabel', '#previewPdfPageLabelMobile']
+        .forEach(selector => {
+          const label = $(selector);
+          if (label) label.textContent = pageText;
+        });
 
-      if (prevButton) {
-        prevButton.disabled =
-          (state.pdfPageNumber || 1) <= 1;
-      }
+      const atFirst = (state.pdfPageNumber || 1) <= 1;
+      const atLast =
+        (state.pdfPageNumber || 1) >=
+        (state.pdfPageCount || 1);
 
-      if (nextButton) {
-        nextButton.disabled =
-          (state.pdfPageNumber || 1) >=
-          (state.pdfPageCount || 1);
-      }
+      ['#previewPdfPrevPage', '#previewPdfPrevPageMobile']
+        .forEach(selector => {
+          const button = $(selector);
+          if (button) button.disabled = atFirst;
+        });
 
-      const pageControls = $('#previewPdfPageControls');
-      if (pageControls) {
-        pageControls.classList.toggle(
-          'view-hidden',
-          (state.pdfPageCount || 1) <= 1
-        );
-      }
+      ['#previewPdfNextPage', '#previewPdfNextPageMobile']
+        .forEach(selector => {
+          const button = $(selector);
+          if (button) button.disabled = atLast;
+        });
+
+      const hidePages = (state.pdfPageCount || 1) <= 1;
+      ['#previewPdfPageControls', '#previewPdfPageControlsMobile']
+        .forEach(selector => {
+          const controls = $(selector);
+          if (controls) {
+            controls.classList.toggle('view-hidden', hidePages);
+          }
+        });
     }
 
     function updateFullscreenPdfPanState() {
@@ -21543,7 +22060,11 @@
         '#previewPdfActualSize',
         '#previewPdfFitScreen',
         '#previewPdfPrevPage',
-        '#previewPdfNextPage'
+        '#previewPdfNextPage',
+        '#previewPdfActualSizeMobile',
+        '#previewPdfFitScreenMobile',
+        '#previewPdfPrevPageMobile',
+        '#previewPdfNextPageMobile'
       ].forEach(selector => {
         const button = $(selector);
         if (button) button.disabled = true;
@@ -21982,11 +22503,17 @@
       const body = $('#fullscreenPreviewBody');
       const controls = $('#fullscreenImageControls');
       const pdfControls = $('#fullscreenPdfControls');
+      const mobileBottom = $('#fullscreenPreviewMobileBottom');
+      const imageMobile = $('#fullscreenImageMobileBottomControls');
+      const pdfMobile = $('#fullscreenPdfMobileBottomControls');
 
       if (!body) return;
 
       controls?.classList.remove('view-hidden');
       pdfControls?.classList.add('view-hidden');
+      mobileBottom?.classList.remove('view-hidden');
+      imageMobile?.classList.remove('view-hidden');
+      pdfMobile?.classList.add('view-hidden');
 
       if (fullscreenPreviewState) {
         fullscreenPreviewState.kind = 'image';
@@ -22049,6 +22576,9 @@
       const body = $('#fullscreenPreviewBody');
       const imageControls = $('#fullscreenImageControls');
       const pdfControls = $('#fullscreenPdfControls');
+      const mobileBottom = $('#fullscreenPreviewMobileBottom');
+      const imageMobile = $('#fullscreenImageMobileBottomControls');
+      const pdfMobile = $('#fullscreenPdfMobileBottomControls');
 
       if (!body) return;
 
@@ -22072,6 +22602,9 @@
 
       imageControls?.classList.add('view-hidden');
       pdfControls?.classList.add('view-hidden');
+      mobileBottom?.classList.remove('view-hidden');
+      imageMobile?.classList.add('view-hidden');
+      pdfMobile?.classList.remove('view-hidden');
 
       updateFullscreenPreviewProgress(
         100,
@@ -22190,6 +22723,11 @@
       const doc = getCurrentDocument(type);
 
       if (!detail || !doc || !doc.uploaded) return;
+
+      // Revisi 024: jika predownload sedang mengambil dokumen lain,
+      // dokumen yang benar-benar diklik menjadi prioritas. Jika dokumen ini
+      // sedang diambil, getDocumentPreviewFast akan join Promise yang sama.
+      prioritizeDocumentPredownload(type);
 
       openFullscreenPreviewShell(detail, doc);
 
