@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <link rel="icon" type="image/svg+xml" href="logo.svg" />
   <title>Data Siswa Kelas 9 2026-2027</title>
-  <!-- CLASSOF2027 Revisi 014 · Tabel Akun Full-Width Tanpa Gutter Kanan · Versi 1.42 -->
+  <!-- CLASSOF2027 Revisi 016 · Unified Dashboard One-Shot Render · Versi 1.44 -->
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -8488,7 +8488,7 @@
   <footer class="footer app-shell">
     <div><strong>SMP NEGERI 3 JAYAPURA</strong> · Sistem Pendataan Terpadu Murid & Nilai</div>
     <div style="margin-top:6px">Dikembangkan oleh gurukemarinsore</div>
-    <div style="margin-top:3px">Versi 1.42</div>
+    <div style="margin-top:3px">Versi 1.44</div>
     <div class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</div>
   </footer>
   </div>
@@ -8513,7 +8513,7 @@
         <div class="sidebar-footer">
           <div class="sidebar-footer-copy">
             <small>Dikembangkan oleh gurukemarinsore</small>
-            <small class="app-version-label">Versi 1.42</small>
+            <small class="app-version-label">Versi 1.44</small>
           </div>
           <small class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</small>
         </div>
@@ -9158,6 +9158,11 @@
     // dihydrate sesudah paint awal. Layout desktop dipadatkan hanya pada
     // Password + Kelas sesuai keputusan desain.
 
+    // ===== Revisi 016 · Unified Dashboard Aggregate / One-Shot Render =====
+    // Dashboard internal memakai satu endpoint getappdashboard. Seluruh kartu
+    // utama + akun + lock semester berasal dari satu snapshot A1:L12 sehingga
+    // skeleton dan hasil akhir tampil dalam satu fase, tanpa preload listaccounts.
+
     // ===== Revisi 012 · Dashboard Stale-While-Revalidate =====
     // Dashboard yang sudah pernah tersedia selalu ditampilkan dari cache lebih
     // dahulu. Refresh otoritatif hanya berjalan di background ketika snapshot
@@ -9165,7 +9170,14 @@
     const DASHBOARD_CACHE_REVALIDATE_MS = 120000;
 
     function captureDashboardSessionCache() {
-      if (!state.sessionToken || !state.dashboard) return;
+      if (
+        !state.sessionToken ||
+        !state.dashboard ||
+        !isUnifiedAuthenticatedDashboard(state.dashboard)
+      ) {
+        return;
+      }
+
       state.sessionCache.dashboard = {
         cachedAt: Date.now(),
         data: plainClone(state.dashboard),
@@ -9190,6 +9202,42 @@
         return Promise.resolve(state.sessionCache?.dashboard?.data || null);
       }
       return loadDashboard(true, false);
+    }
+
+    // ===== Revisi 015 · Fast Settings Cache-First + Stale-While-Revalidate =====
+    // Pengaturan yang sudah pernah dimuat ditampilkan langsung dari cache sesi.
+    // Unified Live Sync tetap menjadi jalur pembaruan utama; refresh otoritatif
+    // hanya berjalan diam-diam bila snapshot sudah cukup lama.
+    const SETTINGS_CACHE_REVALIDATE_MS = 120000;
+
+    function settingsSessionCacheNeedsRevalidate() {
+      const snapshot = state.sessionCache?.settings;
+      if (!snapshot) return true;
+
+      const cachedAt = Number(snapshot.cachedAt || 0);
+      if (!Number.isFinite(cachedAt) || cachedAt <= 0) return true;
+
+      return (Date.now() - cachedAt) >= SETTINGS_CACHE_REVALIDATE_MS;
+    }
+
+    function revalidateSettingsInBackground(force = false) {
+      if (
+        !state.sessionToken ||
+        state.user?.role !== 'SUPER_ADMIN'
+      ) {
+        return Promise.resolve(null);
+      }
+
+      // Jangan pernah menimpa draft/pengaturan yang sedang disimpan.
+      if (settingsHasLocalDraft()) {
+        return Promise.resolve(state.sessionCache?.settings || null);
+      }
+
+      if (!force && !settingsSessionCacheNeedsRevalidate()) {
+        return Promise.resolve(state.sessionCache?.settings || null);
+      }
+
+      return loadSettingsModule(false, true);
     }
 
     function captureOverviewSessionCache() {
@@ -9306,6 +9354,21 @@
       };
     }
 
+    function settingsStateHasUnsavedDraft() {
+      const semesterDraft = !arraysSameNumbers(
+        state.settings.dashboardSemesters || [],
+        state.settings.originalDashboardSemesters || []
+      );
+
+      const fontDraft = normalizeFrontendFontKey(
+        state.settings.fontKey || state.appFontKey
+      ) !== normalizeFrontendFontKey(
+        state.settings.originalFontKey || state.appFontKey
+      );
+
+      return semesterDraft || fontDraft;
+    }
+
     function captureSettingsSessionCache() {
       if (
         !state.sessionToken ||
@@ -9313,7 +9376,8 @@
         state.settings.loading ||
         state.settings.savingDashboard ||
         state.settings.savingFont ||
-        state.settings.savingLock
+        state.settings.savingLock ||
+        settingsStateHasUnsavedDraft()
       ) {
         return;
       }
@@ -9359,8 +9423,15 @@
       if (!snapshot?.data) return false;
 
       state.dashboard = plainClone(snapshot.data);
+
+      if (!isUnifiedAuthenticatedDashboard(state.dashboard)) {
+        invalidateDashboardSessionCache();
+        return false;
+      }
+
       state.selectedClass = snapshot.selectedClass || state.selectedClass || 'ALL';
       state.chartType = snapshot.chartType || state.chartType || 'dokumen';
+      applyUnifiedDashboardOverview(state.dashboard);
       return true;
     }
 
@@ -9510,6 +9581,7 @@
       const snapshot = state.sessionCache.settings;
       if (!snapshot || state.user?.role !== 'SUPER_ADMIN') return false;
 
+      state.settings.loading = false;
       state.settings.dashboardSemesters = plainClone(snapshot.dashboardSemesters || []);
       state.settings.originalDashboardSemesters = plainClone(snapshot.originalDashboardSemesters || []);
       state.settings.locks = plainClone(snapshot.locks || []);
@@ -9621,20 +9693,8 @@
     function settingsHasLocalDraft() {
       if (state.appSection !== 'settings') return false;
 
-      const semesterDraft = !arraysSameNumbers(
-        state.settings.dashboardSemesters || [],
-        state.settings.originalDashboardSemesters || []
-      );
-
-      const fontDraft = normalizeFrontendFontKey(
-        state.settings.fontKey || state.appFontKey
-      ) !== normalizeFrontendFontKey(
-        state.settings.originalFontKey || state.appFontKey
-      );
-
       return !!(
-        semesterDraft ||
-        fontDraft ||
+        settingsStateHasUnsavedDraft() ||
         state.settings.savingDashboard ||
         state.settings.savingFont ||
         state.settings.savingLock
@@ -9984,8 +10044,10 @@
         if (type.startsWith('ACCOUNT_')) {
           invalidateAccountsSessionCache();
           invalidateOverviewSessionCache();
+          invalidateDashboardSessionCache();
           effects.accounts = true;
-          effects.overview = true;
+          effects.dashboard = true;
+          effects.dashboardAll = true;
 
           const username = String(change?.username || '').trim().toLowerCase();
           const oldUsername = String(change?.usernameLama || '').trim().toLowerCase();
@@ -10030,6 +10092,7 @@
             settingKey.startsWith('SEMESTER_LOCK_') ||
             (Array.isArray(change?.fields) && change.fields.includes('semesterLock'))
           ) {
+            invalidateDashboardSessionCache();
             effects.semesterLocks = true;
             if (semester) {
               invalidateGradeSessionCache('', semester);
@@ -10185,7 +10248,28 @@
         state.dashboard.kelasDipilih = byClass.get(selected) || null;
       }
 
+      if (Array.isArray(result?.semesterLocks)) {
+        state.semesterLocks = plainClone(result.semesterLocks);
+        state.dashboard.semesterLocks = plainClone(result.semesterLocks);
+      }
+
+      if (
+        state.user?.role === 'SUPER_ADMIN' &&
+        result?.accountsSummary
+      ) {
+        state.accountsSummary = {
+          total: Number(result.accountsSummary.total || 0),
+          active: Number(result.accountsSummary.active || 0)
+        };
+        state.dashboard.accountsSummary = plainClone(state.accountsSummary);
+      }
+
+      if (result?.aggregateSource) {
+        state.dashboard.aggregateSource = result.aggregateSource;
+      }
+
       captureDashboardSessionCache();
+      captureOverviewSessionCache();
       return true;
     }
 
@@ -10242,6 +10326,14 @@
     async function refreshSemesterLocksFromLiveSync() {
       if (!state.sessionToken) return;
 
+      // Di Dashboard, lock semester harus berasal dari snapshot agregat yang
+      // sama dengan Murid/Dokumen/Nilai/Akun agar semuanya tetap konsisten.
+      if (state.appSection === 'dashboard') {
+        invalidateDashboardSessionCache();
+        await loadDashboard(true, false);
+        return;
+      }
+
       try {
         const lockData = await apiPost('getsemesterlocks', {
           token: state.sessionToken
@@ -10255,9 +10347,7 @@
           captureSettingsSessionCache();
         }
 
-        if (state.appSection === 'dashboard') {
-          renderSemesterLocks();
-        } else if (state.appSection === 'grades') {
+        if (state.appSection === 'grades') {
           renderGradeSemesterTabs();
         } else if (state.appSection === 'settings') {
           renderSettingsLocks();
@@ -10333,8 +10423,16 @@
         await refreshSemesterLocksFromLiveSync();
       }
 
-      if (effects.overview && ['dashboard', 'grades'].includes(state.appSection)) {
+      if (effects.overview && state.appSection === 'grades') {
         await loadAppOverview();
+      }
+
+      if (
+        effects.overview &&
+        state.appSection === 'dashboard' &&
+        !effects.dashboard
+      ) {
+        await loadDashboard(true, false);
       }
 
       if (
@@ -10407,10 +10505,7 @@
       }
 
       if (state.appSection === 'dashboard') {
-        await Promise.all([
-          loadDashboard(true, false),
-          loadAppOverview()
-        ]);
+        await loadDashboard(true, false);
       } else if (state.appSection === 'students') {
         await loadStudents(false, true);
       } else if (state.appSection === 'grades') {
@@ -11034,6 +11129,56 @@
       return result.data;
     }
 
+    // ===== Revisi 016 · Unified Dashboard One-Shot =====
+    // Setelah login, seluruh kartu Dashboard + status kunci berasal dari satu
+    // payload backend yang membaca satu snapshot Rekap_Dashboard A1:L12.
+    function isUnifiedAuthenticatedDashboard(dashboard) {
+      if (!dashboard || dashboard.requiresLogin !== true) return false;
+
+      const locks = dashboard.semesterLocks;
+      if (!Array.isArray(locks) || locks.length !== 6) return false;
+
+      if (state.user?.role === 'SUPER_ADMIN') {
+        const summary = dashboard.accountsSummary;
+        if (
+          !summary ||
+          !Number.isFinite(Number(summary.total)) ||
+          !Number.isFinite(Number(summary.active))
+        ) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    function applyUnifiedDashboardOverview(dashboard) {
+      if (!dashboard) return;
+
+      if (Array.isArray(dashboard.semesterLocks)) {
+        state.semesterLocks = plainClone(dashboard.semesterLocks);
+      }
+
+      if (state.user?.role === 'SUPER_ADMIN') {
+        const summary = dashboard.accountsSummary;
+        state.accountsSummary = summary
+          ? {
+              total: Number(summary.total || 0),
+              active: Number(summary.active || 0)
+            }
+          : null;
+      } else {
+        state.accountsSummary = null;
+      }
+    }
+
+    async function fetchAuthenticatedDashboard(requestToken) {
+      return apiPost('getappdashboard', {
+        token: requestToken,
+        kelas: ''
+      });
+    }
+
     async function loadDashboard(silent = false, showRefreshToast = silent) {
       const requestToken = state.sessionToken || '';
       const authenticatedRequest = Boolean(requestToken && state.user);
@@ -11047,7 +11192,7 @@
           ? await sharedSingleRequest(
               'dashboard',
               async entry => {
-                const data = await fetchDashboard();
+                const data = await fetchAuthenticatedDashboard(requestToken);
 
                 if (
                   entry.cancelled ||
@@ -11074,7 +11219,9 @@
         state.dashboard = dashboard;
 
         if (authenticatedRequest) {
+          applyUnifiedDashboardOverview(dashboard);
           captureDashboardSessionCache();
+          captureOverviewSessionCache();
         }
 
         applyGlobalFont(
@@ -12459,10 +12606,13 @@
     }
 
     function renderDashboardShell() {
-      const source = roleDashboardSource();
+      const unifiedReady = isUnifiedAuthenticatedDashboard(state.dashboard);
+      const source = unifiedReady ? roleDashboardSource() : null;
       const user = state.user;
       const meta = roleMeta(user?.role);
-      const activeSemesters = state.dashboard?.semesterNilai?.activeSemesters || [];
+      const activeSemesters = unifiedReady
+        ? (state.dashboard?.semesterNilai?.activeSemesters || [])
+        : [];
       const classLabel = user?.role === 'WALI_KELAS'
         ? `Kelas ${user.kelasPerwalian || '—'}`
         : 'Seluruh sekolah';
@@ -12472,13 +12622,37 @@
         : (user?.role === 'WALI_KELAS' ? 'Kelas Perwalian' : 'Cakupan Kelas');
 
       const fourthValue = user?.role === 'SUPER_ADMIN'
-        ? (state.accountsSummary ? `${state.accountsSummary.active}/${state.accountsSummary.total}` : null)
+        ? (
+            unifiedReady && state.accountsSummary
+              ? `${state.accountsSummary.active}/${state.accountsSummary.total}`
+              : null
+          )
         : (user?.role === 'WALI_KELAS' ? (user.kelasPerwalian || '—') : '10');
 
       const fourthValueHtml =
         user?.role === 'SUPER_ADMIN' && fourthValue === null
           ? '<span class="sk sk-value-md"></span>'
           : escapeHtml(String(fourthValue));
+
+      const studentValueHtml = unifiedReady
+        ? Number(source?.jumlahMurid || 0).toLocaleString('id-ID')
+        : '<span class="sk sk-value-md"></span>';
+
+      const documentValueHtml = unifiedReady
+        ? appMetricValue(source?.dokumen)
+        : '<span class="sk sk-value-md"></span>';
+
+      const gradeValueHtml = unifiedReady
+        ? appMetricValue(source?.nilai)
+        : '<span class="sk sk-value-md"></span>';
+
+      const documentNote = unifiedReady
+        ? metricNote(source?.dokumen, 'dokumen')
+        : 'ringkasan sekolah';
+
+      const gradeNote = unifiedReady
+        ? `Semester aktif: ${activeSemesters.length ? activeSemesters.join(', ') : 'belum ditentukan'}`
+        : 'memuat semester aktif';
 
       const fourthNote = user?.role === 'SUPER_ADMIN'
         ? 'akun aktif / total akun'
@@ -12502,7 +12676,7 @@
             <div class="app-stat-label">
               <span>Jumlah Murid</span><i class="ti ti-users"></i>
             </div>
-            <div class="app-stat-value">${Number(source?.jumlahMurid || 0).toLocaleString('id-ID')}</div>
+            <div class="app-stat-value">${studentValueHtml}</div>
             <div class="app-stat-note">${escapeHtml(classLabel)}</div>
           </article>
 
@@ -12510,16 +12684,16 @@
             <div class="app-stat-label">
               <span>Dokumen</span><i class="ti ti-files"></i>
             </div>
-            <div class="app-stat-value">${appMetricValue(source?.dokumen)}</div>
-            <div class="app-stat-note">${escapeHtml(metricNote(source?.dokumen, 'dokumen'))}</div>
+            <div class="app-stat-value">${documentValueHtml}</div>
+            <div class="app-stat-note">${escapeHtml(documentNote)}</div>
           </article>
 
           <article class="app-stat">
             <div class="app-stat-label">
               <span>Nilai</span><i class="ti ti-report-analytics"></i>
             </div>
-            <div class="app-stat-value">${appMetricValue(source?.nilai)}</div>
-            <div class="app-stat-note">Semester aktif: ${activeSemesters.length ? activeSemesters.join(', ') : 'belum ditentukan'}</div>
+            <div class="app-stat-value">${gradeValueHtml}</div>
+            <div class="app-stat-note">${escapeHtml(gradeNote)}</div>
           </article>
 
           <article class="app-stat">
@@ -12570,6 +12744,10 @@
       $$('[data-quick-section]').forEach(btn => {
         btn.addEventListener('click', () => switchAppSection(btn.dataset.quickSection));
       });
+
+      if (unifiedReady) {
+        renderSemesterLocks();
+      }
     }
 
     function moduleShortDescription(section, role) {
@@ -22392,6 +22570,7 @@
         }
 
         renderFontSettings();
+        captureSettingsSessionCache();
         scheduleDeferredLiveSyncFlush();
       }
     }
@@ -22509,21 +22688,31 @@
     }
 
     async function loadSettingsModule(showToastAfter = false, background = false) {
-      if (!state.sessionToken || state.user?.role !== 'SUPER_ADMIN') return;
+      if (!state.sessionToken || state.user?.role !== 'SUPER_ADMIN') return null;
 
       const requestToken = state.sessionToken;
       const isCurrentView = () =>
         state.sessionToken === requestToken &&
         state.appSection === 'settings';
 
-      if (isCurrentView()) state.settings.loading = true;
+      // Loader penuh hanya untuk first load tanpa cache. Refresh stale/background
+      // tidak mengubah halaman yang sudah tampil menjadi skeleton lagi.
+      const ownsLoadingFlag =
+        isCurrentView() &&
+        !background &&
+        !state.sessionCache?.settings;
+
+      if (ownsLoadingFlag) {
+        state.settings.loading = true;
+      }
 
       try {
         const bundle = await sharedSingleRequest(
           'settings',
           async entry => {
-            // Satu request menggantikan empat request Pengaturan lama.
             // Request tetap hidup di background bila pengguna pindah menu.
+            // sharedSingleRequest memastikan request identik bergabung ke Promise
+            // yang sama, bukan membuat panggilan backend kedua.
             const data = await apiPost('getsettingsbundle', {
               token: requestToken
             });
@@ -22535,12 +22724,29 @@
           }
         );
 
-        if (!bundle || state.sessionToken !== requestToken) return;
+        if (!bundle || state.sessionToken !== requestToken) return null;
 
-        applySettingsBundleData(bundle, true);
+        // Jika user mulai membuat draft saat refresh background masih berjalan,
+        // jangan timpa input lokal dengan snapshot server yang baru datang.
+        if (
+          background &&
+          (
+            settingsStateHasUnsavedDraft() ||
+            state.settings.savingDashboard ||
+            state.settings.savingFont ||
+            state.settings.savingLock
+          )
+        ) {
+          return bundle;
+        }
+
+        // Matikan flag sebelum apply agar snapshot otoritatif dapat langsung
+        // ditangkap oleh captureSettingsSessionCache().
         state.settings.loading = false;
+        applySettingsBundleData(bundle, true);
+        captureSettingsSessionCache();
 
-        if (!isCurrentView()) return;
+        if (!isCurrentView()) return bundle;
 
         renderDashboardSemesterOptions();
         updateSaveDashboardSemestersButton();
@@ -22552,8 +22758,10 @@
           showToast('Pengaturan diperbarui.');
         }
 
+        return bundle;
+
       } catch (error) {
-        if (await handleSessionError(error)) return;
+        if (await handleSessionError(error)) return null;
 
         if (background || !isCurrentView()) {
           console.warn('Background Pengaturan:', error?.message || error);
@@ -22567,10 +22775,17 @@
           }
         }
 
+        return null;
+
       } finally {
-        if (isCurrentView()) state.settings.loading = false;
+        // Request yang dimulai di Pengaturan boleh selesai setelah user pindah
+        // menu; flag loading tetap harus dibersihkan agar cache tidak terkunci.
+        if (state.sessionToken === requestToken) {
+          state.settings.loading = false;
+        }
       }
     }
+
 
 
     async function saveDashboardSemesterSettings() {
@@ -22653,6 +22868,7 @@
         }
 
         updateSaveDashboardSemestersButton();
+        captureSettingsSessionCache();
         scheduleDeferredLiveSyncFlush();
       }
     }
@@ -22782,6 +22998,8 @@
           btn.disabled = false;
           btn.innerHTML = original;
         }
+
+        captureSettingsSessionCache();
       }
     }
 
@@ -22966,30 +23184,16 @@
       $('#appPageSubtitle').textContent = `${currentRoleScope()} · ${sessionSubtitle()}`;
 
       if (section === 'dashboard') {
-        let dashboardRestored = restoreDashboardSessionCache();
+        const dashboardRestored = restoreDashboardSessionCache();
 
-        // Pada login pertama, public dashboard yang sudah selesai dimuat dapat
-        // langsung menjadi snapshot awal sesi. Tidak perlu request kedua hanya
-        // untuk menggambar kartu yang sama.
-        if (!dashboardRestored && state.dashboard) {
-          captureDashboardSessionCache();
-          dashboardRestored = Boolean(state.sessionCache?.dashboard?.data);
-        }
-
+        // Revisi 016: public dashboard sebelum login tidak lagi dipakai sebagai
+        // cache dashboard internal. First load menampilkan skeleton untuk SEMUA
+        // ringkasan, lalu satu payload getappdashboard merender semuanya serempak.
         renderDashboardShell();
 
-        if (!restoreOverviewSessionCache()) {
-          loadAppOverview();
-        }
-
         if (!dashboardRestored) {
-          // Benar-benar belum ada data: lakukan first load. Render shell tetap
-          // tersedia sehingga navigasi tidak diblokir.
           loadDashboard(true, false);
         } else {
-          // Stale-while-revalidate: cache tampil sekarang, refresh otoritatif
-          // hanya bila snapshot cukup lama. Jika request sudah berjalan, fungsi
-          // loadDashboard akan bergabung ke Promise yang sama.
           revalidateDashboardInBackground(false);
         }
       } else if (section === 'students') {
@@ -23023,31 +23227,23 @@
       } else if (section === 'accounts') {
         renderAccountsModule();
 
+        // Revisi 016: daftar akun lengkap (termasuk avatar) hanya dimuat saat
+        // menu Akun benar-benar dibuka. Dashboard tidak lagi melakukan preload.
         if (!restoreAccountsSessionCache()) {
-          const overviewInFlight = state.sessionRequests?.overview?.promise;
-          if (overviewInFlight) {
-            const continueAccountsLoad = () => {
-              if (
-                state.appSection === 'accounts' &&
-                !restoreAccountsSessionCache()
-              ) {
-                loadAccounts();
-              }
-            };
-
-            overviewInFlight.then(
-              continueAccountsLoad,
-              continueAccountsLoad
-            );
-          } else {
-            loadAccounts();
-          }
+          loadAccounts();
         }
       } else if (section === 'settings') {
         renderSettingsModule();
 
-        if (!restoreSettingsSessionCache()) {
-          loadSettingsModule();
+        const settingsRestored = restoreSettingsSessionCache();
+
+        if (!settingsRestored) {
+          // First load: belum ada snapshot sesi, ambil data otoritatif.
+          loadSettingsModule(false, false);
+        } else {
+          // Revisit: data cache sudah tampil. Refresh hanya bila stale dan
+          // dilakukan diam-diam; Live Sync tetap menjadi updater utama.
+          revalidateSettingsInBackground(false);
         }
       } else {
         renderModulePlaceholder(section);
@@ -23061,71 +23257,34 @@
       if (!state.sessionToken || !state.user) return;
 
       const requestToken = state.sessionToken;
-      const requestRole = state.user.role;
 
       try {
         const result = await sharedSingleRequest(
           'overview',
           async entry => {
-            const tasks = [
-              apiPost('getsemesterlocks', { token: requestToken })
-            ];
-
-            if (requestRole === 'SUPER_ADMIN') {
-              tasks.push(apiPost('listaccounts', { token: requestToken }));
-            }
-
-            const results = await Promise.all(tasks);
+            const lockData = await apiPost('getsemesterlocks', {
+              token: requestToken
+            });
 
             if (entry.cancelled || state.sessionToken !== requestToken) {
               return null;
             }
 
-            return {
-              lockData: results[0] || null,
-              accountsData:
-                requestRole === 'SUPER_ADMIN'
-                  ? (results[1] || null)
-                  : null
-            };
+            return { lockData: lockData || null };
           }
         );
 
         if (!result || state.sessionToken !== requestToken) return;
 
         state.semesterLocks = result.lockData?.semesters || [];
-
-        if (requestRole === 'SUPER_ADMIN' && result.accountsData) {
-          const data = result.accountsData;
-          const accounts = data.accounts || [];
-
-          // listaccounts memang sudah dibaca untuk overview; gunakan hasil yang
-          // sama untuk cache menu Akun agar tidak meminta data kedua kali.
-          state.accounts.rows = plainClone(accounts);
-          state.accounts.loaded = true;
-          state.accounts.roles = plainClone(data.roles || state.accounts.roles);
-          state.accounts.classes = plainClone(data.classes || state.accounts.classes);
-          state.accounts.max = Number(data.maxAccounts || data.max || state.accounts.max || 20);
-
-          state.accountsSummary = {
-            total: accounts.length,
-            active: accounts.filter(item => item.statusAktif === true).length
-          };
-
-          captureAccountsSessionCache();
-        }
-
         captureOverviewSessionCache();
 
-        if (state.appSection === 'dashboard') {
-          renderDashboardShell();
-          renderSemesterLocks();
-        } else if (state.appSection === 'grades') {
-          // Status warna + ikon Semester 1–6 langsung diperbarui begitu
-          // overview selesai, tanpa perlu klik semester sebagai pemicu.
+        if (state.appSection === 'grades') {
           renderGradeSemesterTabs();
-        } else if (state.appSection === 'accounts') {
-          restoreAccountsSessionCache();
+        } else if (state.appSection === 'settings') {
+          renderSettingsLocks();
+        } else if (state.appSection === 'dashboard') {
+          renderSemesterLocks();
         }
       } catch (error) {
         if (['SESSION_TIDAK_VALID','SESSION_SUDAH_LOGOUT','SESSION_KEDALUWARSA','SESSION_DICABUT'].includes(error.code)) {
@@ -23136,7 +23295,7 @@
         if ($('#lockLoadStatus')) {
           $('#lockLoadStatus').textContent = 'gagal memuat';
         }
-        console.warn('Background overview:', error?.message || error);
+        console.warn('Background semester overview:', error?.message || error);
       }
     }
 
