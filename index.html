@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <link rel="icon" type="image/svg+xml" href="logo.svg" />
   <title>Data Siswa Kelas 9 2026-2027</title>
-  <!-- CLASSOF2027 Revisi 021 · Dokumen Tahap 2 Fast Detail + Background Metadata · Versi 1.49 -->
+  <!-- CLASSOF2027 Revisi 022 · Dokumen Tahap 3 Signed Preview Fast Path · Versi 1.50 -->
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -8597,7 +8597,7 @@
   <footer class="footer app-shell">
     <div><strong>SMP NEGERI 3 JAYAPURA</strong> · Sistem Pendataan Terpadu Murid & Nilai</div>
     <div style="margin-top:6px">Dikembangkan oleh gurukemarinsore</div>
-    <div style="margin-top:3px">Versi 1.49</div>
+    <div style="margin-top:3px">Versi 1.50</div>
     <div class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</div>
   </footer>
   </div>
@@ -8622,7 +8622,7 @@
         <div class="sidebar-footer">
           <div class="sidebar-footer-copy">
             <small>Dikembangkan oleh gurukemarinsore</small>
-            <small class="app-version-label">Versi 1.49</small>
+            <small class="app-version-label">Versi 1.50</small>
           </div>
           <small class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</small>
         </div>
@@ -9141,6 +9141,7 @@
     }
 
     // ===== Revisi 021 · Dokumen Tahap 2: Detail Cache =====
+    // ===== Revisi 022 · Dokumen Tahap 3: Signed Preview Fast Path =====
     function studentDocumentDetailCacheKey(source) {
       return [
         String(source?.kelas || '').trim().toUpperCase(),
@@ -20486,7 +20487,15 @@
           token: state.sessionToken,
           kelas: detail.kelas,
           nisn: detail.nisn,
-          documentType: type
+          documentType: type,
+
+          // Revisi 022 · Tahap 3: tiket preview ditandatangani backend.
+          // Jika valid, backend dapat langsung membuka file Drive tanpa
+          // mencari murid dan membaca Spreadsheet ulang. Backend tetap
+          // mempunyai safe fallback ke jalur lama bila tiket tidak ada,
+          // kedaluwarsa, atau file legacy perlu validasi tambahan.
+          previewTicket: String(doc?.previewTicket || ''),
+          fileId: String(doc?.fileId || '')
         }));
 
         // Dipakai resetSessionRequests() ketika logout/session berganti.
@@ -20497,6 +20506,44 @@
           entry.abort = () => xhr.abort();
         }
       });
+    }
+
+    function syncDocumentPreviewTicketFromResponse(detail, doc, data) {
+      const ticket = String(data?.previewTicket || '').trim();
+      const expiresAt = String(data?.previewTicketExpiresAt || '').trim();
+
+      if (!ticket || !doc) return;
+
+      doc.previewTicket = ticket;
+      doc.previewTicketExpiresAt = expiresAt;
+
+      const current = (state.documents.detail?.documents || [])
+        .find(item =>
+          item.type === doc.type &&
+          String(item.fileId || '') === String(doc.fileId || '')
+        );
+
+      if (current) {
+        current.previewTicket = ticket;
+        current.previewTicketExpiresAt = expiresAt;
+      }
+
+      const student = state.documents.selectedStudent;
+      if (student) {
+        const key = studentDocumentDetailCacheKey(student);
+        const cache = state.sessionCache?.documentDetails;
+        const cached = cache instanceof Map ? cache.get(key) : null;
+        const cachedDoc = (cached?.documents || [])
+          .find(item =>
+            item.type === doc.type &&
+            String(item.fileId || '') === String(doc.fileId || '')
+          );
+
+        if (cachedDoc) {
+          cachedDoc.previewTicket = ticket;
+          cachedDoc.previewTicketExpiresAt = expiresAt;
+        }
+      }
     }
 
     function getDocumentPreviewFast(detail, doc, type, onProgress) {
@@ -20586,6 +20633,12 @@
         broadcastProgress
       )
         .then(data => {
+          syncDocumentPreviewTicketFromResponse(
+            detail,
+            doc,
+            data
+          );
+
           if (cache instanceof Map) {
             setBoundedSessionCache(
               cache,
