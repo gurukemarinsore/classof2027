@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <link rel="icon" type="image/svg+xml" href="logo.svg" />
   <title>Data Siswa Kelas 9 2026-2027</title>
-  <!-- CLASSOF2027 Revisi 020 · Dokumen Tahap 1 Fast Preview + Progress Nyata · Versi 1.48 -->
+  <!-- CLASSOF2027 Revisi 021 · Dokumen Tahap 2 Fast Detail + Background Metadata · Versi 1.49 -->
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -8597,7 +8597,7 @@
   <footer class="footer app-shell">
     <div><strong>SMP NEGERI 3 JAYAPURA</strong> · Sistem Pendataan Terpadu Murid & Nilai</div>
     <div style="margin-top:6px">Dikembangkan oleh gurukemarinsore</div>
-    <div style="margin-top:3px">Versi 1.48</div>
+    <div style="margin-top:3px">Versi 1.49</div>
     <div class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</div>
   </footer>
   </div>
@@ -8622,7 +8622,7 @@
         <div class="sidebar-footer">
           <div class="sidebar-footer-copy">
             <small>Dikembangkan oleh gurukemarinsore</small>
-            <small class="app-version-label">Versi 1.48</small>
+            <small class="app-version-label">Versi 1.49</small>
           </div>
           <small class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</small>
         </div>
@@ -8985,6 +8985,7 @@
         studentDirectory: new Map(),
         grades: new Map(),
         documents: new Map(),
+        documentDetails: new Map(),
         documentPreviews: new Map(),
         accountAvatars: new Map(),
         accounts: null,
@@ -9006,6 +9007,8 @@
         studentDirectory: new Map(),
         grades: new Map(),
         documents: new Map(),
+        documentDetails: new Map(),
+        documentMetadata: new Map(),
         documentPreviews: new Map(),
         accounts: null,
         settings: null
@@ -9033,7 +9036,7 @@
         cancelRequestEntry(current.accounts);
         cancelRequestEntry(current.settings);
 
-        ['students','studentDirectory','grades','documents','documentPreviews'].forEach(name => {
+        ['students','studentDirectory','grades','documents','documentDetails','documentMetadata','documentPreviews'].forEach(name => {
           const map = current[name];
           if (!(map instanceof Map)) return;
           map.forEach(cancelRequestEntry);
@@ -9135,6 +9138,87 @@
         Number(source?.page || 1),
         Number(source?.limit || 20)
       ].join('|');
+    }
+
+    // ===== Revisi 021 · Dokumen Tahap 2: Detail Cache =====
+    function studentDocumentDetailCacheKey(source) {
+      return [
+        String(source?.kelas || '').trim().toUpperCase(),
+        String(source?.nisn || '').trim()
+      ].join('|');
+    }
+
+    function cacheStudentDocumentDetail(data) {
+      if (!data || !state.sessionCache?.documentDetails) return null;
+
+      const snapshot = {
+        ...plainClone(data),
+        cachedAt: Date.now()
+      };
+
+      setBoundedSessionCache(
+        state.sessionCache.documentDetails,
+        studentDocumentDetailCacheKey(snapshot),
+        snapshot,
+        30
+      );
+
+      return snapshot;
+    }
+
+    function invalidateDocumentDetailCache(kelas = '', nisn = '') {
+      const normalizedClass = String(kelas || '').trim().toUpperCase();
+      const normalizedNisn = String(nisn || '').trim();
+      const cache = state.sessionCache?.documentDetails;
+      const requestMaps = [
+        state.sessionRequests?.documentDetails,
+        state.sessionRequests?.documentMetadata
+      ];
+
+      const matches = key => {
+        const [cachedClass, cachedNisn] = String(key || '').split('|');
+
+        if (!normalizedClass && !normalizedNisn) return true;
+        if (
+          normalizedClass &&
+          String(cachedClass || '').toUpperCase() !== normalizedClass
+        ) {
+          return false;
+        }
+        if (
+          normalizedNisn &&
+          String(cachedNisn || '') !== normalizedNisn
+        ) {
+          return false;
+        }
+        return true;
+      };
+
+      if (cache instanceof Map) {
+        [...cache.keys()].forEach(key => {
+          if (matches(key)) cache.delete(key);
+        });
+      }
+
+      requestMaps.forEach(map => {
+        if (!(map instanceof Map)) return;
+        [...map.entries()].forEach(([key, entry]) => {
+          if (!matches(key)) return;
+          cancelRequestEntry(entry);
+          map.delete(key);
+        });
+      });
+    }
+
+    function sameSelectedDocumentStudent(student) {
+      return !!(
+        student &&
+        state.documents.selectedStudent &&
+        String(student.kelas || '').toUpperCase() ===
+          String(state.documents.selectedStudent.kelas || '').toUpperCase() &&
+        String(student.nisn || '') ===
+          String(state.documents.selectedStudent.nisn || '')
+      );
     }
 
     // ===== Revisi 011 · Shared Student Directory Cache =====
@@ -10026,6 +10110,7 @@
 
         if (type.startsWith('STUDENT_') || type.startsWith('STUDENTS_')) {
           clearDocumentPreviewCache();
+          invalidateDocumentDetailCache(kelas);
           invalidateSearchSessionCacheForClass(
             state.sessionCache?.students,
             kelas
@@ -10119,6 +10204,7 @@
 
         if (type.startsWith('DOCUMENT_')) {
           clearDocumentPreviewCache();
+          invalidateDocumentDetailCache(kelas);
           invalidateSearchSessionCacheForClass(
             state.sessionCache?.documents,
             kelas
@@ -19605,13 +19691,22 @@
 
     async function openStudentDocumentsDialog(student) {
       state.documents.selectedStudent = student;
-      state.documents.detail = null;
+
+      const detailKey =
+        studentDocumentDetailCacheKey(student);
+      const cached =
+        state.sessionCache?.documentDetails instanceof Map
+          ? state.sessionCache.documentDetails.get(detailKey)
+          : null;
+
+      state.documents.detail =
+        cached ? plainClone(cached) : null;
 
       appendDialog(`
         <div class="dialog-head">
           <div>
             <h3>Dokumen Murid</h3>
-            <p>Memuat KK, Akte Kelahiran, dan Ijazah SD.</p>
+            <p>KK, Akte Kelahiran, dan Ijazah SD.</p>
           </div>
           <button class="dialog-close" id="closeDocumentsDialog" type="button">
             <i class="ti ti-x"></i>
@@ -19619,12 +19714,16 @@
         </div>
 
         <div id="studentDocumentsContent">
-          <div class="preview-loading">
-            <span class="app-loading-line">
-              <span class="mini-spinner"></span>
-              membaca dokumen ${escapeHtml(student.namaLengkap)}
-            </span>
-          </div>
+          ${cached
+            ? ''
+            : `
+              <div class="preview-loading">
+                <span class="app-loading-line">
+                  <span class="mini-spinner"></span>
+                  membaca dokumen ${escapeHtml(student.namaLengkap)}
+                </span>
+              </div>
+            `}
         </div>
       `, true);
 
@@ -19633,7 +19732,114 @@
         closeAppDialog
       );
 
+      if (cached) {
+        renderStudentDocumentDetail();
+
+        if (cached.metadataComplete !== true) {
+          scheduleStudentDocumentMetadataEnrichment(student);
+        }
+        return;
+      }
+
       await loadStudentDocumentDetail(student);
+    }
+
+    function requestStudentDocumentFastDetail(student) {
+      const key = studentDocumentDetailCacheKey(student);
+      const cache = state.sessionCache?.documentDetails;
+      const registry = state.sessionRequests?.documentDetails;
+      const cached = cache instanceof Map
+        ? cache.get(key)
+        : null;
+
+      if (cached) {
+        return Promise.resolve(plainClone(cached));
+      }
+
+      return sharedMapRequest(
+        registry,
+        key,
+        async entry => {
+          const data = await apiPost('getdocuments', {
+            token: state.sessionToken,
+            kelas: student.kelas,
+            nisn: student.nisn
+          });
+
+          if (entry.cancelled) return null;
+          return cacheStudentDocumentDetail(data);
+        }
+      );
+    }
+
+    function requestStudentDocumentMetadata(student) {
+      const key = studentDocumentDetailCacheKey(student);
+      const cache = state.sessionCache?.documentDetails;
+      const registry = state.sessionRequests?.documentMetadata;
+      const cached = cache instanceof Map
+        ? cache.get(key)
+        : null;
+
+      if (cached?.metadataComplete === true) {
+        return Promise.resolve(plainClone(cached));
+      }
+
+      return sharedMapRequest(
+        registry,
+        key,
+        async entry => {
+          const data = await apiPost('getdocumentsmetadata', {
+            token: state.sessionToken,
+            kelas: student.kelas,
+            nisn: student.nisn
+          });
+
+          if (entry.cancelled) return null;
+          return cacheStudentDocumentDetail(data);
+        }
+      );
+    }
+
+    let documentMetadataEnrichmentTimer = null;
+
+    function scheduleStudentDocumentMetadataEnrichment(student) {
+      if (!student || !state.sessionToken) return;
+
+      clearTimeout(documentMetadataEnrichmentTimer);
+
+      // Fast path sudah dicat lebih dulu. Validasi Drive baru dimulai
+      // sedikit setelahnya agar tiga kartu tidak menunggu Drive.
+      documentMetadataEnrichmentTimer = setTimeout(async () => {
+        documentMetadataEnrichmentTimer = null;
+
+        try {
+          const data =
+            await requestStudentDocumentMetadata(student);
+
+          if (!data) return;
+
+          if (sameSelectedDocumentStudent(student)) {
+            state.documents.detail = plainClone(data);
+
+            // Jika dialog utama masih terbuka, enrich metadata tanpa
+            // memblokir render awal. Nested dialog/fullscreen tidak diganggu.
+            if (
+              $('#studentDocumentsContent') &&
+              !$('#fullscreenDocumentPreview')
+            ) {
+              renderStudentDocumentDetail();
+            }
+          }
+
+        } catch (error) {
+          // Enrichment bersifat best-effort. Preview/Ganti/Hapus tetap
+          // melakukan validasi Drive sendiri sehingga keamanan tidak turun.
+          console.warn(
+            'Enrichment metadata dokumen gagal:',
+            error?.message || error
+          );
+        }
+      }, 220);
     }
 
     async function loadStudentDocumentDetail(student) {
@@ -19641,14 +19847,19 @@
       if (!target) return;
 
       try {
-        const data = await apiPost('getdocuments', {
-          token: state.sessionToken,
-          kelas: student.kelas,
-          nisn: student.nisn
-        });
+        const data =
+          await requestStudentDocumentFastDetail(student);
 
-        state.documents.detail = data;
+        if (!data || !sameSelectedDocumentStudent(student)) {
+          return;
+        }
+
+        state.documents.detail = plainClone(data);
         renderStudentDocumentDetail();
+
+        if (data.metadataComplete !== true) {
+          scheduleStudentDocumentMetadataEnrichment(student);
+        }
 
       } catch (error) {
         if (await handleSessionError(error)) return;
@@ -19718,6 +19929,16 @@
     }
 
     function documentMetaHtml(doc) {
+      if (
+        doc.uploaded &&
+        doc.metadataPending === true
+      ) {
+        return `
+          <strong>Dokumen tersedia</strong><br>
+          Metadata file dimuat di latar belakang…
+        `;
+      }
+
       if (doc.locationMismatch) {
         return 'File tercatat tetapi berada di lokasi folder yang tidak sesuai. Hubungi Super Admin.';
       }
@@ -20877,6 +21098,28 @@
       body.appendChild(iframe);
     }
 
+    function mergePreviewMetadataIntoDocumentDetail(type, previewData) {
+      const detail = state.documents.detail;
+      if (!detail || !previewData) return;
+
+      const doc = (detail.documents || [])
+        .find(item => item.type === type);
+
+      if (!doc) return;
+
+      doc.uploaded = true;
+      doc.missing = false;
+      doc.locationMismatch = false;
+      doc.metadataPending = false;
+      doc.validationDeferred = false;
+      doc.fileId = String(previewData.fileId || doc.fileId || '');
+      doc.fileName = String(previewData.fileName || doc.fileName || '');
+      doc.mimeType = String(previewData.mimeType || doc.mimeType || '');
+      doc.sizeBytes = Number(previewData.sizeBytes || doc.sizeBytes || 0);
+
+      cacheStudentDocumentDetail(detail);
+    }
+
     async function previewStudentDocument(type) {
       const detail = state.documents.detail;
       const doc = getCurrentDocument(type);
@@ -20904,6 +21147,8 @@
         if (!$('#fullscreenDocumentPreview')) {
           return;
         }
+
+        mergePreviewMetadataIntoDocumentDetail(type, data);
 
         updateFullscreenPreviewProgress(
           100,
@@ -21203,6 +21448,10 @@
           });
 
           clearDocumentPreviewCache(previousFileId);
+          invalidateDocumentDetailCache(
+            detail.kelas,
+            detail.nisn
+          );
 
           if (bar) bar.style.width = '100%';
           status.textContent =
@@ -21316,6 +21565,10 @@
             });
 
             clearDocumentPreviewCache(previousFileId);
+            invalidateDocumentDetailCache(
+              detail.kelas,
+              detail.nisn
+            );
             await refreshDocumentDataAfterChange();
 
             closeAppDialog();
@@ -21348,13 +21601,19 @@
       if (!student) return;
 
       try {
+        invalidateDocumentDetailCache(
+          student.kelas,
+          student.nisn
+        );
+
         const data = await apiPost('getdocuments', {
           token: state.sessionToken,
           kelas: student.kelas,
           nisn: student.nisn
         });
 
-        state.documents.detail = data;
+        const cached = cacheStudentDocumentDetail(data);
+        state.documents.detail = plainClone(cached || data);
 
         // Perbarui status ringkas pada list yang sudah ada.
         const row = state.documents.students.find(
@@ -21379,6 +21638,7 @@
           };
         }
 
+        scheduleStudentDocumentMetadataEnrichment(student);
         loadDashboard(true);
 
       } catch (error) {
