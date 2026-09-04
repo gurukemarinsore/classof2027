@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <link rel="icon" type="image/svg+xml" href="logo.svg" />
   <title>Data Siswa Kelas 9 2026-2027</title>
-  <!-- CLASSOF2027 Revisi 026 · Normalisasi Gambar 4000px + Kamera Fullscreen · Versi 1.54 -->
+  <!-- CLASSOF2027 Revisi 027 · Kamera Resolusi Tinggi + Validasi Hasil Foto · Versi 1.55 -->
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -8558,7 +8558,7 @@
 
   
     /* =========================================================
-       Revisi 026 · Normalisasi Gambar 4000px + Kamera Fullscreen
+       Revisi 027 · Kamera Resolusi Tinggi + Validasi Hasil Foto
        ========================================================= */
     .document-upload-choice-grid {
       margin-top: 12px;
@@ -9060,7 +9060,7 @@
   <footer class="footer app-shell">
     <div><strong>SMP NEGERI 3 JAYAPURA</strong> · Sistem Pendataan Terpadu Murid & Nilai</div>
     <div style="margin-top:6px">Dikembangkan oleh gurukemarinsore</div>
-    <div style="margin-top:3px">Versi 1.54</div>
+    <div style="margin-top:3px">Versi 1.55</div>
     <div class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</div>
   </footer>
   </div>
@@ -9085,7 +9085,7 @@
         <div class="sidebar-footer">
           <div class="sidebar-footer-copy">
             <small>Dikembangkan oleh gurukemarinsore</small>
-            <small class="app-version-label">Versi 1.54</small>
+            <small class="app-version-label">Versi 1.55</small>
           </div>
           <small class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</small>
         </div>
@@ -23280,6 +23280,15 @@
     const DOCUMENT_IMAGE_MAX_SIDE = 4000;
     const DOCUMENT_JPEG_QUALITY = 0.95;
 
+    // Revisi 027 · Kamera dokumen resolusi tinggi.
+    // Stream diminta setinggi mungkin agar fallback canvas tidak jatuh ke
+    // resolusi default rendah. Foto tetap mencoba resolusi maksimum sensor
+    // melalui ImageCapture, lalu hasil akhirnya dinormalisasi ke 4000px.
+    const DOCUMENT_CAMERA_STREAM_IDEAL_WIDTH = 4096;
+    const DOCUMENT_CAMERA_STREAM_IDEAL_HEIGHT = 3072;
+    const DOCUMENT_CAMERA_MIN_LONG_SIDE = 1600;
+    const DOCUMENT_CAMERA_MIN_SHORT_SIDE = 900;
+
     function documentImageOutputName(name, mimeType) {
       const clean = String(name || 'dokumen').trim() || 'dokumen';
       const base = clean.replace(/\.[^.]+$/, '') || 'dokumen';
@@ -23637,6 +23646,144 @@
       documentCameraSession = null;
     }
 
+    function documentCameraVideoConstraints(
+      preferredFacingMode,
+      exactFacingMode = false
+    ) {
+      return {
+        facingMode: exactFacingMode
+          ? { exact: preferredFacingMode }
+          : { ideal: preferredFacingMode },
+        width: { ideal: DOCUMENT_CAMERA_STREAM_IDEAL_WIDTH },
+        height: { ideal: DOCUMENT_CAMERA_STREAM_IDEAL_HEIGHT }
+      };
+    }
+
+    async function improveDocumentCameraTrackResolution(track) {
+      if (!track || typeof track.applyConstraints !== 'function') {
+        return null;
+      }
+
+      let capabilities = null;
+
+      try {
+        capabilities = track.getCapabilities?.() || null;
+      } catch (err) {
+        capabilities = null;
+      }
+
+      if (!capabilities) return null;
+
+      const maxWidth = Number(capabilities.width?.max || 0);
+      const maxHeight = Number(capabilities.height?.max || 0);
+
+      if (!maxWidth && !maxHeight) return capabilities;
+
+      const constraints = {};
+
+      // Gunakan "ideal", bukan "exact", agar browser bebas memilih kombinasi
+      // resolusi tertinggi yang benar-benar didukung kamera aktif.
+      if (maxWidth) constraints.width = { ideal: maxWidth };
+      if (maxHeight) constraints.height = { ideal: maxHeight };
+
+      try {
+        await track.applyConstraints(constraints);
+      } catch (err) {
+        // Stream awal tetap valid bila browser menolak peningkatan constraint.
+      }
+
+      return capabilities;
+    }
+
+    async function createDocumentImageCaptureInfo(track) {
+      if (
+        !track ||
+        typeof window.ImageCapture !== 'function' ||
+        typeof window.ImageCapture.prototype?.takePhoto !== 'function'
+      ) {
+        return {
+          imageCapture: null,
+          photoCapabilities: null,
+          maxPhotoWidth: 0,
+          maxPhotoHeight: 0
+        };
+      }
+
+      try {
+        const imageCapture = new ImageCapture(track);
+        let photoCapabilities = null;
+
+        if (typeof imageCapture.getPhotoCapabilities === 'function') {
+          try {
+            photoCapabilities = await imageCapture.getPhotoCapabilities();
+          } catch (err) {
+            photoCapabilities = null;
+          }
+        }
+
+        return {
+          imageCapture,
+          photoCapabilities,
+          maxPhotoWidth: Number(photoCapabilities?.imageWidth?.max || 0),
+          maxPhotoHeight: Number(photoCapabilities?.imageHeight?.max || 0)
+        };
+      } catch (err) {
+        return {
+          imageCapture: null,
+          photoCapabilities: null,
+          maxPhotoWidth: 0,
+          maxPhotoHeight: 0
+        };
+      }
+    }
+
+    async function waitForDocumentCameraVideo(video, timeoutMs = 1800) {
+      if (!video) return;
+
+      if (video.readyState >= 1 && video.videoWidth && video.videoHeight) {
+        return;
+      }
+
+      await new Promise(resolve => {
+        let settled = false;
+        const finish = () => {
+          if (settled) return;
+          settled = true;
+          video.removeEventListener('loadedmetadata', finish);
+          video.removeEventListener('resize', finish);
+          clearTimeout(timer);
+          resolve();
+        };
+
+        const timer = setTimeout(finish, timeoutMs);
+        video.addEventListener('loadedmetadata', finish, { once: true });
+        video.addEventListener('resize', finish, { once: true });
+      });
+    }
+
+    function documentCameraResolutionTooLow(width, height) {
+      const w = Number(width || 0);
+      const h = Number(height || 0);
+
+      if (!w || !h) return true;
+
+      const longSide = Math.max(w, h);
+      const shortSide = Math.min(w, h);
+
+      return (
+        longSide < DOCUMENT_CAMERA_MIN_LONG_SIDE ||
+        shortSide < DOCUMENT_CAMERA_MIN_SHORT_SIDE
+      );
+    }
+
+    function documentCameraLowResolutionMessage(width, height) {
+      return (
+        `Resolusi foto terlalu rendah (${width}×${height}) untuk dokumen ` +
+        'bertulisan kecil. Foto tidak digunakan. Coba Foto Ulang; jika kamera ' +
+        'browser tetap rendah, pilih foto resolusi tinggi dari galeri.'
+      );
+    }
+
     async function startDocumentCamera(
       type,
       detail,
@@ -23667,47 +23814,69 @@
       if (status) {
         status.textContent =
           preferredFacingMode === 'environment'
-            ? 'Membuka kamera belakang/utama…'
-            : 'Membuka kamera depan…';
+            ? 'Membuka kamera belakang/utama resolusi tinggi…'
+            : 'Membuka kamera depan resolusi tinggi…';
       }
 
       let stream = null;
 
       try {
-        // Revisi 026: resolusi kamera tidak dikunci. Browser/perangkat
-        // bebas memberikan kualitas terbaik yang tersedia. Yang diatur
-        // hanya prioritas kamera belakang/depan; normalisasi 4000px
-        // dilakukan setelah foto selesai diambil.
+        // Revisi 027: minta kamera yang dipilih + stream resolusi tinggi.
+        // Constraint resolusi bersifat ideal agar kompatibel lintas HP/browser.
         stream = await navigator.mediaDevices.getUserMedia({
           audio: false,
-          video: {
-            facingMode: { exact: preferredFacingMode }
-          }
+          video: documentCameraVideoConstraints(
+            preferredFacingMode,
+            true
+          )
         });
       } catch (exactError) {
         try {
-          // Sebagian browser hanya mendukung facingMode sebagai preferensi.
           stream = await navigator.mediaDevices.getUserMedia({
             audio: false,
-            video: {
-              facingMode: { ideal: preferredFacingMode }
-            }
+            video: documentCameraVideoConstraints(
+              preferredFacingMode,
+              false
+            )
           });
         } catch (idealError) {
-          stream = await navigator.mediaDevices.getUserMedia({
-            audio: false,
-            video: true
-          });
+          try {
+            stream = await navigator.mediaDevices.getUserMedia({
+              audio: false,
+              video: {
+                width: { ideal: DOCUMENT_CAMERA_STREAM_IDEAL_WIDTH },
+                height: { ideal: DOCUMENT_CAMERA_STREAM_IDEAL_HEIGHT }
+              }
+            });
+          } catch (highResolutionError) {
+            // Fallback terakhir untuk browser dengan dukungan constraint terbatas.
+            stream = await navigator.mediaDevices.getUserMedia({
+              audio: false,
+              video: true
+            });
+          }
         }
       }
 
+      const track = stream.getVideoTracks()[0];
+      const trackCapabilities = await improveDocumentCameraTrackResolution(track);
+      const captureInfo = await createDocumentImageCaptureInfo(track);
+
       documentCameraSession = {
         stream,
+        track,
+        trackCapabilities,
+        imageCapture: captureInfo.imageCapture,
+        photoCapabilities: captureInfo.photoCapabilities,
+        maxPhotoWidth: captureInfo.maxPhotoWidth,
+        maxPhotoHeight: captureInfo.maxPhotoHeight,
         facingMode: preferredFacingMode,
         type,
         detail,
         onUseFile,
         capturedFile: null,
+        capturedMeta: null,
+        captureMethod: '',
         previewUrl: ''
       };
 
@@ -23718,6 +23887,8 @@
       try {
         await video.play();
       } catch (err) {}
+
+      await waitForDocumentCameraVideo(video);
 
       let devices = [];
 
@@ -23739,17 +23910,26 @@
       }
 
       if (status) {
-        const track = stream.getVideoTracks()[0];
         const settings = track?.getSettings?.() || {};
-        const width = settings.width || video.videoWidth || '';
-        const height = settings.height || video.videoHeight || '';
+        const width = Number(video.videoWidth || settings.width || 0);
+        const height = Number(video.videoHeight || settings.height || 0);
         const facing =
-          settings.facingMode === 'user'
+          settings.facingMode === 'user' ||
+          preferredFacingMode === 'user'
             ? 'Kamera depan'
             : 'Kamera belakang/utama';
 
-        status.textContent =
-          `${facing}${width && height ? ` · ${width}×${height}` : ''}`;
+        const previewText =
+          width && height
+            ? ` · preview ${width}×${height}`
+            : '';
+
+        const photoText =
+          captureInfo.maxPhotoWidth && captureInfo.maxPhotoHeight
+            ? ` · foto maks ${captureInfo.maxPhotoWidth}×${captureInfo.maxPhotoHeight}`
+            : '';
+
+        status.textContent = `${facing}${previewText}${photoText}`;
       }
     }
 
@@ -23761,25 +23941,46 @@
         throw new Error('Kamera belum aktif.');
       }
 
-      const track = session.stream.getVideoTracks()[0];
+      const track = session.track || session.stream.getVideoTracks()[0];
 
       if (!track) {
         throw new Error('Kamera tidak ditemukan.');
       }
 
       let blob = null;
+      let captureMethod = '';
 
-      // ImageCapture dapat memberikan resolusi foto lebih tinggi daripada
-      // frame video pada browser/perangkat yang mendukung.
-      if (
-        typeof window.ImageCapture === 'function' &&
-        typeof window.ImageCapture.prototype?.takePhoto === 'function'
-      ) {
+      // Jalur utama: minta foto maksimum yang dilaporkan ImageCapture.
+      if (session.imageCapture) {
+        const photoSettings = {};
+        const maxWidth = Number(
+          session.photoCapabilities?.imageWidth?.max ||
+          session.maxPhotoWidth ||
+          0
+        );
+        const maxHeight = Number(
+          session.photoCapabilities?.imageHeight?.max ||
+          session.maxPhotoHeight ||
+          0
+        );
+
+        if (maxWidth) photoSettings.imageWidth = maxWidth;
+        if (maxHeight) photoSettings.imageHeight = maxHeight;
+
         try {
-          const capture = new ImageCapture(track);
-          blob = await capture.takePhoto();
-        } catch (err) {
-          blob = null;
+          blob = Object.keys(photoSettings).length
+            ? await session.imageCapture.takePhoto(photoSettings)
+            : await session.imageCapture.takePhoto();
+          captureMethod = 'ImageCapture maksimum';
+        } catch (maxPhotoError) {
+          // Beberapa implementasi melaporkan max tetapi tidak menerima pasangan
+          // width/height tersebut. Coba takePhoto tanpa setting sebelum fallback.
+          try {
+            blob = await session.imageCapture.takePhoto();
+            captureMethod = 'ImageCapture';
+          } catch (plainPhotoError) {
+            blob = null;
+          }
         }
       }
 
@@ -23805,8 +24006,10 @@
       }
 
       if (!blob) {
-        const width = video.videoWidth;
-        const height = video.videoHeight;
+        // Fallback tetap memakai stream yang sudah diminta/ditingkatkan ke
+        // resolusi tinggi. Tidak sengaja kembali meminta stream 640×480.
+        const width = Number(video.videoWidth || track.getSettings?.().width || 0);
+        const height = Number(video.videoHeight || track.getSettings?.().height || 0);
 
         if (!width || !height) {
           throw new Error(
@@ -23829,6 +24032,7 @@
 
         context.drawImage(video, 0, 0, width, height);
         blob = await canvasToJpegBlob(canvas, 0.95);
+        captureMethod = 'Frame stream';
       }
 
       const file = new File(
@@ -23839,6 +24043,8 @@
           lastModified: Date.now()
         }
       );
+
+      session.captureMethod = captureMethod;
 
       // Jangan cek 10 MB di sini. Foto resolusi tinggi dinormalisasi
       // terlebih dahulu ke sisi terpanjang maksimal 4000px.
@@ -23885,8 +24091,17 @@
           ? ' · dinormalisasi maks. 4000px'
           : '';
 
+        const sourceText =
+          imageMeta?.sourceWidth && imageMeta?.sourceHeight &&
+          (imageMeta.sourceWidth !== imageMeta.width || imageMeta.sourceHeight !== imageMeta.height)
+            ? ` · sumber ${imageMeta.sourceWidth}×${imageMeta.sourceHeight}`
+            : '';
+        const methodText = imageMeta?.captureMethod
+          ? ` · ${imageMeta.captureMethod}`
+          : '';
+
         status.textContent =
-          `Foto siap · JPEG${dimensionText} · ${formatFileSize(file.size)}${resizeText}`;
+          `Foto siap · JPEG${dimensionText}${sourceText} · ${formatFileSize(file.size)}${resizeText}${methodText}`;
       }
     }
 
@@ -23945,13 +24160,13 @@
               class="document-camera-preview view-hidden"
               alt="Preview foto dokumen">
             <span class="document-camera-overlay-note">
-              Hasil foto disimpan sebagai JPEG · sisi terpanjang maks. 4000px
+              Foto diambil pada resolusi tinggi lalu disimpan sebagai JPEG · sisi terpanjang maks. 4000px
             </span>
           </div>
 
           <div id="documentCameraStatus"
             class="document-camera-status">
-            Membuka kamera belakang/utama…
+            Membuka kamera belakang/utama resolusi tinggi…
           </div>
 
           <div id="documentCameraLiveControls"
@@ -24063,6 +24278,18 @@
           }
 
           const normalized = await normalizeDocumentUploadFile(rawFile);
+
+          const actualWidth = Number(normalized.sourceWidth || normalized.width || 0);
+          const actualHeight = Number(normalized.sourceHeight || normalized.height || 0);
+
+          if (documentCameraResolutionTooLow(actualWidth, actualHeight)) {
+            throw new Error(
+              documentCameraLowResolutionMessage(actualWidth, actualHeight)
+            );
+          }
+
+          normalized.captureMethod =
+            documentCameraSession?.captureMethod || '';
           showDocumentCameraReview(normalized.file, normalized);
 
         } catch (error) {
