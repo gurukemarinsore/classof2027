@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <link rel="icon" type="image/svg+xml" href="logo.svg" />
   <title>Data Siswa Kelas 9 2026-2027</title>
-  <!-- CLASSOF2027 Revisi 029 · Penyederhanaan Bahasa Aplikasi · Versi 1.57 -->
+  <!-- CLASSOF2027 Revisi 031 · Mobile Profile Version Info · Versi 1.59 -->
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -6962,6 +6962,41 @@
       color: var(--danger);
     }
 
+    /* Revisi 031 · informasi sesi + versi hanya di menu profil HP. */
+    .profile-mobile-session-info,
+    .profile-mobile-session-bottom-separator {
+      display: none;
+    }
+
+    @media (max-width: 720px) {
+      .profile-mobile-session-info {
+        display: block;
+        padding: 6px 10px 7px;
+      }
+
+      .profile-mobile-session-info span {
+        display: block;
+        line-height: 1.45;
+      }
+
+      .profile-mobile-session-line {
+        color: var(--text);
+        font-size: .68rem;
+        font-weight: 650;
+      }
+
+      .profile-mobile-version-line {
+        margin-top: 2px;
+        color: var(--muted);
+        font-size: .65rem;
+        font-weight: 600;
+      }
+
+      .profile-mobile-session-bottom-separator {
+        display: block;
+      }
+    }
+
     /* Main table: kolom rata-rata sama persis dengan kolom mapel. */
     .grades-table th.grade-average-head,
     .grades-table td.grade-average {
@@ -9061,7 +9096,7 @@
   <footer class="footer app-shell">
     <div><strong>SMP NEGERI 3 JAYAPURA</strong> · Sistem Pendataan Terpadu Murid & Nilai</div>
     <div style="margin-top:6px">Dikembangkan oleh gurukemarinsore</div>
-    <div style="margin-top:3px">Versi 1.57</div>
+    <div class="app-version-label" style="margin-top:3px">Versi</div>
     <div class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</div>
   </footer>
   </div>
@@ -9086,7 +9121,7 @@
         <div class="sidebar-footer">
           <div class="sidebar-footer-copy">
             <small>Dikembangkan oleh gurukemarinsore</small>
-            <small class="app-version-label">Versi 1.57</small>
+            <small class="app-version-label">Versi</small>
           </div>
           <small class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</small>
         </div>
@@ -9153,6 +9188,13 @@
                 </button>
 
                 <div class="profile-popup-separator"></div>
+
+                <div class="profile-mobile-session-info" id="profileMobileSessionInfo" aria-label="Informasi sesi dan versi aplikasi">
+                  <span class="profile-mobile-session-line" id="profileMobileSessionText">Sesi sedang berlangsung</span>
+                  <span class="profile-mobile-version-line" id="profileMobileVersionText">Class of 2027 · Versi</span>
+                </div>
+
+                <div class="profile-popup-separator profile-mobile-session-bottom-separator"></div>
 
                 <button class="profile-popup-item danger" id="profileLogoutBtn" type="button" role="menuitem">
                   <i class="ti ti-logout" aria-hidden="true"></i>
@@ -9227,6 +9269,7 @@
 
   <script>
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbwbXIVdM4PcLxQFvCn5d5N1OU6BGE1pp54KXcFVbT8DvEcucqc4YgRiatfovy9278Pd/exec';
+    const APP_VERSION = '1.59';
 
     function detectChatGPTPreviewEnvironment() {
       const values = [];
@@ -12149,6 +12192,17 @@
       return (name.charAt(0) || 'A').toUpperCase();
     }
 
+    function syncAppVersionLabels() {
+      $$('.app-version-label').forEach(element => {
+        element.textContent = `Versi ${APP_VERSION}`;
+      });
+
+      const mobileVersion = $('#profileMobileVersionText');
+      if (mobileVersion) {
+        mobileVersion.textContent = `Class of 2027 · Versi ${APP_VERSION}`;
+      }
+    }
+
     function sessionSubtitle() {
       if (!state.sessionExpiresAt) return 'Sesi sedang berlangsung';
       const date = new Date(state.sessionExpiresAt);
@@ -12267,8 +12321,17 @@
           allowed ? 'flex' : 'none';
       }
 
+      const sessionText = sessionSubtitle();
+
       $('#appPageSubtitle').textContent =
-        `${currentRoleScope()} · ${sessionSubtitle()}`;
+        `${currentRoleScope()} · ${sessionText}`;
+
+      const mobileSession = $('#profileMobileSessionText');
+      if (mobileSession) {
+        mobileSession.textContent = sessionText;
+      }
+
+      syncAppVersionLabels();
     }
 
     async function loadMyProfile() {
@@ -21739,56 +21802,232 @@
     }
 
     // ============================================================
-    // Revisi 023 · CUSTOM PDF.JS VIEWER
-    // - PDF.js dimuat hanya saat PDF pertama kali dipreview.
-    // - Resource lokal/repository: ./pdfjs/pdf.mjs + pdf.worker.mjs
-    // - Hanya halaman aktif yang dirender.
+    // Revisi 030 · DUAL-SOURCE PDF.JS LOADER
+    // - Utama: CDN jsDelivr, PDF.js 6.3.289.
+    // - Fallback: repository ./pdfjs/ dengan versi yang sama.
+    // - pdf.mjs dan pdf.worker.mjs selalu diperlakukan sebagai satu paket.
+    // - Jika modul CDN gagal/timeout, loader langsung memakai repository.
+    // - Jika worker CDN gagal ketika PDF dibuka, dokumen dicoba sekali lagi
+    //   memakai paket repository. Detail perpindahan hanya dicatat di console.
     // ============================================================
-    const PDFJS_MAIN_MODULE_URL = './pdfjs/pdf.mjs';
-    const PDFJS_WORKER_MODULE_URL = './pdfjs/pdf.worker.mjs';
+    const PDFJS_VERSION = '6.3.289';
+    const PDFJS_SOURCES = Object.freeze({
+      cdn: Object.freeze({
+        main: `https://cdn.jsdelivr.net/npm/pdfjs-dist@${PDFJS_VERSION}/build/pdf.mjs`,
+        worker: `https://cdn.jsdelivr.net/npm/pdfjs-dist@${PDFJS_VERSION}/build/pdf.worker.mjs`
+      }),
+      repository: Object.freeze({
+        main: './pdfjs/pdf.mjs',
+        worker: './pdfjs/pdf.worker.mjs'
+      })
+    });
+    const PDFJS_LIBRARY_TIMEOUT_MS = 6500;
+    const PDFJS_CDN_DOCUMENT_TIMEOUT_MS = 9000;
     const PDFJS_MAX_CANVAS_PIXELS = 16 * 1024 * 1024;
     let pdfJsModulePromise = null;
+    let pdfJsActiveSource = '';
     let fullscreenPdfFitTimer = null;
 
-    async function loadPdfJsModule() {
-      if (pdfJsModulePromise) {
+    function withExternalLibraryTimeout(promise, timeoutMs, label) {
+      return new Promise((resolve, reject) => {
+        let settled = false;
+        const timer = setTimeout(() => {
+          if (settled) return;
+          settled = true;
+          const error = new Error(`${label || 'Library'} tidak merespons.`);
+          error.code = 'LIBRARY_LOAD_TIMEOUT';
+          reject(error);
+        }, Math.max(1000, Number(timeoutMs) || 6500));
+
+        Promise.resolve(promise).then(
+          value => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timer);
+            resolve(value);
+          },
+          error => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timer);
+            reject(error);
+          }
+        );
+      });
+    }
+
+    async function importPdfJsFromSource(sourceKey) {
+      const config = PDFJS_SOURCES[sourceKey];
+      if (!config) {
+        throw new Error('Sumber PDF.js tidak dikenal.');
+      }
+
+      const mainUrl = new URL(config.main, document.baseURI).href;
+      const workerUrl = new URL(config.worker, document.baseURI).href;
+
+      const pdfjsLib = await withExternalLibraryTimeout(
+        import(mainUrl),
+        PDFJS_LIBRARY_TIMEOUT_MS,
+        `PDF.js ${sourceKey}`
+      );
+
+      if (
+        !pdfjsLib ||
+        typeof pdfjsLib.getDocument !== 'function' ||
+        !pdfjsLib.GlobalWorkerOptions
+      ) {
+        throw new Error('API PDF.js tidak tersedia dari sumber yang dipilih.');
+      }
+
+      pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
+      pdfJsActiveSource = sourceKey;
+      console.info(
+        `[ClassOf2027] PDF.js ${PDFJS_VERSION} aktif dari ${
+          sourceKey === 'cdn' ? 'CDN' : 'repository'
+        }.`
+      );
+
+      return pdfjsLib;
+    }
+
+    async function loadPdfJsModule(options = {}) {
+      const forceRepository = options.forceRepository === true;
+
+      if (
+        pdfJsModulePromise &&
+        (!forceRepository || pdfJsActiveSource === 'repository')
+      ) {
         return pdfJsModulePromise;
       }
 
-      pdfJsModulePromise = import(PDFJS_MAIN_MODULE_URL)
-        .then(pdfjsLib => {
-          if (
-            !pdfjsLib ||
-            typeof pdfjsLib.getDocument !== 'function' ||
-            !pdfjsLib.GlobalWorkerOptions
-          ) {
-            console.error('File pdf.mjs ditemukan tetapi API PDF.js tidak valid.');
-            throw new Error(
-              'PDF tidak dapat ditampilkan. Silakan coba lagi atau gunakan tombol Download.'
+      if (forceRepository) {
+        pdfJsModulePromise = null;
+        pdfJsActiveSource = '';
+      }
+
+      const sequence = forceRepository
+        ? ['repository']
+        : ['cdn', 'repository'];
+
+      pdfJsModulePromise = (async () => {
+        let lastError = null;
+
+        for (const sourceKey of sequence) {
+          try {
+            return await importPdfJsFromSource(sourceKey);
+          } catch (error) {
+            lastError = error;
+            console.warn(
+              `[ClassOf2027] PDF.js dari ${
+                sourceKey === 'cdn' ? 'CDN' : 'repository'
+              } gagal dimuat.`,
+              error
+            );
+          }
+        }
+
+        const wrapped = new Error(
+          'PDF tidak dapat ditampilkan. Silakan coba lagi atau gunakan tombol Download.'
+        );
+        wrapped.code = 'PDFJS_LOAD_FAILED';
+        wrapped.cause = lastError;
+        throw wrapped;
+      })();
+
+      try {
+        return await pdfJsModulePromise;
+      } catch (error) {
+        pdfJsModulePromise = null;
+        pdfJsActiveSource = '';
+        throw error;
+      }
+    }
+
+    function isPdfJsSourceFailure(error) {
+      const text = `${error?.name || ''} ${error?.message || ''}`
+        .toLowerCase();
+
+      return (
+        error?.code === 'LIBRARY_LOAD_TIMEOUT' ||
+        text.includes('worker') ||
+        text.includes('pdf.worker') ||
+        text.includes('failed to fetch') ||
+        text.includes('networkerror') ||
+        text.includes('network error') ||
+        text.includes('dynamically imported module') ||
+        text.includes('module script') ||
+        text.includes('fake worker') ||
+        text.includes('api version') ||
+        text.includes('worker version')
+      );
+    }
+
+    async function getPdfDocumentWithSourceFallback(bytes, viewerState) {
+      const originalBytes = new Uint8Array(bytes);
+
+      const openWithLibrary = async pdfjsLib => {
+        const sourceAtStart = pdfJsActiveSource;
+        const loadingTask = pdfjsLib.getDocument({
+          // Berikan salinan baru karena PDF.js dapat mentransfer ArrayBuffer
+          // ke worker sehingga buffer percobaan tidak aman dipakai ulang.
+          data: new Uint8Array(originalBytes)
+        });
+
+        viewerState.pdfLoadingTask = loadingTask;
+
+        try {
+          if (sourceAtStart === 'cdn') {
+            return await withExternalLibraryTimeout(
+              loadingTask.promise,
+              PDFJS_CDN_DOCUMENT_TIMEOUT_MS,
+              'PDF.js worker CDN'
             );
           }
 
-          pdfjsLib.GlobalWorkerOptions.workerSrc =
-            new URL(
-              PDFJS_WORKER_MODULE_URL,
-              document.baseURI
-            ).href;
+          return await loadingTask.promise;
+        } catch (error) {
+          if (error?.code === 'LIBRARY_LOAD_TIMEOUT') {
+            try {
+              loadingTask.destroy?.();
+            } catch (destroyError) {}
+          }
+          throw error;
+        } finally {
+          if (viewerState.pdfLoadingTask === loadingTask) {
+            viewerState.pdfLoadingTask = null;
+          }
+        }
+      };
 
-          return pdfjsLib;
-        })
-        .catch(error => {
-          pdfJsModulePromise = null;
+      let pdfjsLib = await loadPdfJsModule();
 
-          console.error('PDF.js gagal dimuat:', error);
-          const wrapped = new Error(
-            'PDF tidak dapat ditampilkan. Silakan coba lagi atau gunakan tombol Download.'
-          );
-          wrapped.code = 'PDFJS_LOAD_FAILED';
-          wrapped.cause = error;
-          throw wrapped;
+      try {
+        return await openWithLibrary(pdfjsLib);
+      } catch (error) {
+        const shouldFallback =
+          pdfJsActiveSource === 'cdn' &&
+          isPdfJsSourceFailure(error);
+
+        if (!shouldFallback) {
+          throw error;
+        }
+
+        console.warn(
+          '[ClassOf2027] Worker PDF.js CDN bermasalah. Mencoba paket repository.',
+          error
+        );
+
+        try {
+          viewerState.pdfLoadingTask?.destroy?.();
+        } catch (destroyError) {}
+        viewerState.pdfLoadingTask = null;
+
+        pdfjsLib = await loadPdfJsModule({
+          forceRepository: true
         });
 
-      return pdfJsModulePromise;
+        return openWithLibrary(pdfjsLib);
+      }
     }
 
     function dataUrlToUint8Array(dataUrl) {
@@ -22913,7 +23152,11 @@
       );
 
       try {
-        const pdfjsLib = await loadPdfJsModule();
+        // Loader mencoba CDN terlebih dahulu. Jika modul CDN gagal,
+        // loadPdfJsModule otomatis memakai repository. Jika justru worker
+        // CDN yang gagal saat dokumen dibuka, helper berikut mencoba paket
+        // repository sekali lagi dengan salinan byte PDF yang baru.
+        await loadPdfJsModule();
 
         if (
           fullscreenPreviewState !== state ||
@@ -22930,15 +23173,11 @@
         const bytes =
           dataUrlToUint8Array(state.pdfDataUrl);
 
-        const loadingTask =
-          pdfjsLib.getDocument({
-            data: bytes
-          });
-
-        state.pdfLoadingTask = loadingTask;
-
         const pdfDocument =
-          await loadingTask.promise;
+          await getPdfDocumentWithSourceFallback(
+            bytes,
+            state
+          );
 
         if (
           fullscreenPreviewState !== state ||
@@ -23153,10 +23392,21 @@
     }
 
     const DOCUMENT_UPLOAD_MAX_BYTES = 10 * 1024 * 1024;
+
+    // Revisi 030 · DUAL-SOURCE HEIC/HEIF CONVERTER
+    // Utama: CDN jsDelivr heic2any 0.0.4.
+    // Fallback: repository ./heic/heic2any.min.js.
+    // Fallback hanya dipakai bila library gagal/timeout saat dimuat;
+    // kegagalan karena file HEIC rusak tetap ditangani sebagai error file.
+    const HEIC2ANY_VERSION = '0.0.4';
     const HEIC2ANY_CDN_URL =
-      'https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js';
+      `https://cdn.jsdelivr.net/npm/heic2any@${HEIC2ANY_VERSION}/dist/heic2any.min.js`;
+    const HEIC2ANY_REPOSITORY_URL =
+      './heic/heic2any.min.js';
+    const HEIC2ANY_LIBRARY_TIMEOUT_MS = 6500;
 
     let heic2anyLoaderPromise = null;
+    let heic2anyActiveSource = '';
     let documentCameraSession = null;
 
     function isHeicDocumentFile(file) {
@@ -23171,6 +23421,85 @@
       );
     }
 
+    function loadHeic2AnyScriptFromSource(url, sourceKey) {
+      return new Promise((resolve, reject) => {
+        if (typeof window.heic2any === 'function') {
+          heic2anyActiveSource = heic2anyActiveSource || sourceKey;
+          resolve(window.heic2any);
+          return;
+        }
+
+        const selector =
+          `script[data-classof2027-heic2any-source="${sourceKey}"]`;
+        const stale = document.querySelector(selector);
+        if (stale) {
+          stale.remove();
+        }
+
+        const script = document.createElement('script');
+        script.src = new URL(url, document.baseURI).href;
+        script.async = true;
+        script.dataset.classof2027Heic2anySource = sourceKey;
+
+        let settled = false;
+        const cleanup = () => {
+          clearTimeout(timer);
+          script.onload = null;
+          script.onerror = null;
+        };
+
+        const fail = error => {
+          if (settled) return;
+          settled = true;
+          cleanup();
+          try { script.remove(); } catch (removeError) {}
+          reject(error);
+        };
+
+        const timer = setTimeout(() => {
+          const error = new Error(
+            `heic2any ${sourceKey} tidak merespons.`
+          );
+          error.code = 'HEIC2ANY_LOAD_TIMEOUT';
+          fail(error);
+        }, HEIC2ANY_LIBRARY_TIMEOUT_MS);
+
+        script.onload = () => {
+          if (settled) return;
+
+          if (typeof window.heic2any !== 'function') {
+            fail(
+              new Error(
+                `heic2any ${sourceKey} dimuat tetapi API tidak tersedia.`
+              )
+            );
+            return;
+          }
+
+          settled = true;
+          cleanup();
+          script.dataset.loaded = '1';
+          heic2anyActiveSource = sourceKey;
+          console.info(
+            `[ClassOf2027] heic2any ${HEIC2ANY_VERSION} aktif dari ${
+              sourceKey === 'cdn' ? 'CDN' : 'repository'
+            }.`
+          );
+          resolve(window.heic2any);
+        };
+
+        script.onerror = () => {
+          fail(
+            new Error(
+              `heic2any ${sourceKey} gagal dimuat.`
+            )
+          );
+        };
+
+        document.head.appendChild(script);
+      });
+    }
+
     function loadHeic2AnyConverter() {
       if (typeof window.heic2any === 'function') {
         return Promise.resolve(window.heic2any);
@@ -23180,70 +23509,49 @@
         return heic2anyLoaderPromise;
       }
 
-      heic2anyLoaderPromise = new Promise((resolve, reject) => {
-        const existing = document.querySelector(
-          'script[data-classof2027-heic2any="1"]'
-        );
-
-        if (existing) {
-          const checkReady = () => {
-            if (typeof window.heic2any === 'function') {
-              resolve(window.heic2any);
-            } else {
-              reject(
-                new Error(
-                  'Foto belum dapat diproses. Coba beberapa saat lagi.'
-                )
-              );
-            }
-          };
-
-          existing.addEventListener('load', checkReady, { once: true });
-          existing.addEventListener(
-            'error',
-            () => reject(
-              new Error(
-                'Foto tidak dapat diproses. Periksa koneksi internet lalu coba lagi.'
-              )
-            ),
-            { once: true }
-          );
-
-          if (existing.dataset.loaded === '1') {
-            checkReady();
+      heic2anyLoaderPromise = (async () => {
+        const sources = [
+          {
+            key: 'cdn',
+            url: HEIC2ANY_CDN_URL
+          },
+          {
+            key: 'repository',
+            url: HEIC2ANY_REPOSITORY_URL
           }
-          return;
-        }
+        ];
 
-        const script = document.createElement('script');
-        script.src = HEIC2ANY_CDN_URL;
-        script.async = true;
-        script.dataset.classof2027Heic2any = '1';
+        let lastError = null;
 
-        script.onload = () => {
-          script.dataset.loaded = '1';
-
-          if (typeof window.heic2any === 'function') {
-            resolve(window.heic2any);
-          } else {
-            reject(
-              new Error(
-                'Foto tidak dapat diproses. Silakan coba lagi atau pilih foto lain.'
-              )
+        for (const source of sources) {
+          try {
+            return await loadHeic2AnyScriptFromSource(
+              source.url,
+              source.key
+            );
+          } catch (error) {
+            lastError = error;
+            console.warn(
+              `[ClassOf2027] heic2any dari ${
+                source.key === 'cdn' ? 'CDN' : 'repository'
+              } gagal dimuat.`,
+              error
             );
           }
-        };
+        }
 
-        script.onerror = () => {
-          heic2anyLoaderPromise = null;
-          reject(
-            new Error(
-              'Foto tidak dapat diproses. Periksa koneksi internet lalu coba lagi.'
-            )
-          );
-        };
+        const wrapped = new Error(
+          'Foto tidak dapat diproses. Periksa koneksi internet lalu coba lagi.'
+        );
+        wrapped.code = 'HEIC2ANY_LOAD_FAILED';
+        wrapped.cause = lastError;
+        throw wrapped;
+      })();
 
-        document.head.appendChild(script);
+      heic2anyLoaderPromise = heic2anyLoaderPromise.catch(error => {
+        heic2anyLoaderPromise = null;
+        heic2anyActiveSource = '';
+        throw error;
       });
 
       return heic2anyLoaderPromise;
@@ -27595,6 +27903,7 @@
     })();
 
     (async function bootstrap() {
+      syncAppVersionLabels();
       await loadDashboard();
       await restoreSession();
       startGlobalFontSync();
