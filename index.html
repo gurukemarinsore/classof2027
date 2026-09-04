@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <link rel="icon" type="image/svg+xml" href="logo.svg" />
   <title>Data Siswa Kelas 9 2026-2027</title>
-  <!-- CLASSOF2027 Revisi 027 · Kamera Resolusi Tinggi + Validasi Hasil Foto · Versi 1.55 -->
+  <!-- CLASSOF2027 Revisi 028 · Penyederhanaan Bahasa Upload & Kamera · Versi 1.56 -->
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -8558,7 +8558,7 @@
 
   
     /* =========================================================
-       Revisi 027 · Kamera Resolusi Tinggi + Validasi Hasil Foto
+       Revisi 028 · Penyederhanaan Bahasa Upload & Kamera
        ========================================================= */
     .document-upload-choice-grid {
       margin-top: 12px;
@@ -9060,7 +9060,7 @@
   <footer class="footer app-shell">
     <div><strong>SMP NEGERI 3 JAYAPURA</strong> · Sistem Pendataan Terpadu Murid & Nilai</div>
     <div style="margin-top:6px">Dikembangkan oleh gurukemarinsore</div>
-    <div style="margin-top:3px">Versi 1.55</div>
+    <div style="margin-top:3px">Versi 1.56</div>
     <div class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</div>
   </footer>
   </div>
@@ -9085,7 +9085,7 @@
         <div class="sidebar-footer">
           <div class="sidebar-footer-copy">
             <small>Dikembangkan oleh gurukemarinsore</small>
-            <small class="app-version-label">Versi 1.55</small>
+            <small class="app-version-label">Versi 1.56</small>
           </div>
           <small class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</small>
         </div>
@@ -23190,7 +23190,7 @@
             } else {
               reject(
                 new Error(
-                  'Konverter HEIC belum siap. Coba beberapa saat lagi.'
+                  'Foto belum dapat diproses. Coba beberapa saat lagi.'
                 )
               );
             }
@@ -23201,7 +23201,7 @@
             'error',
             () => reject(
               new Error(
-                'Konverter HEIC tidak dapat dimuat. Periksa koneksi internet.'
+                'Foto tidak dapat diproses. Periksa koneksi internet lalu coba lagi.'
               )
             ),
             { once: true }
@@ -23226,7 +23226,7 @@
           } else {
             reject(
               new Error(
-                'Konverter HEIC dimuat tetapi tidak dapat digunakan.'
+                'Foto tidak dapat diproses. Silakan coba lagi atau pilih foto lain.'
               )
             );
           }
@@ -23236,7 +23236,7 @@
           heic2anyLoaderPromise = null;
           reject(
             new Error(
-              'Konverter HEIC tidak dapat dimuat. Periksa koneksi internet.'
+              'Foto tidak dapat diproses. Periksa koneksi internet lalu coba lagi.'
             )
           );
         };
@@ -23261,7 +23261,7 @@
       }
 
       if (!(converted instanceof Blob) || converted.size <= 0) {
-        throw new Error('File HEIC/HEIF tidak dapat dikonversi.');
+        throw new Error('Format foto ini tidak dapat diproses. Silakan pilih foto lain.');
       }
 
       const baseName = String(file.name || 'dokumen')
@@ -23337,7 +23337,7 @@
           const height = Number(drawable.height || 0);
 
           if (!width || !height) {
-            throw new Error('Resolusi gambar tidak dapat dibaca.');
+            throw new Error('Gambar tidak dapat dibaca. Silakan pilih gambar lain.');
           }
 
           return {
@@ -23357,7 +23357,7 @@
           const image = new Image();
           image.onload = () => resolve(image);
           image.onerror = () => reject(
-            new Error('Gambar tidak dapat dibaca oleh browser.')
+            new Error('Gambar tidak dapat dibaca. Silakan pilih gambar lain.')
           );
           image.src = objectUrl;
         });
@@ -23366,7 +23366,7 @@
         const height = Number(drawable.naturalHeight || drawable.height || 0);
 
         if (!width || !height) {
-          throw new Error('Resolusi gambar tidak dapat dibaca.');
+          throw new Error('Gambar tidak dapat dibaca. Silakan pilih gambar lain.');
         }
 
         return {
@@ -23393,7 +23393,7 @@
 
     async function resizeDocumentImageIfNeeded(file, statusElement = null) {
       if (!isNativeDocumentImageFile(file)) {
-        throw new Error('Gambar harus berupa JPG/JPEG atau PNG.');
+        throw new Error('Format gambar tidak didukung. Silakan pilih foto lain.');
       }
 
       const decoded = await decodeDocumentImage(file);
@@ -23420,8 +23420,7 @@
 
         if (statusElement) {
           statusElement.textContent =
-            `Menyesuaikan gambar ${sourceWidth}×${sourceHeight} → ` +
-            `${targetWidth}×${targetHeight}…`;
+            'Menyesuaikan ukuran gambar…';
           if (statusElement.classList?.contains('dialog-status')) {
             statusElement.className = 'dialog-status';
           }
@@ -23442,7 +23441,7 @@
         });
 
         if (!context) {
-          throw new Error('Canvas gambar tidak tersedia.');
+          throw new Error('Gambar tidak dapat diproses di perangkat ini. Silakan pilih gambar lain.');
         }
 
         if (outputType === 'image/jpeg') {
@@ -23523,7 +23522,7 @@
       if (isHeicDocumentFile(workingFile)) {
         if (statusElement) {
           statusElement.textContent =
-            'Mengonversi HEIC/HEIF ke JPEG berkualitas tinggi…';
+            'Menyiapkan gambar…';
           if (statusElement.classList?.contains('dialog-status')) {
             statusElement.className = 'dialog-status';
           }
@@ -23533,7 +23532,7 @@
         convertedFromHeic = true;
       } else if (!isNativeDocumentImageFile(workingFile)) {
         throw new Error(
-          'Format file harus JPG/JPEG, PNG, PDF, atau HEIC/HEIF.'
+          'Format file tidak didukung. Gunakan foto atau PDF.'
         );
       }
 
@@ -23564,13 +23563,13 @@
 
       if (!allowed.includes(String(file.type || '').toLowerCase())) {
         throw new Error(
-          'Format file harus JPG/JPEG, PNG, PDF, atau HEIC/HEIF.'
+          'Format file tidak didukung. Gunakan foto atau PDF.'
         );
       }
 
       if (file.size > DOCUMENT_UPLOAD_MAX_BYTES) {
         throw new Error(
-          'Ukuran file hasil akhir maksimal 10 MB.'
+          'Ukuran file terlalu besar. Maksimal 10 MB.'
         );
       }
 
@@ -23595,7 +23594,7 @@
         });
 
         if (!context) {
-          throw new Error('Canvas kamera tidak tersedia.');
+          throw new Error('Foto tidak dapat diproses di perangkat ini. Silakan coba lagi atau pilih foto dari galeri.');
         }
 
         context.fillStyle = '#ffffff';
@@ -23778,9 +23777,7 @@
 
     function documentCameraLowResolutionMessage(width, height) {
       return (
-        `Resolusi foto terlalu rendah (${width}×${height}) untuk dokumen ` +
-        'bertulisan kecil. Foto tidak digunakan. Coba Foto Ulang; jika kamera ' +
-        'browser tetap rendah, pilih foto resolusi tinggi dari galeri.'
+        'Foto kurang jelas untuk dokumen. Silakan foto ulang atau pilih foto yang lebih jelas dari galeri.'
       );
     }
 
@@ -23795,7 +23792,7 @@
         typeof navigator.mediaDevices.getUserMedia !== 'function'
       ) {
         throw new Error(
-          'Kamera browser tidak tersedia. Gunakan HTTPS/localhost atau pilih file.'
+          'Kamera tidak dapat digunakan. Silakan pilih foto dari galeri.'
         );
       }
 
@@ -23808,14 +23805,14 @@
       const switchBtn = $('#switchDocumentCamera');
 
       if (!video) {
-        throw new Error('Panel kamera tidak tersedia.');
+        throw new Error('Kamera tidak dapat digunakan di perangkat ini.');
       }
 
       if (status) {
         status.textContent =
           preferredFacingMode === 'environment'
-            ? 'Membuka kamera belakang/utama resolusi tinggi…'
-            : 'Membuka kamera depan resolusi tinggi…';
+            ? 'Membuka kamera belakang…'
+            : 'Membuka kamera depan…';
       }
 
       let stream = null;
@@ -23916,20 +23913,10 @@
         const facing =
           settings.facingMode === 'user' ||
           preferredFacingMode === 'user'
-            ? 'Kamera depan'
-            : 'Kamera belakang/utama';
+            ? 'Kamera depan siap'
+            : 'Kamera belakang siap';
 
-        const previewText =
-          width && height
-            ? ` · preview ${width}×${height}`
-            : '';
-
-        const photoText =
-          captureInfo.maxPhotoWidth && captureInfo.maxPhotoHeight
-            ? ` · foto maks ${captureInfo.maxPhotoWidth}×${captureInfo.maxPhotoHeight}`
-            : '';
-
-        status.textContent = `${facing}${previewText}${photoText}`;
+        status.textContent = facing;
       }
     }
 
@@ -24027,7 +24014,7 @@
         });
 
         if (!context) {
-          throw new Error('Canvas kamera tidak tersedia.');
+          throw new Error('Foto tidak dapat diproses di perangkat ini. Silakan coba lagi atau pilih foto dari galeri.');
         }
 
         context.drawImage(video, 0, 0, width, height);
@@ -24101,7 +24088,7 @@
           : '';
 
         status.textContent =
-          `Foto siap · JPEG${dimensionText}${sourceText} · ${formatFileSize(file.size)}${resizeText}${methodText}`;
+          `Foto siap digunakan · ${formatFileSize(file.size)}`;
       }
     }
 
@@ -24160,13 +24147,13 @@
               class="document-camera-preview view-hidden"
               alt="Preview foto dokumen">
             <span class="document-camera-overlay-note">
-              Foto diambil pada resolusi tinggi lalu disimpan sebagai JPEG · sisi terpanjang maks. 4000px
+              Foto akan disiapkan otomatis agar tetap jelas dan ukurannya sesuai
             </span>
           </div>
 
           <div id="documentCameraStatus"
             class="document-camera-status">
-            Membuka kamera belakang/utama resolusi tinggi…
+            Membuka kamera belakang…
           </div>
 
           <div id="documentCameraLiveControls"
@@ -24266,7 +24253,7 @@
         if (button) button.disabled = true;
         if (cameraStatus) {
           cameraStatus.textContent =
-            'Mengambil foto resolusi terbaik yang tersedia…';
+            'Mengambil foto…';
         }
 
         try {
@@ -24274,7 +24261,7 @@
 
           if (cameraStatus) {
             cameraStatus.textContent =
-              'Menyiapkan foto dan menyesuaikan ukuran bila diperlukan…';
+              'Menyiapkan foto…';
           }
 
           const normalized = await normalizeDocumentUploadFile(rawFile);
@@ -24350,7 +24337,7 @@
 
         if (button) button.disabled = true;
         if (cameraStatus) {
-          cameraStatus.textContent = 'Menyiapkan foto untuk upload…';
+          cameraStatus.textContent = 'Menyiapkan foto…';
         }
 
         try {
@@ -24423,7 +24410,7 @@
             <div>
               <i class="ti ti-cloud-upload"></i>
               <strong>Pilih file / galeri</strong>
-              <span>JPG/JPEG, PNG, PDF, HEIC/HEIF · hasil akhir maks. 10 MB</span>
+              <span>Foto atau PDF · maksimal 10 MB</span>
             </div>
           </label>
 
@@ -24433,7 +24420,7 @@
             <div>
               <i class="ti ti-camera"></i>
               <strong>Foto dengan kamera</strong>
-              <span>Buka kamera fullscreen · belakang utama otomatis</span>
+              <span>Kamera belakang dipilih otomatis</span>
             </div>
           </button>
         </div>
@@ -24520,37 +24507,16 @@
           validateDocumentFileClient(file);
           selectedFile = file;
 
-          const dimensionText =
-            normalized.width && normalized.height
-              ? `${normalized.width}×${normalized.height}`
-              : '';
-
-          const processParts = [];
-          if (normalized.convertedFromHeic) {
-            processParts.push('HEIC/HEIF → JPEG');
-          }
-          if (normalized.resized) {
-            processParts.push(
-              `${normalized.sourceWidth}×${normalized.sourceHeight} → ` +
-              `${normalized.width}×${normalized.height}`
-            );
-          } else if (dimensionText) {
-            processParts.push(dimensionText);
-          }
-          if (sourceLabel) {
-            processParts.push(sourceLabel);
-          }
+          const friendlyFileType =
+            String(file.type || '').toLowerCase() === 'application/pdf'
+              ? 'PDF'
+              : 'Foto';
 
           selectedBox.innerHTML = `
             <div class="selected-file-box">
               <div>
                 <strong>${escapeHtml(file.name)}</strong>
-                <span>
-                  ${escapeHtml(file.type)} · ${formatFileSize(file.size)}
-                  ${processParts.length
-                    ? ` · ${escapeHtml(processParts.join(' · '))}`
-                    : ''}
-                </span>
+                <span>${friendlyFileType} · ${formatFileSize(file.size)}</span>
               </div>
               <i class="ti ti-check" style="color:var(--success)"></i>
             </div>
@@ -24558,10 +24524,10 @@
 
           if (normalized.resized) {
             status.textContent =
-              `Gambar dinormalisasi ke ${normalized.width}×${normalized.height}. File siap diunggah.`;
+              'Gambar sudah disesuaikan dan siap diunggah.';
           } else if (normalized.convertedFromHeic) {
             status.textContent =
-              'HEIC/HEIF berhasil dikonversi ke JPEG. File siap diunggah.';
+              'Gambar sudah disiapkan dan siap diunggah.';
           } else {
             status.textContent = 'File siap diunggah.';
           }
