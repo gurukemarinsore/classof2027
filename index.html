@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <link rel="icon" type="image/svg+xml" href="logo.svg" />
   <title>Data Siswa Kelas 9 2026-2027</title>
-  <!-- CLASSOF2027 Revisi 034 · Landing Page Final · Versi 1.61 -->
+  <!-- CLASSOF2027 Revisi 038 · Cleanup JavaScript + Logo · Versi 1.65 -->
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -71,10 +71,6 @@
     select,
     textarea { font: inherit; }
 
-    .app-shell {
-      width: min(1440px, calc(100% - 28px));
-      margin: 0 auto;
-    }
 
     .topbar {
       position: sticky;
@@ -164,14 +160,6 @@
       font-weight: 700;
     }
 
-    .ghost-btn {
-      min-height: 40px;
-      padding: 0 14px;
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      color: var(--text);
-      font-weight: 650;
-    }
 
     .icon-btn:hover,
     .primary-btn:hover,
@@ -179,403 +167,57 @@
       transform: translateY(-1px);
     }
 
-    .hero {
-      padding: 44px 0 20px;
-      display: grid;
-      grid-template-columns: 1.15fr .85fr;
-      gap: 24px;
-      align-items: stretch;
-    }
 
-    .hero-main {
-      background:
-        linear-gradient(135deg, rgba(22,135,248,.10), rgba(88,184,255,.06)),
-        var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 30px;
-      box-shadow: var(--shadow);
-      padding: clamp(26px, 4vw, 52px);
-      overflow: hidden;
-      position: relative;
-    }
 
-    .hero-main::after {
-      content: "";
-      position: absolute;
-      width: 250px;
-      height: 250px;
-      right: -70px;
-      bottom: -90px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(22,135,248,.18), transparent 68%);
-      pointer-events: none;
-    }
 
-    .eyebrow {
-      display: inline-flex;
-      gap: 8px;
-      align-items: center;
-      padding: 7px 11px;
-      border-radius: 999px;
-      background: var(--primary-soft);
-      color: var(--primary);
-      font-size: .78rem;
-      font-weight: 760;
-      letter-spacing: .02em;
-    }
 
-    h1 {
-      margin: 18px 0 10px;
-      font-size: clamp(2rem, 5vw, 4.1rem);
-      line-height: .98;
-      letter-spacing: -.05em;
-    }
 
-    .subtitle {
-      margin: 0;
-      font-size: clamp(1rem, 2vw, 1.28rem);
-      color: var(--muted);
-      max-width: 760px;
-      line-height: 1.65;
-    }
 
-    .slogan {
-      margin-top: 22px;
-      display: inline-flex;
-      align-items: center;
-      gap: 9px;
-      color: var(--text);
-      font-weight: 720;
-    }
 
-    .hero-side {
-      display: grid;
-      grid-template-rows: 1fr auto;
-      gap: 14px;
-    }
 
-    .hero-side-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 26px;
-      box-shadow: var(--shadow);
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-height: 210px;
-    }
 
-    .live {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--success);
-      font-size: .82rem;
-      font-weight: 730;
-    }
 
-    .live-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--success);
-      box-shadow: 0 0 0 6px color-mix(in srgb, var(--success) 12%, transparent);
-    }
 
-    .hero-side-card strong {
-      display: block;
-      font-size: 1.55rem;
-      letter-spacing: -.035em;
-      margin-top: 14px;
-    }
 
-    .hero-side-card p {
-      color: var(--muted);
-      margin: 8px 0 0;
-      line-height: 1.55;
-    }
 
-    .semester-pills {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 7px;
-      margin-top: 20px;
-    }
 
-    .semester-pill {
-      padding: 7px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      font-size: .76rem;
-      font-weight: 700;
-      color: var(--muted);
-      background: var(--surface-2);
-    }
 
-    .semester-pill.active {
-      background: var(--primary-soft);
-      border-color: color-mix(in srgb, var(--primary) 28%, var(--border));
-      color: var(--primary);
-    }
 
-    .updated {
-      color: var(--muted);
-      font-size: .76rem;
-      display: flex;
-      align-items: center;
-      gap: 7px;
-    }
 
-    .section {
-      padding: 18px 0;
-    }
 
-    .section-head {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 14px;
-    }
 
-    .section-head h2 {
-      margin: 0;
-      font-size: clamp(1.25rem, 2.5vw, 1.8rem);
-      letter-spacing: -.03em;
-    }
 
-    .section-head p {
-      margin: 5px 0 0;
-      color: var(--muted);
-      font-size: .9rem;
-    }
 
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
-    }
 
-    .stat-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow-sm);
-      border-radius: 22px;
-      padding: 20px;
-      min-height: 138px;
-    }
 
-    .stat-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      color: var(--muted);
-      font-size: .82rem;
-      font-weight: 650;
-    }
 
-    .stat-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 12px;
-      background: var(--primary-soft);
-      color: var(--primary);
-      display: grid;
-      place-items: center;
-      font-size: 1.05rem;
-    }
 
-    .stat-value {
-      margin-top: 17px;
-      font-size: clamp(1.55rem, 3vw, 2.2rem);
-      line-height: 1;
-      font-weight: 780;
-      letter-spacing: -.04em;
-    }
 
-    .stat-note {
-      color: var(--muted);
-      margin-top: 8px;
-      font-size: .78rem;
-    }
 
-    .filter-wrap {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding: 3px 0 6px;
-      scrollbar-width: thin;
-    }
 
-    .filter-btn {
-      flex: 0 0 auto;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--muted);
-      padding: 9px 13px;
-      border-radius: 999px;
-      cursor: pointer;
-      font-weight: 700;
-      font-size: .8rem;
-    }
 
-    .filter-btn.active {
-      background: var(--primary);
-      border-color: var(--primary);
-      color: #fff;
-      box-shadow: 0 7px 18px rgba(22,135,248,.18);
-    }
 
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: .82fr 1.18fr;
-      gap: 14px;
-      align-items: start;
-    }
 
-    .panel {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow-sm);
-      border-radius: 24px;
-      padding: 20px;
-    }
 
-    .panel-title {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 18px;
-    }
 
-    .panel-title h3 {
-      margin: 0;
-      font-size: 1rem;
-      letter-spacing: -.015em;
-    }
 
-    .muted {
-      color: var(--muted);
-    }
 
-    .progress-stack {
-      display: grid;
-      gap: 18px;
-    }
 
-    .progress-card {
-      padding: 16px;
-      border-radius: 18px;
-      border: 1px solid var(--border);
-      background: var(--surface-2);
-    }
 
-    .progress-line {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: center;
-    }
 
-    .progress-line strong {
-      font-size: .9rem;
-    }
 
-    .progress-value {
-      font-weight: 800;
-      letter-spacing: -.02em;
-    }
 
-    .progress {
-      height: 10px;
-      border-radius: 999px;
-      overflow: hidden;
-      background: color-mix(in srgb, var(--border) 70%, transparent);
-      margin-top: 11px;
-    }
 
-    .progress > span {
-      display: block;
-      height: 100%;
-      width: 0;
-      border-radius: inherit;
-      background: linear-gradient(90deg, var(--primary), var(--primary-2));
-      transition: width .5s ease;
-    }
 
-    .progress-meta {
-      margin-top: 8px;
-      color: var(--muted);
-      font-size: .75rem;
-      line-height: 1.4;
-    }
 
-    .bars {
-      display: grid;
-      gap: 11px;
-    }
 
-    .bar-row {
-      display: grid;
-      grid-template-columns: 38px minmax(0, 1fr) 62px;
-      gap: 10px;
-      align-items: center;
-    }
 
-    .bar-label {
-      font-size: .78rem;
-      font-weight: 760;
-      color: var(--muted);
-    }
 
-    .bar-track {
-      height: 13px;
-      border-radius: 999px;
-      overflow: hidden;
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-    }
 
-    .bar-fill {
-      height: 100%;
-      border-radius: inherit;
-      min-width: 0;
-      background: linear-gradient(90deg, var(--primary), var(--primary-2));
-      transition: width .45s ease;
-    }
 
-    .bar-value {
-      text-align: right;
-      font-size: .76rem;
-      font-weight: 730;
-      color: var(--muted);
-    }
 
-    .chart-tabs {
-      display: flex;
-      gap: 7px;
-      margin-bottom: 14px;
-    }
 
-    .chart-tab {
-      border: 1px solid var(--border);
-      background: var(--surface-2);
-      color: var(--muted);
-      border-radius: 10px;
-      padding: 7px 10px;
-      font-size: .75rem;
-      font-weight: 720;
-      cursor: pointer;
-    }
 
-    .chart-tab.active {
-      color: var(--primary);
-      border-color: color-mix(in srgb, var(--primary) 30%, var(--border));
-      background: var(--primary-soft);
-    }
 
     .empty {
       min-height: 160px;
@@ -593,16 +235,7 @@
       margin-bottom: 10px;
     }
 
-    .footer {
-      padding: 36px 0 24px;
-      text-align: center;
-      color: var(--muted);
-      font-size: .8rem;
-    }
 
-    .footer strong {
-      color: var(--text);
-    }
 
     .loading-screen {
       position: fixed;
@@ -828,26 +461,8 @@
       margin-top: 1px;
     }
 
-    @media (max-width: 980px) {
-      .hero {
-        grid-template-columns: 1fr;
-      }
-      .hero-side {
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: auto;
-      }
-      .stats {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      .dashboard-grid {
-        grid-template-columns: 1fr;
-      }
-    }
 
     @media (max-width: 640px) {
-      .app-shell {
-        width: min(100% - 18px, 1440px);
-      }
       .topbar {
         padding-top: 9px;
       }
@@ -867,36 +482,6 @@
       .primary-btn {
         width: 42px;
         padding: 0;
-      }
-      .hero {
-        padding-top: 20px;
-      }
-      .hero-main {
-        border-radius: 24px;
-        padding: 28px 22px;
-      }
-      .hero-side {
-        grid-template-columns: 1fr;
-      }
-      .stats {
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-      }
-      .stat-card {
-        padding: 16px;
-        min-height: 128px;
-      }
-      .section-head {
-        align-items: flex-start;
-        flex-direction: column;
-      }
-      .panel {
-        padding: 16px;
-        border-radius: 20px;
-      }
-      .bar-row {
-        grid-template-columns: 34px minmax(0, 1fr) 54px;
-        gap: 7px;
       }
       .modal {
         align-items: end;
@@ -929,7 +514,7 @@
     }
 
     /* ============================================================
-       TAHAP 2B — APP SHELL SETELAH LOGIN
+       APP SHELL SETELAH LOGIN
        ============================================================ */
     .view-hidden {
       display: none !important;
@@ -1361,9 +946,9 @@
       font-size: .7rem;
     }
 
-    /* Circle spinner Revisi 004:
-       bentuk mengikuti loader radial + conic yang diberikan pengguna,
-       tetapi ukuran tetap mengikuti spinner aplikasi sebelumnya. */
+    /* Circle spinner:
+       bentuk mengikuti loader radial + conic, dengan ukuran tetap mengikuti
+       spinner aplikasi yang digunakan pada komponen lain. */
     .mini-spinner {
       --spinner-size: 13px;
       --spinner-stroke: 2px;
@@ -1420,7 +1005,6 @@
       }
 
       .app-content {
-        width: min(100% - 18px, 1280px);
         padding: 14px 0 90px;
       }
 
@@ -1431,15 +1015,10 @@
       .mobile-app-nav {
         position: fixed;
         z-index: 130;
-        left: 9px;
-        right: 9px;
-        bottom: 8px;
         display: flex;
         gap: 4px;
         overflow-x: auto;
-        padding: 7px;
         border: 1px solid var(--border);
-        border-radius: 18px;
         background: color-mix(in srgb, var(--surface) 94%, transparent);
         backdrop-filter: blur(18px);
         box-shadow: var(--shadow);
@@ -1516,7 +1095,7 @@
     }
 
     /* ============================================================
-       TAHAP 2C — MODUL DATA MURID
+       MODUL DATA MURID
        ============================================================ */
     .students-toolbar {
       display: grid;
@@ -1654,7 +1233,7 @@
       font-size: .72rem;
     }
 
-    /* Revisi 018: grid kolom Data Murid dikunci sama untuk semua role. */
+    /* Grid kolom Data Murid dikunci sama untuk semua role. */
     .students-table-compact col.student-col-no { width: 5%; }
     .students-table-compact col.student-col-name { width: 49%; }
     .students-table-compact col.student-col-documents { width: 13%; }
@@ -2028,7 +1607,7 @@
     }
 
     /* ============================================================
-       TAHAP 2D — MODUL NILAI SEMESTER 1–6
+       MODUL NILAI SEMESTER 1–6
        ============================================================ */
     .grades-page {
       display: grid;
@@ -2176,7 +1755,6 @@
 
     .grades-table {
       width: 100%;
-      min-width: 1580px;
       border-collapse: separate;
       border-spacing: 0;
       font-size: .66rem;
@@ -2191,7 +1769,7 @@
       background: var(--surface);
     }
 
-    /* Revisi 019: tinggi header dan baris Nilai dikunci sama untuk
+    /* Tinggi header dan baris Nilai dikunci sama untuk
        SUPER_ADMIN, WALI_KELAS, dan ADMIN_TU. */
     .grades-table thead th,
     .grades-table tbody td {
@@ -2305,7 +1883,7 @@
       border-color: transparent;
     }
 
-    /* Revisi 009: mode baca tetap memakai shell input 32px agar tinggi
+    /* Mode baca tetap memakai shell input 32px agar tinggi
        baris identik dengan mode edit Super Admin. */
     .grade-input.grade-input-readonly:disabled {
       opacity: 1;
@@ -2417,7 +1995,7 @@
     }
 
     /* ============================================================
-       TAHAP 2E — MODUL DOKUMEN MURID
+       MODUL DOKUMEN MURID
        ============================================================ */
     .documents-page {
       display: grid;
@@ -2776,22 +2354,7 @@
       font-size: .72rem;
     }
 
-    .delete-confirm-input {
-      width: 100%;
-      height: 43px;
-      border: 1px solid var(--border);
-      border-radius: 11px;
-      padding: 0 11px;
-      background: var(--surface-2);
-      color: var(--text);
-      outline: none;
-      margin-top: 10px;
-    }
 
-    .delete-confirm-input:focus {
-      border-color: var(--danger);
-      box-shadow: 0 0 0 4px color-mix(in srgb, var(--danger) 9%, transparent);
-    }
 
     .doc-info-strip {
       display: flex;
@@ -2853,7 +2416,7 @@
     }
 
     /* ============================================================
-       TAHAP 2E REVISI 001 — FULL PAGE DOCUMENT PREVIEW
+       FULL PAGE DOCUMENT PREVIEW
        Hanya untuk tampilan setelah tombol Preview ditekan.
        ============================================================ */
     .fullscreen-doc-preview {
@@ -3033,17 +2596,9 @@
       transform-origin: center center;
     }
 
-    /* Revisi 023 · Custom PDF.js Viewer.
-       PDF tidak lagi diserahkan ke iframe/viewer bawaan browser.
+    /* Custom PDF.js Viewer.
+       PDF tidak diserahkan ke iframe/viewer bawaan browser.
        Hanya halaman aktif yang dirender ke canvas. */
-    .fullscreen-preview-pdf {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      border: 0;
-      background: #fff;
-    }
 
     .fullscreen-pdf-scroll {
       position: absolute;
@@ -3139,7 +2694,7 @@
       font-size: .73rem;
     }
 
-    /* Revisi 020 · Progress preview dokumen.
+    /* Progress preview dokumen.
        Persentase berasal dari byte respons yang benar-benar diterima browser.
        Selama backend/Drive belum mulai mengirim data, progress tetap 0%. */
     .fullscreen-preview-progress-card {
@@ -3205,15 +2760,8 @@
       line-height: 1.55;
     }
 
-    /* Legacy selector dipertahankan untuk kompatibilitas markup lama.
-       Revisi 023 tidak lagi memakai native PDF viewer browser. */
-    .pdf-native-note {
-      color: var(--muted);
-      font-size: .61rem;
-      white-space: nowrap;
-    }
 
-    /* Revisi 024 · Toolbar preview HP dibagi atas + bawah.
+    /* Toolbar preview HP dibagi atas + bawah.
        Toolbar bawah menjadi baris kontrol kedua dan hanya aktif pada HP. */
     .fullscreen-preview-mobile-bottom {
       display: none;
@@ -3365,7 +2913,7 @@
     }
 
     /* ============================================================
-       TAHAP 2F — MODUL MANAJEMEN AKUN SUPER ADMIN
+       MODUL MANAJEMEN AKUN SUPER ADMIN
        ============================================================ */
     .accounts-page {
       display: grid;
@@ -3494,7 +3042,6 @@
 
     .accounts-table {
       width: 100%;
-      min-width: 1040px;
       border-collapse: collapse;
       font-size: .69rem;
     }
@@ -3807,16 +3354,7 @@
     }
 
     @media (max-width: 620px) {
-      .accounts-head-card {
-        grid-template-columns: 1fr;
-      }
 
-      .account-capacity {
-        width: 100%;
-        
-        max-width: 260px;
-        text-align: left;
-      }
 
       .accounts-toolbar {
         grid-template-columns: 1fr;
@@ -3836,7 +3374,7 @@
     }
 
     /* ============================================================
-       TAHAP 2G — MODUL PENGATURAN SUPER ADMIN
+       MODUL PENGATURAN SUPER ADMIN
        ============================================================ */
     .settings-page {
       display: grid;
@@ -4241,7 +3779,7 @@
     }
 
     /* ============================================================
-       TAHAP 2G REVISI 001 — SKELETON LOADER DATA
+       SKELETON LOADER DATA
        ============================================================ */
     .sk {
       position: relative;
@@ -4274,11 +3812,6 @@
     .sk-line-lg { width: 180px; height: 13px; }
     .sk-line-xl { width: min(230px, 80%); height: 14px; }
 
-    .sk-value-sm {
-      width: 54px;
-      height: 25px;
-      border-radius: 8px;
-    }
 
     .sk-value-md {
       width: 76px;
@@ -4348,30 +3881,9 @@
       max-width: 100%;
     }
 
-    .sk-filter-pill {
-      width: 92px;
-      height: 36px;
-      border-radius: 999px;
-      flex: 0 0 auto;
-    }
 
-    .sk-chart-row {
-      display: grid;
-      grid-template-columns: 38px minmax(0, 1fr) 62px;
-      gap: 10px;
-      align-items: center;
-    }
 
-    .sk-chart-label {
-      width: 25px;
-      height: 10px;
-    }
 
-    .sk-chart-value {
-      width: 44px;
-      height: 10px;
-      justify-self: end;
-    }
 
     .sk-summary-card span.sk,
     .sk-summary-card strong.sk,
@@ -4397,10 +3909,6 @@
         width: min(180px, 75%);
       }
 
-      .sk-chart-row {
-        grid-template-columns: 34px minmax(0, 1fr) 54px;
-        gap: 7px;
-      }
     }
 
     /* skeleton wajib mengikuti batas card/container */
@@ -4447,26 +3955,8 @@
       max-width: 100%;
     }
 
-    /* Progress/bar loading: track normal kosong, TANPA skeleton shimmer */
-    .progress-loading-track,
-    .chart-loading-track {
-      display: block;
-      width: 100%;
-      box-sizing: border-box;
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      overflow: hidden;
-    }
 
-    .progress-loading-track {
-      height: 10px;
-      border-radius: 999px;
-    }
 
-    .chart-loading-track {
-      height: 13px;
-      border-radius: 999px;
-    }
 
     /* guard tambahan agar skeleton tidak pernah keluar card */
     .dashboard-semester-list,
@@ -4523,7 +4013,7 @@
     }
 
     /* ============================================================
-       TAHAP 2G REVISI 004 — FONT GLOBAL APLIKASI
+       FONT GLOBAL APLIKASI
        ============================================================ */
     .font-settings-card {
       grid-column: 1 / -1;
@@ -4738,7 +4228,7 @@
     }
 
     /* ============================================================
-       TAHAP 2H-1 — AUDIT TAMPILAN / VISUAL HARDENING
+       AUDIT TAMPILAN / VISUAL HARDENING
        ============================================================ */
 
     /* Kontrol native dan media tidak boleh melampaui container. */
@@ -5142,60 +4632,11 @@
       flex-direction: column;
     }
 
-    .mass-grade-help {
-      flex: 0 0 auto;
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 10px;
-      padding: 10px 11px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: var(--surface-2);
-      color: var(--muted);
-      font-size: .63rem;
-      line-height: 1.45;
-    }
 
-    .mass-grade-help strong {
-      color: var(--text);
-    }
 
-    .mass-grade-help-badges {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      flex-wrap: wrap;
-    }
 
-    .mass-grade-help-badge {
-      min-height: 24px;
-      padding: 0 8px;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      background: var(--surface);
-      color: var(--muted);
-      font-size: .58rem;
-      font-weight: 720;
-      white-space: nowrap;
-    }
 
-    .mass-grade-help-badge.valid {
-      color: var(--success);
-      border-color: color-mix(in srgb, var(--success) 22%, var(--border));
-      background: color-mix(in srgb, var(--success) 7%, var(--surface));
-    }
 
-    .mass-grade-help-badge.invalid {
-      color: var(--danger);
-      border-color: color-mix(in srgb, var(--danger) 22%, var(--border));
-      background: color-mix(in srgb, var(--danger) 7%, var(--surface));
-    }
 
     .mass-grade-grid-wrap {
       flex: 1 1 auto;
@@ -5388,44 +4829,8 @@
       font-weight: 760;
     }
 
-    .mass-grade-selection-info {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      min-height: 24px;
-      padding: 0 8px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      background: var(--surface);
-      color: var(--muted);
-      font-size: .58rem;
-      font-weight: 700;
-    }
 
-    .mass-grade-shortcuts {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      color: var(--muted);
-      font-size: .58rem;
-    }
 
-    .mass-grade-key {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 21px;
-      padding: 0 6px;
-      border: 1px solid var(--border);
-      border-bottom-width: 2px;
-      border-radius: 5px;
-      background: var(--surface);
-      color: var(--text);
-      font-size: .55rem;
-      font-weight: 720;
-      line-height: 1;
-    }
 
     .mass-grade-footer {
       flex: 0 0 auto;
@@ -5520,8 +4925,8 @@
       cursor: default;
     }
 
-    /* Revisi 009: tombol Edit Wali Kelas pada semester terkunci tetap
-       menjaga ukuran baris/kolom, tetapi benar-benar nonaktif dan netral. */
+    /* Tombol Edit Wali Kelas pada semester terkunci tetap menjaga
+       ukuran baris/kolom, tetapi benar-benar nonaktif dan netral. */
     .grade-row-action-btn.grade-action-disabled,
     .grade-row-action-btn.grade-action-disabled:hover {
       opacity: 1;
@@ -5815,13 +5220,6 @@
     }
 
     .grades-control-card .grades-toolbar {
-      grid-template-columns:
-        max-content
-        minmax(130px, 190px)
-        minmax(0, 1fr);
-      grid-template-areas:
-        "judul kelas aksi"
-        "semester semester semester";
       gap: 10px 12px;
       align-items: center;
     }
@@ -5923,12 +5321,6 @@
     }
 
     @media (max-width: 980px) {
-      .grades-control-card .grades-toolbar {
-        grid-template-columns:
-          max-content
-          minmax(120px, 165px)
-          minmax(0, 1fr);
-      }
 
       .grades-control-card .grades-actions {
         grid-column: auto;
@@ -5942,18 +5334,9 @@
       }
 
       .grades-control-card .grades-toolbar {
-        grid-template-columns: 1fr;
-        grid-template-areas:
-          "judul"
-          "kelas"
-          "aksi"
-          "semester";
         gap: 8px;
       }
 
-      .grade-title-inline {
-        justify-content: space-between;
-      }
 
       .grades-control-card .grades-actions {
         display: grid;
@@ -6243,22 +5626,17 @@
     }
 
     .bulk-grid-loading-card {
-      width: min(290px, calc(100% - 28px));
       padding: 14px 16px;
       border: 1px solid var(--border);
       border-radius: 12px;
       background: var(--surface);
       box-shadow: 0 10px 28px rgba(20, 40, 70, .10);
-      display: grid;
       grid-template-columns: auto 1fr;
-      gap: 4px 9px;
-      align-items: center;
       color: var(--text);
     }
 
     .bulk-grid-loading-card > strong {
       font-size: .69rem;
-      line-height: 1.35;
     }
 
     .bulk-grid-loading-card > span:last-child {
@@ -6498,16 +5876,6 @@
       padding: 10px 14px;
     }
 
-    .grades-page.grades-panel-collapsed
-    .grades-control-card
-    .grades-toolbar {
-      grid-template-columns:
-        minmax(0, 1fr)
-        38px;
-      grid-template-areas:
-        "judul collapse";
-      gap: 10px;
-    }
 
     .grades-page.grades-panel-collapsed
     .grade-class-control,
@@ -6579,15 +5947,6 @@
         justify-content: flex-start;
       }
 
-      .grades-page.grades-panel-collapsed
-      .grades-control-card
-      .grades-toolbar {
-        grid-template-columns:
-          minmax(0, 1fr)
-          38px;
-        grid-template-areas:
-          "judul collapse";
-      }
 
       .grades-page.grades-panel-collapsed
       .grade-title-inline {
@@ -6612,11 +5971,6 @@
     }
 
     @media (max-width: 460px) {
-      .grades-page.grades-panel-collapsed
-      .grade-title-inline {
-        display: grid;
-        gap: 2px;
-      }
 
       .grades-page.grades-panel-collapsed
       .grade-collapsed-summary {
@@ -6962,7 +6316,7 @@
       color: var(--danger);
     }
 
-    /* Revisi 031 · informasi sesi + versi hanya di menu profil HP. */
+    /* Informasi sesi + versi hanya ditampilkan di menu profil HP. */
     .profile-mobile-session-info,
     .profile-mobile-session-bottom-separator {
       display: none;
@@ -7398,12 +6752,8 @@
     /* Lebar minimum tabel hanya berlaku desktop/tablet besar.
        Scroll kiri-kanan terjadi di accounts-table-wrap, bukan page. */
     @media (min-width: 621px) {
-      .accounts-table {
-        width: max(100%, 1040px);
-        min-width: 1040px;
-      }
 
-      /* Revisi 013 · Pemerataan tabel Akun desktop.
+      /* Pemerataan tabel Akun desktop.
          Teks identitas rata kiri; badge/foto/password/status/aksi rata tengah. */
       .accounts-table th.account-name-head,
       .accounts-table td.account-name-cell,
@@ -7455,16 +6805,15 @@
     }
 
     /* ============================================================
-       Revisi 014 · Tabel Akun memenuhi lebar kartu sampai sisi kanan
+       TABEL AKUN MEMENUHI LEBAR KARTU
        ============================================================
-       - Hapus gutter scrollbar permanen yang menyisakan ruang kosong kanan.
+       - Tanpa gutter scrollbar permanen di sisi kanan.
        - Wrapper hanya menangani scroll horizontal bila benar-benar dibutuhkan.
-       - Tabel selalu mengisi 100% ruang yang tersedia, dengan 1040px sebagai
-         batas minimum desktop. Sisa lebar dibagikan alami oleh table-layout:auto
-         ke kolom fleksibel tanpa mengubah ukuran kolom fixed Foto/Kelas. */
+       - Tabel mengisi 100% ruang yang tersedia, dengan 1040px sebagai batas
+         minimum desktop. Sisa lebar dibagikan oleh table-layout:auto ke kolom
+         fleksibel tanpa mengubah ukuran kolom fixed Foto/Kelas. */
     @media (min-width: 621px) {
       .accounts-table-wrap {
-        overflow-x: auto;
         overflow-y: hidden;
         scrollbar-gutter: auto;
       }
@@ -7478,8 +6827,8 @@
     }
 
     /* Pada HP, perbaikan overflow dibatasi HANYA pada modul Akun.
-       .app-content tetap memakai spacing mobile asli Revisi 018,
-       sehingga seluruh card halaman lain tidak menempel ke tepi layar. */
+       .app-content tetap memakai spacing mobile yang konsisten agar card
+       halaman lain tidak menempel ke tepi layar. */
     @media (max-width: 620px) {
       .accounts-page {
         width: 100%;
@@ -7757,9 +7106,8 @@
        Restore spacing mobile + navbar dock bawah
        ============================================================ */
 
-    /* Spacing HP dikembalikan ke pola Revisi 018.
-       Ini sengaja global untuk app-content, tetapi hanya mengembalikan
-       nilai yang memang sudah benar sebelum fix overflow Revisi 019. */
+    /* Spacing HP untuk app-content dijaga global dan konsisten agar
+       perbaikan overflow modul tertentu tidak mengubah jarak halaman lain. */
     @media (max-width: 820px) {
       .app-content {
         width: min(calc(100% - 18px), 1280px);
@@ -8098,15 +7446,10 @@
 
     /* ------------------------------------------------------------
        C. NAVBAR HP — AREA SCROLL INTERNAL BER-PADDING
-       Outer navbar tetap dock ke bawah dari Revisi 020.
+       Outer navbar tetap dock ke bawah.
        ------------------------------------------------------------ */
 
     @media (max-width: 820px) {
-      .mobile-app-nav,
-    .mobile-app-nav[data-count="4"] {
-        display: block;
-
-      }
 
       /* Karena track berada di dalam padding outer navbar,
          menu sudah mulai terpotong sebelum mencapai tepi fisik layar. */
@@ -8133,7 +7476,7 @@
 
     @media (max-width: 820px) {
       /*
-       * Outer navbar tetap dock seperti Revisi 020.
+       * Outer navbar tetap dock.
        * Padding 7px menjadi ruang aman di kiri/kanan/atas.
        */
       .mobile-app-nav,
@@ -8308,10 +7651,6 @@
       overflow: hidden;
     }
 
-    .fullscreen-mass-grade .mass-grade-help {
-      flex: 0 0 auto;
-      margin: 0;
-    }
 
     .fullscreen-mass-grade .mass-grade-grid-wrap {
       flex: 1 1 auto;
@@ -8452,15 +7791,6 @@
        Perbarui + Simpan Perubahan benar-benar 50:50.
        ------------------------------------------------------------ */
     @media (max-width: 760px) {
-      .grades-page-wali:not(.grades-panel-collapsed)
-      .grades-control-card
-      .grades-actions {
-        width: 100%;
-
-        grid-template-columns:
-          repeat(2, minmax(0, 1fr));
-        
-      }
 
       .grades-page-wali:not(.grades-panel-collapsed)
       .grades-control-card
@@ -8474,8 +7804,7 @@
     }
 
     /* ============================================================
-       Versi 1.25
-       Stable Sidebar Icons + Wali Mobile 50:50
+       STABLE SIDEBAR ICONS + WALI MOBILE 50:50
        ============================================================ */
 
     /* Label versi mengikuti font/warna "Dikembangkan oleh". */
@@ -8569,21 +7898,18 @@
     }
 
     /* ============================================================
-       Versi 1.27
-       Footer sidebar mengikuti mekanisme teks menu.
+       FOOTER SIDEBAR MENGIKUTI MEKANISME TEKS MENU
        ============================================================ */
 
 
     /* ============================================================
-       CLASSOF2027 Revisi 005 — Versi 1.34
-       - Edit Massal Data Murid fullscreen.
+       EDIT MASSAL DATA MURID
+       - Mode fullscreen.
        - Grid Data Murid menyamai selection/focus spreadsheet Nilai.
-       - Bar petunjuk Edit Massal Nilai dihapus tanpa menonaktifkan shortcut.
+       - Shortcut tetap aktif tanpa bar petunjuk tambahan.
        ============================================================ */
     /* ============================================================
-       CLASSOF2027 Revisi 005 — Versi 1.34
-       Stable Sidebar Rail
-       - Mengembalikan mekanisme rail Revisi 003 yang sudah stabil.
+       STABLE SIDEBAR RAIL
        - Padding/alignment tombol identik saat sidebar buka/tutup.
        - Slot ikon fixed 24px, tidak di-center ulang saat collapsed.
        - Tidak ada translate/margin-auto khusus state collapsed.
@@ -8593,7 +7919,7 @@
 
   
     /* =========================================================
-       Revisi 029 · Penyederhanaan Bahasa Aplikasi
+       PENYEDERHANAAN BAHASA APLIKASI
        ========================================================= */
     /* Teks yang tampil ke pengguna disederhanakan tanpa mengubah logika aplikasi. */
     .document-upload-choice-grid {
@@ -8843,7 +8169,7 @@
     }
 
 
-    /* ===== Revisi 033 · Landing Page Final · Basis Preview 006 ===== */
+    /* ===== LANDING PAGE FINAL · BASIS PREVIEW 006 ===== */
     #publicView.landing-redesign {
       min-height: 100vh;
       font-family: "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -8868,9 +8194,9 @@
       height: 43px;
       flex: 0 0 auto;
       object-fit: contain;
-      border-radius: 12px;
-      background: #fff;
-      box-shadow: 0 6px 16px rgba(31,69,109,.10);
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
     }
 
     #publicView .landing-topbar .brand-text strong {
@@ -9341,7 +8667,7 @@
       #publicView .landing-topbar .brand-school-logo {
         width: 39px;
         height: 39px;
-        border-radius: 10px;
+        border-radius: 0;
       }
 
       #publicView .landing-topbar .brand-text strong {
@@ -9805,7 +9131,7 @@
 
                 <div class="profile-popup-separator"></div>
 
-                <div class="profile-mobile-session-info" id="profileMobileSessionInfo" aria-label="Informasi sesi dan versi aplikasi">
+                <div class="profile-mobile-session-info" aria-label="Informasi sesi dan versi aplikasi">
                   <span class="profile-mobile-session-line" id="profileMobileSessionText">Sesi sedang berlangsung</span>
                   <span class="profile-mobile-version-line" id="profileMobileVersionText">Class of 2027 · Versi</span>
                 </div>
@@ -9885,7 +9211,7 @@
 
   <script>
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbwbXIVdM4PcLxQFvCn5d5N1OU6BGE1pp54KXcFVbT8DvEcucqc4YgRiatfovy9278Pd/exec';
-    const APP_VERSION = '1.61';
+    const APP_VERSION = '1.65';
 
     function detectChatGPTPreviewEnvironment() {
       const values = [];
@@ -10097,7 +9423,7 @@
     };
 
 
-    // ===== Revisi 007 · Tahap 4: Session Cache Frontend =====
+    // ===== Session Cache Frontend =====
     // Cache hanya hidup selama sesi login/browser aktif. Tidak disimpan ke
     // localStorage/sessionStorage agar data operasional tidak menetap di browser.
     function createSessionCache() {
@@ -10118,7 +9444,7 @@
 
     state.sessionCache = createSessionCache();
 
-    // ===== Revisi 008 · Background In-Flight Request Registry =====
+    // ===== Background In-Flight Request Registry =====
     // Request yang sudah dimulai tetap berjalan saat pengguna pindah menu.
     // Jika pengguna kembali sebelum selesai, frontend menunggu Promise yang
     // sama (tidak membuat request duplikat). Hasil stabil tetap masuk cache.
@@ -10263,8 +9589,7 @@
       ].join('|');
     }
 
-    // ===== Revisi 021 · Dokumen Tahap 2: Detail Cache =====
-    // ===== Revisi 022 · Dokumen Tahap 3: Signed Preview Fast Path =====
+    // ===== Document Detail Cache + Signed Preview Fast Path =====
     function studentDocumentDetailCacheKey(source) {
       return [
         String(source?.kelas || '').trim().toUpperCase(),
@@ -10345,7 +9670,7 @@
       );
     }
 
-    // ===== Revisi 011 · Shared Student Directory Cache =====
+    // ===== Shared Student Directory Cache =====
     // Data Murid dan Dokumen memakai endpoint searchstudents yang sama.
     // Satu snapshot direktori dibagi kedua modul agar kombinasi
     // kelas+pencarian+halaman yang sudah pernah dimuat tidak diminta ulang.
@@ -10476,17 +9801,17 @@
       }
     }
 
-    // ===== Revisi 013 · Optimasi Akun =====
+    // ===== Optimasi Akun =====
     // Cache akun tetap session-only; tabel dipaint lebih dulu, avatar custom
     // dihydrate sesudah paint awal. Layout desktop dipadatkan hanya pada
     // Password + Kelas sesuai keputusan desain.
 
-    // ===== Revisi 016 · Unified Dashboard Aggregate / One-Shot Render =====
+    // ===== Unified Dashboard Aggregate / One-Shot Render =====
     // Dashboard internal memakai satu endpoint getappdashboard. Seluruh kartu
     // utama + akun + lock semester berasal dari satu snapshot A1:L12 sehingga
     // skeleton dan hasil akhir tampil dalam satu fase, tanpa preload listaccounts.
 
-    // ===== Revisi 012 · Dashboard Stale-While-Revalidate =====
+    // ===== Dashboard Stale-While-Revalidate =====
     // Dashboard yang sudah pernah tersedia selalu ditampilkan dari cache lebih
     // dahulu. Refresh otoritatif hanya berjalan di background ketika snapshot
     // sudah cukup lama; Unified Live Sync tetap menjadi jalur pembaruan utama.
@@ -10527,7 +9852,7 @@
       return loadDashboard(true, false);
     }
 
-    // ===== Revisi 015 · Fast Settings Cache-First + Stale-While-Revalidate =====
+    // ===== Fast Settings Cache-First + Stale-While-Revalidate =====
     // Pengaturan yang sudah pernah dimuat ditampilkan langsung dari cache sesi.
     // Unified Live Sync tetap menjadi jalur pembaruan utama; refresh otoritatif
     // hanya berjalan diam-diam bila snapshot sudah cukup lama.
@@ -10922,7 +10247,7 @@
       return true;
     }
 
-    // ===== Revisi 007 · Tahap 5-6: Unified Live Sync + Forced Incremental Refresh =====
+    // ===== Unified Live Sync + Forced Incremental Refresh =====
     // Satu timer global setelah login. Backend hanya mengirim Change Journal
     // setelah lastChangeId; cache yang tidak terdampak tidak disentuh.
     const LIVE_SYNC_INTERVAL_MS = 20 * 1000;
@@ -10949,7 +10274,7 @@
     }
 
 
-    // ===== Revisi 007 · Tahap 8: Edit Conflict Guard =====
+    // ===== Edit Conflict Guard =====
     // Event Live Sync tetap dicatat dan cache tetap diinvalidasi, tetapi
     // render/fetch yang dapat menimpa pekerjaan lokal ditahan sampai edit
     // selesai. Keamanan session tidak ditunda karena getSyncChanges selalu
@@ -11459,7 +10784,7 @@
       return effects.gradeKeys.has(`${kelas}|${semester}`);
     }
 
-    // ===== Revisi 007 · Tahap 7: Dashboard class patch + settings bundle =====
+    // ===== Dashboard class patch + settings bundle =====
     function frontendCompletenessMetric(required, filled, specialStatus = '') {
       const wajib = Number(required) || 0;
       const terisi = Number(filled) || 0;
@@ -12456,7 +11781,7 @@
       return result.data;
     }
 
-    // ===== Revisi 016 · Unified Dashboard One-Shot =====
+    // ===== Unified Dashboard One-Shot =====
     // Setelah login, seluruh kartu Dashboard + status kunci berasal dari satu
     // payload backend yang membaca satu snapshot Rekap_Dashboard A1:L12.
     function isUnifiedAuthenticatedDashboard(dashboard) {
@@ -13145,7 +12470,7 @@
 
         <div class="avatar-manage-actions">
           <button
-            class="avatar-manage-action primary-action"
+            class="avatar-manage-action"
             id="avatarManageChangeBtn"
             type="button">
             <span class="avatar-manage-action-icon">
@@ -14188,7 +13513,7 @@
 
 
     // =========================================================
-    // Revisi 025 · Pagination adaptif per role/filter kelas.
+    // Pagination adaptif per role/filter kelas.
     // SEMUA untuk SUPER_ADMIN/ADMIN_TU tetap 20 per halaman.
     // Satu kelas (termasuk WALI_KELAS) dimuat sekaligus; backend
     // sudah mendukung limit sampai 200 dan kelas maksimal ~35 murid.
@@ -14695,11 +14020,11 @@
     }
 
     function closeAppDialog() {
-      // Revisi 026: jika dialog induk ditutup/diganti saat kamera fullscreen
+      // Jika dialog induk ditutup/diganti saat kamera fullscreen
       // masih terbuka, hentikan kamera dan lepaskan overlay-nya sekaligus.
       closeDocumentCameraFullscreen();
 
-      // Revisi 024: bila dialog Kelola Dokumen ditutup/diganti,
+      // Bila dialog Kelola Dokumen ditutup/diganti,
       // hentikan antrean predownload dan batalkan request aktifnya.
       // File yang sudah selesai tetap berada di cache sesi.
       if ($('#studentDocumentsContent')) {
@@ -17306,7 +16631,7 @@
     function gradeSemesterLockMeta(semester) {
       const normalized = Number(semester);
 
-      // Revisi 010: warna/ikon tab Semester 1–6 hanya memakai sumber
+      // Warna/ikon tab Semester 1–6 hanya memakai sumber
       // status global yang stabil. Jangan membaca state.grades.locked di sini,
       // karena nilainya masih milik semester sebelumnya ketika perpindahan
       // semester sedang melakukan first load dan dapat menyebabkan flicker.
@@ -17328,7 +16653,7 @@
       };
     }
 
-    function gradeSemesterCanEdit(semester, lockMeta) {
+    function gradeSemesterCanEdit(lockMeta) {
       const role = state.user?.role;
 
       if (role === 'SUPER_ADMIN') {
@@ -17382,7 +16707,6 @@
 
         const canEdit =
           gradeSemesterCanEdit(
-            semester,
             lockMeta
           );
 
@@ -17867,7 +17191,7 @@
       const isWali = role === 'WALI_KELAS';
       const isAdminTu = role === 'ADMIN_TU';
 
-      // Revisi 019: ketiga role memakai grid kolom yang sama.
+      // Ketiga role memakai grid kolom yang sama.
       // ADMIN_TU tetap memiliki slot Aksi 123px, tetapi hanya berisi tanda em dash.
       const showActionColumn = true;
 
@@ -18189,7 +17513,7 @@
 
       renderGradeRowActionButton(rowIndex);
 
-      updateLiveSemesterAverage(rowIndex);
+      updateLiveSemesterAverage();
       renderGradeDirtyStatus();
     }
 
@@ -18510,7 +17834,7 @@
       renderGradeSummary();
     }
 
-    function updateLiveSemesterAverage(rowIndex) {
+    function updateLiveSemesterAverage() {
       // Satu input dapat menaikkan/menurunkan semester acuan kelas,
       // sehingga seluruh murid dihitung ulang secara realtime.
       refreshAllGradeLiveStates();
@@ -19444,7 +18768,7 @@
 
         let rowHasValidChange = false;
 
-        subjects.forEach((subject, colIndex) => {
+        subjects.forEach((_, colIndex) => {
           const input = findMassGradeInput(rowIndex, colIndex);
           if (!input) return;
 
@@ -20962,7 +20286,7 @@
       if (cached) {
         renderStudentDocumentDetail();
 
-        // Revisi 024: klik Kelola langsung memulai predownload
+        // Klik Kelola langsung memulai predownload
         // berurutan untuk dokumen murid ini saja.
         startDocumentPredownloadQueue(state.documents.detail);
 
@@ -21052,7 +20376,7 @@
           return;
         }
 
-        // Revisi 024: jangan biarkan enrichment metadata Drive
+        // Jangan biarkan enrichment metadata Drive
         // berebut jalur backend dengan predownload aktif.
         if (isDocumentPredownloadBusyForStudent(student)) {
           documentMetadataEnrichmentTimer = setTimeout(
@@ -21116,7 +20440,7 @@
         state.documents.detail = plainClone(data);
         renderStudentDocumentDetail();
 
-        // Revisi 024: predownload dimulai segera setelah detail cepat
+        // Predownload dimulai segera setelah detail cepat
         // tersedia; tidak menunggu enrichment metadata Drive.
         startDocumentPredownloadQueue(state.documents.detail);
 
@@ -21402,7 +20726,7 @@
         imageDataUrl: '',
         imageFileName: '',
 
-        // Revisi 023 · state khusus PDF.js.
+        // State khusus PDF.js.
         pdfDataUrl: '',
         pdfFileName: '',
         pdfDocument: null,
@@ -21876,7 +21200,7 @@
         }
       }
 
-      // Revisi 024: mutasi/Live Sync juga membatalkan predownload/preview
+      // Mutasi/Live Sync juga membatalkan predownload/preview
       // in-flight terkait agar respons file lama tidak masuk kembali ke cache.
       if (registry instanceof Map) {
         [...registry.entries()].forEach(([key, entry]) => {
@@ -22035,7 +21359,7 @@
           nisn: detail.nisn,
           documentType: type,
 
-          // Revisi 022 · Tahap 3: tiket preview ditandatangani backend.
+          // Tiket preview ditandatangani backend.
           // Jika valid, backend dapat langsung membuka file Drive tanpa
           // mencari murid dan membaca Spreadsheet ulang. Backend tetap
           // mempunyai safe fallback ke jalur lama bila tiket tidak ada,
@@ -22054,7 +21378,7 @@
       });
     }
 
-    function syncDocumentPreviewTicketFromResponse(detail, doc, data) {
+    function syncDocumentPreviewTicketFromResponse(doc, data) {
       const ticket = String(data?.previewTicket || '').trim();
       const expiresAt = String(data?.previewTicketExpiresAt || '').trim();
 
@@ -22180,7 +21504,6 @@
       )
         .then(data => {
           syncDocumentPreviewTicketFromResponse(
-            detail,
             doc,
             data
           );
@@ -22212,7 +21535,7 @@
     }
 
     // ============================================================
-    // Revisi 024 · PREDOWNLOAD SAAT KELOLA DOKUMEN
+    // PREDOWNLOAD SAAT KELOLA DOKUMEN
     // - Hanya murid yang sedang dibuka melalui Kelola.
     // - Maksimal satu preview request aktif pada satu waktu.
     // - Urutan normal mengikuti KK → AKTE → IJAZAH.
@@ -22445,7 +21768,7 @@
     }
 
     // ============================================================
-    // Revisi 030 · DUAL-SOURCE PDF.JS LOADER
+    // DUAL-SOURCE PDF.JS LOADER
     // - Utama: CDN jsDelivr, PDF.js 6.3.289.
     // - Fallback: repository ./pdfjs/ dengan versi yang sama.
     // - pdf.mjs dan pdf.worker.mjs selalu diperlakukan sebagai satu paket.
@@ -23907,7 +23230,7 @@
 
       if (!detail || !doc || !doc.uploaded) return;
 
-      // Revisi 024: jika predownload sedang mengambil dokumen lain,
+      // Jika predownload sedang mengambil dokumen lain,
       // dokumen yang benar-benar diklik menjadi prioritas. Jika dokumen ini
       // sedang diambil, getDocumentPreviewFast akan join Promise yang sama.
       prioritizeDocumentPredownload(type);
@@ -24036,7 +23359,7 @@
 
     const DOCUMENT_UPLOAD_MAX_BYTES = 10 * 1024 * 1024;
 
-    // Revisi 030 · DUAL-SOURCE HEIC/HEIF CONVERTER
+    // DUAL-SOURCE HEIC/HEIF CONVERTER
     // Utama: CDN jsDelivr heic2any 0.0.4.
     // Fallback: repository ./heic/heic2any.min.js.
     // Fallback hanya dipakai bila library gagal/timeout saat dimuat;
@@ -24233,7 +23556,7 @@
     const DOCUMENT_IMAGE_MAX_SIDE = 4000;
     const DOCUMENT_JPEG_QUALITY = 0.95;
 
-    // Revisi 027 · Kamera dokumen resolusi tinggi.
+    // Kamera dokumen resolusi tinggi.
     // Stream diminta setinggi mungkin agar fallback canvas tidak jatuh ke
     // resolusi default rendah. Foto tetap mencoba resolusi maksimum sensor
     // melalui ImageCapture, lalu hasil akhirnya dinormalisasi ke 4000px.
@@ -24728,7 +24051,7 @@
       );
     }
 
-    function documentCameraLowResolutionMessage(width, height) {
+    function documentCameraLowResolutionMessage() {
       return (
         'Foto kurang jelas untuk dokumen. Silakan foto ulang atau pilih foto yang lebih jelas dari galeri.'
       );
@@ -24771,7 +24094,7 @@
       let stream = null;
 
       try {
-        // Revisi 027: minta kamera yang dipilih + stream resolusi tinggi.
+        // Minta kamera yang dipilih + stream resolusi tinggi.
         // Constraint resolusi bersifat ideal agar kompatibel lintas HP/browser.
         stream = await navigator.mediaDevices.getUserMedia({
           audio: false,
@@ -24861,8 +24184,6 @@
 
       if (status) {
         const settings = track?.getSettings?.() || {};
-        const width = Number(video.videoWidth || settings.width || 0);
-        const height = Number(video.videoHeight || settings.height || 0);
         const facing =
           settings.facingMode === 'user' ||
           preferredFacingMode === 'user'
@@ -25023,23 +24344,6 @@
       reviewControls?.classList.remove('view-hidden');
 
       if (status) {
-        const dimensionText =
-          imageMeta?.width && imageMeta?.height
-            ? ` · ${imageMeta.width}×${imageMeta.height}`
-            : '';
-        const resizeText = imageMeta?.resized
-          ? ' · dinormalisasi maks. 4000px'
-          : '';
-
-        const sourceText =
-          imageMeta?.sourceWidth && imageMeta?.sourceHeight &&
-          (imageMeta.sourceWidth !== imageMeta.width || imageMeta.sourceHeight !== imageMeta.height)
-            ? ` · sumber ${imageMeta.sourceWidth}×${imageMeta.sourceHeight}`
-            : '';
-        const methodText = imageMeta?.captureMethod
-          ? ` · ${imageMeta.captureMethod}`
-          : '';
-
         status.textContent =
           `Foto siap digunakan · ${formatFileSize(file.size)}`;
       }
@@ -25224,7 +24528,7 @@
 
           if (documentCameraResolutionTooLow(actualWidth, actualHeight)) {
             throw new Error(
-              documentCameraLowResolutionMessage(actualWidth, actualHeight)
+              documentCameraLowResolutionMessage()
             );
           }
 
@@ -25426,7 +24730,6 @@
 
       const setFile = async (
         sourceFile,
-        sourceLabel = '',
         preparedMeta = null
       ) => {
         const status = $('#uploadDocumentStatus');
@@ -25541,7 +24844,7 @@
             const prepared = meta
               ? { ...meta, file }
               : null;
-            return await setFile(file, 'Kamera', prepared);
+            return await setFile(file, prepared);
           }
         );
       });
@@ -26291,7 +25594,7 @@
 
       const image = document.createElement('img');
       image.alt = `Foto ${String(account.nama || account.username || '')}`;
-      // Revisi 017: avatar berupa data URL sudah tersedia dari listaccounts.
+      // Avatar berupa data URL sudah tersedia dari listaccounts.
       // Jangan gunakan lazy-load pada <img> yang masih detached dari DOM,
       // karena sebagian browser dapat menunda load tanpa batas sehingga
       // event load tidak pernah terpanggil dan inisial tetap tampil.
@@ -26346,7 +25649,7 @@
 
 
     function maskedPassword() {
-      // Revisi 013: panjang password asli tidak ditunjukkan dari jumlah bullet.
+      // Panjang password asli tidak ditunjukkan dari jumlah bullet.
       return '••••••••';
     }
 
@@ -28098,7 +27401,7 @@
       if (section === 'dashboard') {
         const dashboardRestored = restoreDashboardSessionCache();
 
-        // Revisi 016: public dashboard sebelum login tidak lagi dipakai sebagai
+        // Public dashboard sebelum login tidak dipakai sebagai
         // cache dashboard internal. First load menampilkan skeleton untuk SEMUA
         // ringkasan, lalu satu payload getappdashboard merender semuanya serempak.
         renderDashboardShell();
@@ -28124,7 +27427,7 @@
           loadGradeGrid();
         }
 
-        // Revisi 009: status warna/ikon 1–6 harus lengkap sejak awal.
+        // Status warna/ikon 1–6 harus lengkap sejak awal.
         // Snapshot parsial (misalnya hanya semester yang pernah diklik)
         // tidak dianggap cukup; overview tetap dilanjutkan di background.
         if (!overviewRestored || !hasCompleteSemesterLockState()) {
@@ -28139,7 +27442,7 @@
       } else if (section === 'accounts') {
         renderAccountsModule();
 
-        // Revisi 016: daftar akun lengkap (termasuk avatar) hanya dimuat saat
+        // Daftar akun lengkap (termasuk avatar) hanya dimuat saat
         // menu Akun benar-benar dibuka. Dashboard tidak lagi melakukan preload.
         if (!restoreAccountsSessionCache()) {
           loadAccounts();
