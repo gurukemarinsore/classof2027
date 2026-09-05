@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <link rel="icon" type="image/svg+xml" href="logo.svg" />
   <title>Data Siswa Kelas 9 2026-2027</title>
-  <!-- CLASSOF2027 Revisi 031 · Mobile Profile Version Info · Versi 1.59 -->
+  <!-- CLASSOF2027 Revisi 033 · Landing Page Final · Versi 1.60 -->
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -8842,263 +8842,879 @@
       }
     }
 
+
+    /* ===== Revisi 033 · Landing Page Final · Basis Preview 006 ===== */
+    #publicView.landing-redesign {
+      min-height: 100vh;
+      font-family: "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    #publicView .landing-shell {
+      width: min(1180px, calc(100% - 30px));
+      margin: 0 auto;
+    }
+
+    #publicView .landing-topbar {
+      padding: 12px 0;
+    }
+
+    #publicView .landing-topbar .topbar-inner {
+      min-height: 66px;
+      padding: 10px 12px 10px 14px;
+    }
+
+    #publicView .landing-topbar .brand-school-logo {
+      width: 43px;
+      height: 43px;
+      flex: 0 0 auto;
+      object-fit: contain;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 6px 16px rgba(31,69,109,.10);
+    }
+
+    #publicView .landing-topbar .brand-text strong {
+      font-size: .94rem;
+    }
+
+    #publicView .landing-topbar .brand-text span {
+      margin-top: 3px;
+      font-size: .74rem;
+    }
+
+    #publicView .landing-hero {
+      min-height: 132px;
+      padding: 16px 12px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    #publicView .landing-hero h1 {
+      margin: 0;
+      max-width: 100%;
+      font-size: clamp(1.28rem, 4vw, 3.15rem);
+      line-height: 1.08;
+      letter-spacing: -.045em;
+      font-weight: 800;
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    #publicView .landing-hero-badge {
+      margin-top: 12px;
+      min-height: 36px;
+      padding: 0 16px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid color-mix(in srgb, var(--primary) 22%, var(--border));
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-size: .82rem;
+      font-weight: 800;
+      letter-spacing: .01em;
+      box-shadow: 0 6px 16px rgba(22,135,248,.08);
+    }
+
+    #publicView .landing-summary-card {
+      padding: 16px;
+      border-radius: 26px;
+      border: 1px solid var(--border);
+      background:
+        linear-gradient(135deg, color-mix(in srgb, var(--primary-soft) 60%, transparent), transparent 45%),
+        var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    #publicView .landing-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 12px;
+    }
+
+    #publicView .landing-stat {
+      min-height: 122px;
+      position: relative;
+      overflow: hidden;
+      padding: 16px;
+      border-radius: 19px;
+      background: color-mix(in srgb, var(--surface) 93%, transparent);
+      border: 1px solid var(--border);
+    }
+
+    #publicView .landing-stat::after {
+      content: "";
+      position: absolute;
+      width: 84px;
+      height: 84px;
+      right: -28px;
+      bottom: -32px;
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--primary) 8%, transparent);
+    }
+
+    #publicView .landing-stat-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    #publicView .landing-stat-label {
+      color: var(--muted);
+      font-size: .77rem;
+      font-weight: 700;
+    }
+
+    #publicView .landing-stat-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 11px;
+      display: grid;
+      place-items: center;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-size: 1rem;
+    }
+
+    #publicView .landing-stat-icon i {
+      font-size: 1.08rem;
+    }
+
+    #publicView .landing-stat-value {
+      position: relative;
+      z-index: 1;
+      margin-top: 13px;
+      font-size: clamp(1.6rem, 4vw, 2.25rem);
+      line-height: 1;
+      font-weight: 850;
+      letter-spacing: -.04em;
+    }
+
+    #publicView .landing-stat-note {
+      position: relative;
+      z-index: 1;
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: .72rem;
+      line-height: 1.4;
+    }
+
+    #publicView .landing-summary-meta {
+      margin-top: 18px;
+      padding: 16px 4px 1px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px 18px;
+      flex-wrap: wrap;
+    }
+
+    #publicView .landing-semester-line,
+    #publicView .landing-updated-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    #publicView .landing-summary-meta-icon {
+      color: var(--primary);
+      font-size: .98rem;
+      flex: 0 0 auto;
+    }
+
+    #publicView .landing-meta-label {
+      color: var(--muted);
+      font-size: .74rem;
+      font-weight: 680;
+    }
+
+    #publicView .landing-semester-pills {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+
+    #publicView .landing-semester-pill {
+      min-width: 28px;
+      height: 28px;
+      padding: 0 8px;
+      border-radius: 9px;
+      display: inline-grid;
+      place-items: center;
+      color: var(--primary);
+      background: var(--primary-soft);
+      border: 1px solid color-mix(in srgb, var(--primary) 18%, var(--border));
+      font-size: .72rem;
+      font-weight: 800;
+    }
+
+    #publicView .landing-meta-empty {
+      color: var(--muted);
+      font-size: .72rem;
+      font-weight: 700;
+    }
+
+    #publicView .landing-updated-line {
+      color: var(--muted);
+      font-size: .74rem;
+    }
+
+    #publicView .landing-refresh-btn {
+      width: 31px;
+      height: 31px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--surface-2);
+      color: var(--primary);
+      font-size: 1rem;
+      transition: .18s ease;
+    }
+
+    #publicView .landing-refresh-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    #publicView .landing-section {
+      padding: 14px 0 0;
+    }
+
+    #publicView .landing-comparison-panel {
+      border: 1px solid var(--border);
+      background:
+        linear-gradient(135deg, color-mix(in srgb, var(--primary-soft) 35%, transparent), transparent 32%),
+        var(--surface);
+      border-radius: 26px;
+      box-shadow: var(--shadow-sm);
+      padding: 18px;
+    }
+
+    #publicView .landing-comparison-panel-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 0;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    #publicView .landing-comparison-title {
+      margin: 0;
+      font-size: .95rem;
+      letter-spacing: -.015em;
+    }
+
+    #publicView .landing-comparison-head-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    #publicView .landing-comparison-legend {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      flex-wrap: wrap;
+    }
+
+    #publicView .landing-legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--muted);
+      font-size: .66rem;
+      font-weight: 730;
+    }
+
+    #publicView .landing-legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+    }
+
+    #publicView .landing-legend-dot.documents {
+      background: var(--primary);
+    }
+
+    #publicView .landing-legend-dot.grades {
+      background: var(--success);
+    }
+
+    #publicView .landing-class-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    #publicView .landing-class-item {
+      padding: 13px 14px 14px;
+      border-radius: 17px;
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--surface-2) 80%, var(--surface));
+      box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 38%, transparent);
+    }
+
+    #publicView .landing-class-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    #publicView .landing-class-name {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: .8rem;
+      font-weight: 850;
+      letter-spacing: -.01em;
+    }
+
+    #publicView .landing-class-name i {
+      color: var(--primary);
+      font-size: .95rem;
+    }
+
+    #publicView .landing-class-students {
+      color: var(--muted);
+      font-size: .67rem;
+      font-weight: 700;
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+
+    #publicView .landing-dual-bars {
+      display: grid;
+      gap: 8px;
+    }
+
+    #publicView .landing-metric-row {
+      display: grid;
+      grid-template-columns: 72px minmax(0,1fr) 48px;
+      gap: 9px;
+      align-items: center;
+    }
+
+    #publicView .landing-metric-label {
+      color: var(--muted);
+      font-size: .69rem;
+      font-weight: 760;
+    }
+
+    #publicView .landing-metric-track {
+      height: 10px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+
+    #publicView .landing-metric-fill {
+      height: 100%;
+      border-radius: inherit;
+      transition: width .45s ease;
+    }
+
+    #publicView .landing-metric-fill.documents {
+      background: linear-gradient(90deg, var(--primary), var(--primary-2));
+    }
+
+    #publicView .landing-metric-fill.grades {
+      background: linear-gradient(90deg, var(--success), color-mix(in srgb, var(--success) 58%, var(--primary-2)));
+    }
+
+    #publicView .landing-metric-value {
+      text-align: right;
+      color: var(--text);
+      font-size: .69rem;
+      font-weight: 820;
+      white-space: nowrap;
+    }
+
+    #publicView .landing-empty {
+      min-height: 190px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      color: var(--muted);
+      font-size: .78rem;
+    }
+
+    #publicView .landing-class-list > .landing-empty {
+      grid-column: 1 / -1;
+    }
+
+    #publicView .landing-empty i {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--primary);
+      font-size: 1.6rem;
+    }
+
+    #publicView .landing-footer {
+      padding: 28px 0 34px;
+    }
+
+    #publicView .landing-footer-card {
+      border-top: 1px solid var(--border);
+      padding-top: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 28px;
+      color: var(--muted);
+      font-size: .74rem;
+      line-height: 1.55;
+    }
+
+    #publicView .landing-footer-card strong {
+      display: block;
+      color: var(--text);
+      font-size: .76rem;
+      font-weight: 800;
+      margin-bottom: 3px;
+    }
+
+    #publicView .landing-footer-line {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    #publicView .landing-footer-line i {
+      flex: 0 0 auto;
+      color: var(--primary);
+      font-size: 1rem;
+      margin-top: 2px;
+    }
+
+    #publicView .landing-footer-copy {
+      min-width: 0;
+    }
+
+    #publicView .landing-footer-copy span {
+      display: block;
+    }
+
+    #publicView .landing-footer-info {
+      flex: 0 0 auto;
+      text-align: right;
+    }
+
+    #publicView .landing-footer-info span {
+      display: block;
+    }
+
+    @media (max-width: 640px) {
+      #publicView .landing-shell {
+        width: min(100% - 18px, 1180px);
+      }
+
+      #publicView .landing-topbar {
+        padding: 8px 0;
+      }
+
+      #publicView .landing-topbar .topbar-inner {
+        min-height: 58px;
+        padding: 8px 9px;
+        border-radius: 16px;
+      }
+
+      #publicView .landing-topbar .brand-school-logo {
+        width: 39px;
+        height: 39px;
+        border-radius: 10px;
+      }
+
+      #publicView .landing-topbar .brand-text strong {
+        max-width: 180px;
+        font-size: .84rem;
+      }
+
+      #publicView .landing-topbar .brand-text span {
+        display: none;
+      }
+
+      #publicView .landing-topbar .primary-btn {
+        width: auto;
+        min-height: 39px;
+        padding: 0 13px;
+        font-size: .78rem;
+      }
+
+      #publicView .landing-topbar .primary-btn .btn-label {
+        display: inline;
+      }
+
+      #publicView .landing-topbar .icon-btn {
+        width: 39px;
+        height: 39px;
+      }
+
+      #publicView .landing-hero {
+        min-height: 116px;
+        padding: 12px 4px 11px;
+      }
+
+      #publicView .landing-hero h1 {
+        font-size: clamp(1.26rem, 6.45vw, 1.84rem);
+        white-space: nowrap;
+      }
+
+      #publicView .landing-hero-badge {
+        margin-top: 10px;
+        min-height: 34px;
+        padding: 0 15px;
+        font-size: .78rem;
+      }
+
+      #publicView .landing-summary-card {
+        padding: 10px;
+        border-radius: 21px;
+      }
+
+      #publicView .landing-stats {
+        grid-template-columns: repeat(3, minmax(0,1fr));
+        gap: 7px;
+      }
+
+      #publicView .landing-stat {
+        min-height: 100px;
+        padding: 11px 10px;
+        border-radius: 15px;
+      }
+
+      #publicView .landing-stat-icon {
+        width: 29px;
+        height: 29px;
+        border-radius: 9px;
+        font-size: .9rem;
+      }
+
+      #publicView .landing-stat-label {
+        font-size: .64rem;
+        line-height: 1.15;
+      }
+
+      #publicView .landing-stat-value {
+        margin-top: 10px;
+        font-size: 1.48rem;
+      }
+
+      #publicView .landing-stat-note {
+        font-size: .6rem;
+        margin-top: 5px;
+      }
+
+      #publicView .landing-summary-meta {
+        margin-top: 14px;
+        padding: 13px 2px 1px;
+        gap: 9px;
+      }
+
+      #publicView .landing-semester-line {
+        width: 100%;
+        justify-content: flex-start;
+        text-align: left;
+      }
+
+      #publicView .landing-updated-line {
+        width: 100%;
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        align-items: center;
+        justify-content: initial;
+        text-align: left;
+      }
+
+      #publicView .landing-updated-line #updatedAt {
+        min-width: 0;
+        text-align: left;
+      }
+
+      #publicView .landing-updated-line .landing-refresh-btn {
+        justify-self: end;
+      }
+
+      #publicView .landing-meta-label,
+      #publicView .landing-updated-line {
+        font-size: .65rem;
+      }
+
+      #publicView .landing-semester-pill {
+        min-width: 25px;
+        height: 25px;
+        padding: 0 6px;
+        font-size: .65rem;
+      }
+
+      #publicView .landing-section {
+        padding-top: 18px;
+      }
+
+      #publicView .landing-comparison-panel {
+        padding: 13px;
+        border-radius: 20px;
+      }
+
+      #publicView .landing-comparison-panel-head {
+        margin-bottom: 0;
+        padding-bottom: 12px;
+        flex-wrap: wrap;
+      }
+
+      #publicView .landing-comparison-head-actions {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      #publicView .landing-comparison-title {
+        font-size: .84rem;
+      }
+
+      #publicView .landing-class-list {
+        grid-template-columns: 1fr;
+        gap: 9px;
+        margin-top: 13px;
+      }
+
+      #publicView .landing-class-item {
+        padding: 11px 12px 12px;
+        border-radius: 15px;
+      }
+
+      #publicView .landing-class-name {
+        font-size: .75rem;
+      }
+
+      #publicView .landing-class-students {
+        font-size: .62rem;
+      }
+
+      #publicView .landing-metric-row {
+        grid-template-columns: 62px minmax(0,1fr) 42px;
+        gap: 7px;
+      }
+
+      #publicView .landing-metric-label,
+      #publicView .landing-metric-value {
+        font-size: .63rem;
+      }
+
+      #publicView .landing-footer-card {
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+        padding-top: 20px;
+        font-size: .64rem;
+        text-align: center;
+      }
+
+      #publicView .landing-footer-line {
+        width: 100%;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        text-align: center;
+      }
+
+      #publicView .landing-footer-line i {
+        margin-top: 0;
+      }
+
+      #publicView .landing-footer-copy,
+      #publicView .landing-footer-info {
+        width: 100%;
+        text-align: center;
+      }
+
+      #publicView .landing-footer-card strong {
+        font-size: .68rem;
+      }
+    }
+
+    @media (max-width: 390px) {
+      #publicView .landing-hero h1 {
+        font-size: clamp(1.12rem, 5.65vw, 1.36rem);
+      }
+
+      #publicView .landing-topbar .brand-text strong {
+        max-width: 145px;
+      }
+
+      #publicView .landing-stats {
+        gap: 5px;
+      }
+
+      #publicView .landing-stat {
+        padding: 10px 8px;
+      }
+
+      #publicView .landing-stat-label {
+        font-size: .59rem;
+      }
+
+      #publicView .landing-stat-value {
+        font-size: 1.34rem;
+      }
+
+      #publicView .landing-stat-note {
+        display: none;
+      }
+    }
   </style>
 </head>
 <body>
 
   <div class="loading-screen" id="loadingScreen">
     <div class="loader-card">
-      <strong id="loadingText">Memuat data pemantauan…</strong>
+      <strong id="loadingText">Memuat data…</strong>
       <div class="loader-bar"></div>
     </div>
   </div>
 
-  <div id="publicView">
-  <header class="topbar">
-    <div class="app-shell">
-      <div class="topbar-inner">
-        <div class="brand">
-          <img
-            class="brand-school-logo"
-            src="https://i.imgur.com/uJw5HNF.png"
-            alt="Logo SMP Negeri 3 Jayapura">
-          <div class="brand-text">
-            <strong>SMP NEGERI 3 JAYAPURA</strong>
-            <span>Sistem Pendataan Terpadu Murid & Nilai</span>
-          </div>
-        </div>
-
-        <div class="actions">
-          <button class="icon-btn" id="themeBtn" type="button" aria-label="Ganti tema">
-            <i class="ti ti-moon" id="themeIcon"></i>
-          </button>
-          <button class="primary-btn" id="loginBtn" type="button">
-            <i class="ti ti-login-2"></i>
-            <span class="btn-label">Login</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <main class="app-shell">
-    <section class="hero">
-      <div class="hero-main">
-        <div class="eyebrow">
-          <i class="ti ti-chart-bar"></i>
-          DASHBOARD INFORMASI
-        </div>
-        <h1>Satu Pintu.<br>Cepat, Aman,<br>dan Terpusat.</h1>
-        <p class="subtitle">
-          Sistem Pendataan Terpadu Murid & Nilai untuk pemantauan kelengkapan data kelas IX
-          SMP Negeri 3 Jayapura secara ringkas dan terpusat.
-        </p>
-        <div class="slogan">
-          <i class="ti ti-shield-check"></i>
-          Data yang ditampilkan hanya berupa ringkasan umum (tanpa data pribadi).
-        </div>
-      </div>
-
-      <div class="hero-side">
-        <div class="hero-side-card">
-          <div>
-            <div class="live">
-              <span class="live-dot"></span>
-              SISTEM TERHUBUNG
-            </div>
-            <strong>Semester yang Ditampilkan</strong>
-            <p>Super Admin menentukan semester yang ditampilkan pada halaman ini.</p>
-            <div class="semester-pills" id="semesterPills">
-              <span class="sk sk-pill-sm"></span>
-              <span class="sk sk-pill-sm"></span>
-              <span class="sk sk-pill-sm"></span>
-              <span class="sk sk-pill-sm"></span>
-              <span class="sk sk-pill-sm"></span>
-              <span class="sk sk-pill-sm"></span>
+  <div id="publicView" class="landing-redesign">
+    <header class="topbar landing-topbar">
+      <div class="landing-shell">
+        <div class="topbar-inner">
+          <div class="brand">
+            <img
+              class="brand-school-logo"
+              src="https://i.imgur.com/uJw5HNF.png"
+              alt="Logo SMP Negeri 3 Jayapura">
+            <div class="brand-text">
+              <strong>SMP NEGERI 3 JAYAPURA</strong>
+              <span>Sistem Pendataan Terpadu Murid &amp; Nilai</span>
             </div>
           </div>
+
+          <div class="actions">
+            <button class="icon-btn" id="themeBtn" type="button" aria-label="Ganti tema" title="Ganti tema">
+              <i class="ti ti-moon" id="themeIcon"></i>
+            </button>
+            <button class="primary-btn" id="loginBtn" type="button">
+              <i class="ti ti-login-2"></i>
+              <span class="btn-label">Masuk</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="landing-shell">
+      <section class="landing-hero">
+        <h1>Ringkasan Data Kelas IX</h1>
+        <div class="landing-hero-badge">Class of 2027</div>
+      </section>
+
+      <section class="landing-summary-card" aria-label="Ringkasan sekolah">
+        <div class="landing-stats">
+          <article class="landing-stat">
+            <div class="landing-stat-head">
+              <span class="landing-stat-label">Total Murid</span>
+              <span class="landing-stat-icon" aria-hidden="true"><i class="ti ti-users"></i></span>
+            </div>
+            <div class="landing-stat-value" id="statStudents"><span class="sk sk-value-lg"></span></div>
+            <div class="landing-stat-note">Kelas 9A–9J</div>
+          </article>
+
+          <article class="landing-stat">
+            <div class="landing-stat-head">
+              <span class="landing-stat-label">Kelengkapan Dokumen</span>
+              <span class="landing-stat-icon" aria-hidden="true"><i class="ti ti-files"></i></span>
+            </div>
+            <div class="landing-stat-value" id="statDocuments"><span class="sk sk-value-lg"></span></div>
+            <div class="landing-stat-note" id="statDocumentsNote">Memuat kelengkapan dokumen…</div>
+          </article>
+
+          <article class="landing-stat">
+            <div class="landing-stat-head">
+              <span class="landing-stat-label">Kelengkapan Nilai</span>
+              <span class="landing-stat-icon" aria-hidden="true"><i class="ti ti-chart-bar"></i></span>
+            </div>
+            <div class="landing-stat-value" id="statGrades"><span class="sk sk-value-lg"></span></div>
+            <div class="landing-stat-note" id="statGradesNote">Memuat semester…</div>
+          </article>
         </div>
 
-        <div class="hero-side-card" style="min-height:auto">
-          <div class="updated">
-            <i class="ti ti-clock"></i>
+        <div class="landing-summary-meta">
+          <div class="landing-semester-line">
+            <i class="ti ti-calendar-stats landing-summary-meta-icon" aria-hidden="true"></i>
+            <span class="landing-meta-label">Semester:</span>
+            <div class="landing-semester-pills" id="semesterPills" aria-label="Semester yang ditampilkan">
+              <span class="sk sk-pill-sm"></span>
+              <span class="sk sk-pill-sm"></span>
+              <span class="sk sk-pill-sm"></span>
+              <span class="sk sk-pill-sm"></span>
+            </div>
+          </div>
+
+          <div class="landing-updated-line">
+            <i class="ti ti-clock landing-summary-meta-icon" aria-hidden="true"></i>
             <span id="updatedAt"><span class="sk sk-line-md"></span></span>
+            <button class="landing-refresh-btn" id="refreshBtn" type="button" aria-label="Perbarui data" title="Perbarui">
+              <i class="ti ti-refresh"></i>
+            </button>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <section class="section">
-      <div class="section-head">
-        <div>
-          <h2>Ringkasan Sekolah</h2>
-          <p>Pemantauan kelengkapan data seluruh kelas IX.</p>
-        </div>
-        <button class="ghost-btn" id="refreshBtn" type="button">
-          <i class="ti ti-refresh"></i>
-          Perbarui
-        </button>
-      </div>
+      <section class="landing-section">
+        <article class="landing-comparison-panel" aria-label="Perbandingan dokumen dan nilai seluruh kelas">
+          <div class="landing-comparison-panel-head">
+            <div>
+              <h3 class="landing-comparison-title">Dokumen &amp; Nilai per Kelas</h3>
+            </div>
 
-      <div class="stats">
-        <article class="stat-card">
-          <div class="stat-top">
-            <span>Total Murid</span>
-            <span class="stat-icon"><i class="ti ti-users"></i></span>
-          </div>
-          <div class="stat-value" id="statStudents"><span class="sk sk-value-lg"></span></div>
-          <div class="stat-note">Seluruh kelas 9A–9J</div>
-        </article>
-
-        <article class="stat-card">
-          <div class="stat-top">
-            <span>Kelengkapan Dokumen</span>
-            <span class="stat-icon"><i class="ti ti-files"></i></span>
-          </div>
-          <div class="stat-value" id="statDocuments"><span class="sk sk-value-lg"></span></div>
-          <div class="stat-note" id="statDocumentsNote">KK, Akte, dan Ijazah SD</div>
-        </article>
-
-        <article class="stat-card">
-          <div class="stat-top">
-            <span>Kelengkapan Nilai</span>
-            <span class="stat-icon"><i class="ti ti-report-analytics"></i></span>
-          </div>
-          <div class="stat-value" id="statGrades"><span class="sk sk-value-lg"></span></div>
-          <div class="stat-note" id="statGradesNote">Berdasarkan semester aktif</div>
-        </article>
-
-        <article class="stat-card">
-          <div class="stat-top">
-            <span>Semester Aktif</span>
-            <span class="stat-icon"><i class="ti ti-calendar-check"></i></span>
-          </div>
-          <div class="stat-value" id="statSemesters"><span class="sk sk-value-md"></span></div>
-          <div class="stat-note">Pengaturan Super Admin</div>
-        </article>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="section-head">
-        <div>
-          <h2>Pemantauan Per Kelas</h2>
-          <p>Pilih seluruh sekolah atau salah satu kelas.</p>
-        </div>
-      </div>
-
-      <div class="filter-wrap" id="classFilters">
-        <span class="sk sk-filter-pill"></span>
-        <span class="sk sk-filter-pill"></span>
-        <span class="sk sk-filter-pill"></span>
-        <span class="sk sk-filter-pill"></span>
-        <span class="sk sk-filter-pill"></span>
-        <span class="sk sk-filter-pill"></span>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="dashboard-grid">
-        <article class="panel">
-          <div class="panel-title">
-            <h3 id="detailTitle">TOTAL SEKOLAH</h3>
-            <span class="muted" id="detailStudentCount"><span class="sk sk-line-sm"></span></span>
-          </div>
-
-          <div class="progress-stack" id="progressStack">
-            <div class="progress-card">
-              <div class="progress-line">
-                <span class="sk sk-line-sm"></span>
-                <span class="sk sk-value-sm"></span>
+            <div class="landing-comparison-head-actions">
+              <div class="landing-comparison-legend" aria-label="Keterangan grafik">
+                <span class="landing-legend-item"><span class="landing-legend-dot documents"></span>Dokumen</span>
+                <span class="landing-legend-item"><span class="landing-legend-dot grades"></span>Nilai</span>
               </div>
-              <div style="margin-top:11px"><div class="progress-loading-track"></div></div>
-              <div style="margin-top:8px"><span class="sk sk-line-md"></span></div>
             </div>
-            <div class="progress-card">
-              <div class="progress-line">
-                <span class="sk sk-line-sm"></span>
-                <span class="sk sk-value-sm"></span>
-              </div>
-              <div style="margin-top:11px"><div class="progress-loading-track"></div></div>
-              <div style="margin-top:8px"><span class="sk sk-line-md"></span></div>
-            </div>
+          </div>
+
+          <div class="landing-class-list" id="classComparisonList">
+            <div class="landing-empty"><div><span class="mini-spinner"></span><br>Memuat ringkasan kelas…</div></div>
           </div>
         </article>
+      </section>
+    </main>
 
-        <article class="panel">
-          <div class="panel-title">
-            <h3>Grafik Kelengkapan Kelas</h3>
-            <span class="muted">9A–9J</span>
+    <footer class="landing-footer">
+      <div class="landing-shell landing-footer-card">
+        <div class="landing-footer-line">
+          <i class="ti ti-shield-lock" aria-hidden="true"></i>
+          <div class="landing-footer-copy">
+            <strong>SMP NEGERI 3 JAYAPURA</strong>
+            <span>Data pada halaman ini merupakan ringkasan umum dan tidak menampilkan data pribadi murid.</span>
           </div>
+        </div>
 
-          <div class="chart-tabs">
-            <button class="chart-tab active" data-chart="dokumen" type="button">Dokumen</button>
-            <button class="chart-tab" data-chart="nilai" type="button">Nilai</button>
-          </div>
-
-          <div class="bars" id="barsChart">
-            <div class="sk-chart-row">
-              <span class="sk sk-chart-label"></span>
-              <span class="chart-loading-track"></span>
-              <span class="sk sk-chart-value"></span>
-            </div>
-            <div class="sk-chart-row">
-              <span class="sk sk-chart-label"></span>
-              <span class="chart-loading-track"></span>
-              <span class="sk sk-chart-value"></span>
-            </div>
-            <div class="sk-chart-row">
-              <span class="sk sk-chart-label"></span>
-              <span class="chart-loading-track"></span>
-              <span class="sk sk-chart-value"></span>
-            </div>
-            <div class="sk-chart-row">
-              <span class="sk sk-chart-label"></span>
-              <span class="chart-loading-track"></span>
-              <span class="sk sk-chart-value"></span>
-            </div>
-            <div class="sk-chart-row">
-              <span class="sk sk-chart-label"></span>
-              <span class="chart-loading-track"></span>
-              <span class="sk sk-chart-value"></span>
-            </div>
-            <div class="sk-chart-row">
-              <span class="sk sk-chart-label"></span>
-              <span class="chart-loading-track"></span>
-              <span class="sk sk-chart-value"></span>
-            </div>
-            <div class="sk-chart-row">
-              <span class="sk sk-chart-label"></span>
-              <span class="chart-loading-track"></span>
-              <span class="sk sk-chart-value"></span>
-            </div>
-            <div class="sk-chart-row">
-              <span class="sk sk-chart-label"></span>
-              <span class="chart-loading-track"></span>
-              <span class="sk sk-chart-value"></span>
-            </div>
-            <div class="sk-chart-row">
-              <span class="sk sk-chart-label"></span>
-              <span class="chart-loading-track"></span>
-              <span class="sk sk-chart-value"></span>
-            </div>
-            <div class="sk-chart-row">
-              <span class="sk sk-chart-label"></span>
-              <span class="chart-loading-track"></span>
-              <span class="sk sk-chart-value"></span>
-            </div>
-          </div>
-        </article>
+        <div class="landing-footer-info">
+          <span>Dikembangkan oleh gurukemarinsore</span>
+          <span>Class of 2027 · <span class="app-version-label">Versi</span></span>
+        </div>
       </div>
-    </section>
-  </main>
-
-  <footer class="footer app-shell">
-    <div><strong>SMP NEGERI 3 JAYAPURA</strong> · Sistem Pendataan Terpadu Murid & Nilai</div>
-    <div style="margin-top:6px">Dikembangkan oleh gurukemarinsore</div>
-    <div class="app-version-label" style="margin-top:3px">Versi</div>
-    <div class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</div>
-  </footer>
+    </footer>
   </div>
 
 
@@ -9269,7 +9885,7 @@
 
   <script>
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbwbXIVdM4PcLxQFvCn5d5N1OU6BGE1pp54KXcFVbT8DvEcucqc4YgRiatfovy9278Pd/exec';
-    const APP_VERSION = '1.59';
+    const APP_VERSION = '1.60';
 
     function detectChatGPTPreviewEnvironment() {
       const values = [];
@@ -11793,7 +12409,7 @@
       showToast.timer = setTimeout(() => $('#toast').classList.remove('show'), 2800);
     }
 
-    function setLoading(show, text = 'Memuat data pemantauan…') {
+    function setLoading(show, text = 'Memuat data…') {
       $('#loadingText').textContent = text;
       $('#loadingScreen').classList.toggle('hidden', !show);
     }
@@ -11975,133 +12591,160 @@
     function renderAll() {
       renderSemesterPills();
       renderSummary();
-      renderClassFilters();
-      renderSelectedDetail();
       renderBars();
       renderUpdatedAt();
     }
 
     function renderSemesterPills() {
       const container = $('#semesterPills');
-      const semesters = state.dashboard?.semesterNilai?.semesters || [];
-      container.innerHTML = semesters.map(item => `
-        <span class="semester-pill ${item.active ? 'active' : ''}">
-          Semester ${item.semester} ${item.active ? '✓' : '–'}
-        </span>
+      if (!container) return;
+
+      const active = state.dashboard?.semesterNilai?.activeSemesters || [];
+
+      if (!active.length) {
+        container.innerHTML = '<span class="landing-meta-empty">Belum ditentukan</span>';
+        return;
+      }
+
+      container.innerHTML = active.map(semester => `
+        <span class="landing-semester-pill" title="Semester ${semester}">${semester}</span>
       `).join('');
     }
 
     function renderSummary() {
       const total = state.dashboard?.totalSekolah;
-      const active = state.dashboard?.semesterNilai?.activeSemesters || [];
+      const students = $('#statStudents');
+      const documents = $('#statDocuments');
+      const grades = $('#statGrades');
+      const documentsNote = $('#statDocumentsNote');
+      const gradesNote = $('#statGradesNote');
 
-      $('#statStudents').textContent = Number(total?.jumlahMurid || 0).toLocaleString('id-ID');
-      $('#statDocuments').textContent = displayPercent(total?.dokumen);
-      $('#statGrades').textContent = displayPercent(total?.nilai);
-      $('#statSemesters').textContent = active.length ? active.join(', ') : '—';
+      if (students) {
+        students.textContent = Number(total?.jumlahMurid || 0).toLocaleString('id-ID');
+      }
+      if (documents) {
+        documents.textContent = displayPercent(total?.dokumen);
+      }
+      if (grades) {
+        grades.textContent = displayPercent(total?.nilai);
+      }
 
-      $('#statDocumentsNote').textContent = metricNote(total?.dokumen, 'dokumen');
-      $('#statGradesNote').textContent = metricNote(total?.nilai, 'nilai');
-    }
+      if (documentsNote) {
+        const metric = total?.dokumen;
 
-    function renderClassFilters() {
-      const container = $('#classFilters');
-      const classes = state.dashboard?.perKelas || [];
+        if (!metric) {
+          documentsNote.textContent = '—';
+        } else if (metric.status === 'BELUM_ADA_MURID') {
+          documentsNote.textContent = 'Belum ada murid';
+        } else {
+          const filled = Number(metric.terisi || 0).toLocaleString('id-ID');
+          const required = Number(metric.wajib || 0).toLocaleString('id-ID');
+          documentsNote.textContent = `${filled} dari ${required} dokumen lengkap`;
+        }
+      }
 
-      const items = [
-        { key: 'ALL', label: 'Seluruh Sekolah' },
-        ...classes.map(item => ({ key: item.kelas, label: item.kelas }))
-      ];
+      if (gradesNote) {
+        const active = (state.dashboard?.semesterNilai?.activeSemesters || [])
+          .map(Number)
+          .filter(Number.isFinite)
+          .sort((a, b) => a - b);
 
-      container.innerHTML = items.map(item => `
-        <button type="button"
-          class="filter-btn ${state.selectedClass === item.key ? 'active' : ''}"
-          data-class="${item.key}">
-          ${item.label}
-        </button>
-      `).join('');
+        if (!active.length) {
+          gradesNote.textContent = 'Semester belum ditentukan';
+        } else {
+          const contiguous = active.every((semester, index) =>
+            index === 0 || semester === active[index - 1] + 1
+          );
 
-      container.querySelectorAll('[data-class]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          state.selectedClass = btn.dataset.class;
-          renderClassFilters();
-          renderSelectedDetail();
-        });
-      });
-    }
-
-    function selectedData() {
-      if (state.selectedClass === 'ALL') return state.dashboard?.totalSekolah || null;
-      return (state.dashboard?.perKelas || []).find(item => item.kelas === state.selectedClass) || null;
-    }
-
-    function progressCard(label, metric, icon) {
-      const percent = safePercent(metric);
-      const width = percent === null ? 0 : percent;
-      return `
-        <div class="progress-card">
-          <div class="progress-line">
-            <strong><i class="${icon}" style="color:var(--primary); margin-right:6px"></i>${label}</strong>
-            <span class="progress-value">${displayPercent(metric)}</span>
-          </div>
-          <div class="progress"><span style="width:${width}%"></span></div>
-          <div class="progress-meta">${metricNote(metric, label.toLowerCase())}</div>
-        </div>
-      `;
-    }
-
-    function renderSelectedDetail() {
-      const item = selectedData();
-      if (!item) return;
-
-      $('#detailTitle').textContent = state.selectedClass === 'ALL'
-        ? 'TOTAL SEKOLAH'
-        : `KELAS ${item.kelas}`;
-
-      $('#detailStudentCount').textContent = `${Number(item.jumlahMurid || 0).toLocaleString('id-ID')} murid`;
-
-      $('#progressStack').innerHTML = [
-        progressCard('Dokumen', item.dokumen, 'ti ti-files'),
-        progressCard('Nilai', item.nilai, 'ti ti-report-analytics')
-      ].join('');
+          gradesNote.textContent = contiguous && active.length > 1
+            ? `Semester ${active[0]}–${active[active.length - 1]}`
+            : `Semester ${active.join(', ')}`;
+        }
+      }
     }
 
     function renderBars() {
-      const container = $('#barsChart');
+      const container = $('#classComparisonList');
+      if (!container) return;
+
       const classes = state.dashboard?.perKelas || [];
 
       if (!classes.length) {
-        container.innerHTML = '<div class="empty"><div><i class="ti ti-chart-bar-off"></i>Belum ada data kelas.</div></div>';
+        container.innerHTML = `
+          <div class="landing-empty">
+            <div><i class="ti ti-chart-bar-off"></i>Belum ada data kelas.</div>
+          </div>
+        `;
         return;
       }
 
       container.innerHTML = classes.map(item => {
-        const metric = item[state.chartType];
-        const percent = safePercent(metric);
-        const width = percent === null ? 0 : percent;
-        const label = percent === null ? '—' : `${percent.toLocaleString('id-ID', { maximumFractionDigits: 1 })}%`;
+        const documentPercent = safePercent(item.dokumen);
+        const gradePercent = safePercent(item.nilai);
+        const documentWidth = documentPercent === null ? 0 : documentPercent;
+        const gradeWidth = gradePercent === null ? 0 : gradePercent;
+        const documentLabel = documentPercent === null
+          ? '—'
+          : `${documentPercent.toLocaleString('id-ID', { maximumFractionDigits: 1 })}%`;
+        const gradeLabel = gradePercent === null
+          ? '—'
+          : `${gradePercent.toLocaleString('id-ID', { maximumFractionDigits: 1 })}%`;
+        const classLabel = String(item.kelas || '—');
+        const students = Number(item.jumlahMurid || 0).toLocaleString('id-ID');
+
         return `
-          <div class="bar-row">
-            <div class="bar-label">${item.kelas}</div>
-            <div class="bar-track">
-              <div class="bar-fill" style="width:${width}%"></div>
+          <section class="landing-class-item">
+            <div class="landing-class-head">
+              <span class="landing-class-name"><i class="ti ti-school"></i>Kelas ${escapeHtml(classLabel)}</span>
+              <span class="landing-class-students">${students} murid</span>
             </div>
-            <div class="bar-value">${label}</div>
-          </div>
+
+            <div class="landing-dual-bars">
+              <div class="landing-metric-row">
+                <span class="landing-metric-label">Dokumen</span>
+                <div class="landing-metric-track"
+                  role="progressbar"
+                  aria-label="Kelas ${escapeHtml(classLabel)} · Kelengkapan dokumen"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  aria-valuenow="${documentPercent === null ? 0 : documentPercent}">
+                  <div class="landing-metric-fill documents" style="width:${documentWidth}%"></div>
+                </div>
+                <span class="landing-metric-value">${documentLabel}</span>
+              </div>
+
+              <div class="landing-metric-row">
+                <span class="landing-metric-label">Nilai</span>
+                <div class="landing-metric-track"
+                  role="progressbar"
+                  aria-label="Kelas ${escapeHtml(classLabel)} · Kelengkapan nilai"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  aria-valuenow="${gradePercent === null ? 0 : gradePercent}">
+                  <div class="landing-metric-fill grades" style="width:${gradeWidth}%"></div>
+                </div>
+                <span class="landing-metric-value">${gradeLabel}</span>
+              </div>
+            </div>
+          </section>
         `;
       }).join('');
     }
 
     function renderUpdatedAt() {
+      const target = $('#updatedAt');
+      if (!target) return;
+
       const value = state.dashboard?.generatedAt;
       if (!value) {
-        $('#updatedAt').textContent = 'Waktu pembaruan tidak tersedia';
+        target.textContent = 'Waktu pembaruan tidak tersedia';
         return;
       }
+
       const date = new Date(value);
-      $('#updatedAt').textContent = 'Diperbarui ' + new Intl.DateTimeFormat('id-ID', {
+      target.textContent = 'Diperbarui ' + new Intl.DateTimeFormat('id-ID', {
         dateStyle: 'medium',
-        timeStyle: 'medium',
+        timeStyle: 'short',
         timeZone: 'Asia/Jayapura'
       }).format(date) + ' WIT';
     }
@@ -27868,14 +28511,6 @@
       }
     });
 
-    $$('.chart-tab').forEach(btn => {
-      btn.addEventListener('click', () => {
-        $$('.chart-tab').forEach(item => item.classList.remove('active'));
-        btn.classList.add('active');
-        state.chartType = btn.dataset.chart;
-        renderBars();
-      });
-    });
 
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && $('#loginModal').classList.contains('open')) {
