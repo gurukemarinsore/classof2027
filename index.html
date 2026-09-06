@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <link rel="icon" type="image/svg+xml" href="logo.svg" />
   <title>Data Siswa Kelas 9 2026-2027</title>
-  <!-- CLASSOF2027 Revisi 040 · Dialog Custom + Toggle Akses Edit · Versi 1.67 -->
+  <!-- CLASSOF2027 Revisi 042 · Login Ringkas + Landing Interaktif · Versi 1.69 -->
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -388,6 +388,11 @@
     .input-wrap input:focus {
       border-color: var(--primary);
       box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 12%, transparent);
+    }
+
+    #loginForm .input-wrap input::placeholder {
+      color: var(--muted);
+      opacity: .9;
     }
 
     .password-toggle {
@@ -6059,21 +6064,20 @@
     .profile-avatar-trigger {
       width: 42px;
       height: 42px;
-      padding: 4px;
+      padding: 0;
       display: grid;
       place-items: center;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background: var(--surface);
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
       cursor: pointer;
-      box-shadow: var(--shadow-sm);
-      transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+      box-shadow: none;
+      transition: box-shadow .16s ease, transform .16s ease;
     }
 
     .profile-avatar-trigger:hover,
     .profile-avatar-trigger[aria-expanded="true"] {
-      border-color: color-mix(in srgb, var(--primary) 34%, var(--border));
-      box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 8%, transparent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 10%, transparent);
     }
 
     .profile-avatar-trigger:active {
@@ -6081,10 +6085,11 @@
     }
 
     .profile-avatar-trigger .user-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 10px;
-      font-size: .76rem;
+      width: 42px;
+      height: 42px;
+      border: 0;
+      border-radius: 50%;
+      font-size: .82rem;
     }
 
     .profile-popup {
@@ -6186,41 +6191,6 @@
 
     .profile-popup-item.danger i {
       color: var(--danger);
-    }
-
-    /* Informasi sesi + versi hanya ditampilkan di menu profil HP. */
-    .profile-mobile-session-info,
-    .profile-mobile-session-bottom-separator {
-      display: none;
-    }
-
-    @media (max-width: 720px) {
-      .profile-mobile-session-info {
-        display: block;
-        padding: 6px 10px 7px;
-      }
-
-      .profile-mobile-session-info span {
-        display: block;
-        line-height: 1.45;
-      }
-
-      .profile-mobile-session-line {
-        color: var(--text);
-        font-size: .68rem;
-        font-weight: 650;
-      }
-
-      .profile-mobile-version-line {
-        margin-top: 2px;
-        color: var(--muted);
-        font-size: .65rem;
-        font-weight: 600;
-      }
-
-      .profile-mobile-session-bottom-separator {
-        display: block;
-      }
     }
 
     /* Main table: kolom rata-rata sama persis dengan kolom mapel. */
@@ -6510,9 +6480,69 @@
       object-fit: cover;
     }
 
-    /* Logo sekolah hanya tampil pada header setelah login di HP. */
-    .mobile-app-school-logo {
+    /* Logo sekolah tampil pada header ringkas setelah login.
+       Popup informasinya khusus layout HP. */
+    .mobile-school-info-wrap {
       display: none;
+      position: relative;
+      width: 38px;
+      height: 38px;
+    }
+
+    .mobile-school-info-trigger {
+      width: 38px;
+      height: 38px;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .mobile-app-school-logo {
+      display: block;
+      width: 38px;
+      height: 38px;
+      object-fit: contain;
+      object-position: center;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .mobile-school-info-popup {
+      position: absolute;
+      top: calc(100% + 11px);
+      left: 0;
+      width: min(270px, calc(100vw - 24px));
+      padding: 14px 16px;
+      display: none;
+      border: 1px solid var(--border);
+      border-radius: 17px;
+      background: var(--surface);
+      box-shadow: 0 18px 52px rgba(26, 46, 72, .18);
+      z-index: 490;
+    }
+
+    .mobile-school-info-popup.open {
+      display: grid;
+      gap: 4px;
+      animation: profilePopupIn .14s ease-out;
+    }
+
+    .mobile-school-info-title {
+      color: var(--text);
+      font-size: .78rem;
+      line-height: 1.35;
+      font-weight: 800;
+    }
+
+    .mobile-school-info-line {
+      color: var(--muted);
+      font-size: .66rem;
+      line-height: 1.45;
+      font-weight: 600;
     }
 
     @media (max-width: 820px) {
@@ -6523,13 +6553,8 @@
         gap: 9px;
       }
 
-      .mobile-app-school-logo {
+      .mobile-school-info-wrap {
         display: block;
-        width: 38px;
-        height: 38px;
-        object-fit: contain;
-        object-position: center;
-        flex: 0 0 38px;
       }
 
       .app-header-title {
@@ -6568,6 +6593,13 @@
       }
     }
 
+    @media (min-width: 721px) and (max-width: 820px) {
+      .mobile-school-info-trigger {
+        pointer-events: none;
+        cursor: default;
+      }
+    }
+
     @media (max-width: 420px) {
       .app-header {
         grid-template-columns: 34px minmax(0, 1fr) auto;
@@ -6576,6 +6608,8 @@
         padding-right: 9px;
       }
 
+      .mobile-school-info-wrap,
+      .mobile-school-info-trigger,
       .mobile-app-school-logo {
         width: 34px;
         height: 34px;
@@ -8147,12 +8181,22 @@
     #publicView .landing-stat::after {
       content: "";
       position: absolute;
-      width: 84px;
-      height: 84px;
-      right: -28px;
-      bottom: -32px;
+      width: 112px;
+      height: 112px;
+      right: -38px;
+      bottom: -44px;
       border-radius: 50%;
-      background: color-mix(in srgb, var(--primary) 8%, transparent);
+      background:
+        radial-gradient(
+          circle at 38% 38%,
+          color-mix(in srgb, var(--primary) 10%, var(--surface)) 0%,
+          color-mix(in srgb, var(--primary) 6%, var(--surface)) 34%,
+          color-mix(in srgb, var(--primary) 2%, var(--surface)) 62%,
+          var(--surface) 82%
+        );
+      filter: blur(7px);
+      opacity: .9;
+      pointer-events: none;
     }
 
     #publicView .landing-stat-head {
@@ -8169,12 +8213,12 @@
     }
 
     #publicView .landing-stat-icon {
-      width: 34px;
-      height: 34px;
-      border-radius: 11px;
+      width: auto;
+      height: auto;
+      border-radius: 0;
       display: grid;
       place-items: center;
-      background: var(--primary-soft);
+      background: transparent;
       color: var(--primary);
       font-size: 1rem;
     }
@@ -8283,6 +8327,17 @@
       transform: translateY(-1px);
     }
 
+    #publicView .landing-refresh-btn.is-loading {
+      cursor: wait;
+      transform: none;
+      opacity: .88;
+    }
+
+    #publicView .landing-refresh-btn .mini-spinner {
+      --spinner-size: 16px;
+      --spinner-stroke: 2px;
+    }
+
     #publicView .landing-section {
       padding: 14px 0 0;
     }
@@ -8364,6 +8419,34 @@
       border: 1px solid var(--border);
       background: color-mix(in srgb, var(--surface-2) 80%, var(--surface));
       box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 38%, transparent);
+    }
+
+
+    @media (hover: hover) and (pointer: fine) {
+      #publicView .landing-stat,
+      #publicView .landing-class-item {
+        position: relative;
+        transform: translateZ(0) scale(1);
+        transform-origin: center;
+        transition:
+          transform .2s ease,
+          box-shadow .2s ease,
+          border-color .2s ease,
+          filter .2s ease;
+        will-change: transform;
+      }
+
+      #publicView .landing-stat:hover,
+      #publicView .landing-class-item:hover {
+        transform: translateZ(0) scale(1.05);
+        z-index: 12;
+        border-color: color-mix(in srgb, var(--primary) 34%, var(--border));
+        box-shadow:
+          0 12px 28px rgba(22, 135, 248, .10),
+          0 0 0 1px color-mix(in srgb, var(--primary) 10%, transparent),
+          0 0 30px color-mix(in srgb, var(--primary-2) 20%, transparent);
+        filter: saturate(1.03);
+      }
     }
 
     #publicView .landing-class-head {
@@ -8521,6 +8604,14 @@
       display: block;
     }
 
+    #publicView .landing-footer-version {
+      white-space: nowrap;
+    }
+
+    #publicView .landing-footer-version .app-version-label {
+      display: inline;
+    }
+
     @media (max-width: 640px) {
       #publicView .landing-shell {
         width: min(100% - 18px, 1180px);
@@ -8601,9 +8692,9 @@
       }
 
       #publicView .landing-stat-icon {
-        width: 29px;
-        height: 29px;
-        border-radius: 9px;
+        width: auto;
+        height: auto;
+        border-radius: 0;
         font-size: .9rem;
       }
 
@@ -8909,7 +9000,7 @@
 
         <div class="landing-footer-info">
           <span>Dikembangkan oleh gurukemarinsore</span>
-          <span>Class of 2027 · <span class="app-version-label">Versi</span></span>
+          <span class="landing-footer-version">Class of 2027 · <span class="app-version-label">Versi</span></span>
         </div>
       </div>
     </footer>
@@ -8943,10 +9034,32 @@
 
       <div class="app-main">
         <header class="app-header">
-          <img
-            class="mobile-app-school-logo"
-            src="https://i.imgur.com/uJw5HNF.png"
-            alt="Logo SMP Negeri 3 Jayapura">
+          <div class="mobile-school-info-wrap" id="mobileSchoolInfoWrap">
+            <button
+              class="mobile-school-info-trigger"
+              id="mobileSchoolInfoBtn"
+              type="button"
+              aria-haspopup="dialog"
+              aria-expanded="false"
+              aria-label="Informasi aplikasi"
+              title="Informasi aplikasi">
+              <img
+                class="mobile-app-school-logo"
+                src="https://i.imgur.com/uJw5HNF.png"
+                alt="Logo SMP Negeri 3 Jayapura">
+            </button>
+
+            <div
+              class="mobile-school-info-popup"
+              id="mobileSchoolInfoPopup"
+              role="dialog"
+              aria-label="Informasi aplikasi"
+              aria-hidden="true">
+              <strong class="mobile-school-info-title">Ringkasan Data Kelas IX</strong>
+              <span class="mobile-school-info-line" id="mobileSchoolSessionText">Sesi sedang berlangsung</span>
+              <span class="mobile-school-info-line" id="mobileSchoolVersionText">Class of 2027 · Versi</span>
+            </div>
+          </div>
 
           <div class="app-header-title">
             <h2 id="appPageTitle">Dashboard</h2>
@@ -9003,13 +9116,6 @@
 
                 <div class="profile-popup-separator"></div>
 
-                <div class="profile-mobile-session-info" aria-label="Informasi sesi dan versi aplikasi">
-                  <span class="profile-mobile-session-line" id="profileMobileSessionText">Sesi sedang berlangsung</span>
-                  <span class="profile-mobile-version-line" id="profileMobileVersionText">Class of 2027 · Versi</span>
-                </div>
-
-                <div class="profile-popup-separator profile-mobile-session-bottom-separator"></div>
-
                 <button class="profile-popup-item danger" id="profileLogoutBtn" type="button" role="menuitem">
                   <i class="ti ti-logout" aria-hidden="true"></i>
                   <span>Keluar</span>
@@ -9040,7 +9146,6 @@
 
       <form class="form" id="loginForm" autocomplete="off">
         <div class="field">
-          <label for="username">Nama Pengguna</label>
           <div class="input-wrap">
             <i class="ti ti-user"></i>
             <input id="username"
@@ -9048,18 +9153,21 @@
               autocomplete="off"
               autocapitalize="none"
               spellcheck="false"
+              placeholder="Nama Pengguna"
+              aria-label="Nama Pengguna"
               required />
           </div>
         </div>
 
         <div class="field">
-          <label for="password">Kata Sandi</label>
           <div class="input-wrap">
             <i class="ti ti-lock"></i>
             <input id="password"
               name="password"
               type="password"
               autocomplete="new-password"
+              placeholder="Kata Sandi"
+              aria-label="Kata Sandi"
               required />
             <button class="password-toggle" id="passwordToggle" type="button" aria-label="Tampilkan kata sandi">
               <i class="ti ti-eye"></i>
@@ -9083,7 +9191,7 @@
 
   <script>
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbwbXIVdM4PcLxQFvCn5d5N1OU6BGE1pp54KXcFVbT8DvEcucqc4YgRiatfovy9278Pd/exec';
-    const APP_VERSION = '1.67';
+    const APP_VERSION = '1.69';
 
     function detectChatGPTPreviewEnvironment() {
       const values = [];
@@ -12033,9 +12141,9 @@
         element.textContent = `Versi ${APP_VERSION}`;
       });
 
-      const mobileVersion = $('#profileMobileVersionText');
-      if (mobileVersion) {
-        mobileVersion.textContent = `Class of 2027 · Versi ${APP_VERSION}`;
+      const schoolVersion = $('#mobileSchoolVersionText');
+      if (schoolVersion) {
+        schoolVersion.textContent = `Class of 2027 · Versi ${APP_VERSION}`;
       }
     }
 
@@ -12059,6 +12167,36 @@
       }
 
       return roleMeta(state.user.role).scope;
+    }
+
+    function isPhoneHeaderLayout() {
+      return window.matchMedia('(max-width: 720px)').matches;
+    }
+
+    function appPageSubtitleText() {
+      const scope = currentRoleScope();
+      return isPhoneHeaderLayout()
+        ? scope
+        : `${scope} · ${sessionSubtitle()}`;
+    }
+
+    function syncAppPageSubtitle() {
+      const target = $('#appPageSubtitle');
+      if (target && state.user) {
+        target.textContent = appPageSubtitleText();
+      }
+    }
+
+    function syncMobileSchoolInfo() {
+      const session = $('#mobileSchoolSessionText');
+      if (session) {
+        session.textContent = sessionSubtitle();
+      }
+
+      const version = $('#mobileSchoolVersionText');
+      if (version) {
+        version.textContent = `Class of 2027 · Versi ${APP_VERSION}`;
+      }
     }
 
     function syncThemeIcons() {
@@ -12157,16 +12295,8 @@
           allowed ? 'flex' : 'none';
       }
 
-      const sessionText = sessionSubtitle();
-
-      $('#appPageSubtitle').textContent =
-        `${currentRoleScope()} · ${sessionText}`;
-
-      const mobileSession = $('#profileMobileSessionText');
-      if (mobileSession) {
-        mobileSession.textContent = sessionText;
-      }
-
+      syncAppPageSubtitle();
+      syncMobileSchoolInfo();
       syncAppVersionLabels();
     }
 
@@ -12222,6 +12352,37 @@
       updateSidebarToggleNavItem();
     }
 
+    function closeMobileSchoolInfo() {
+      const popup = $('#mobileSchoolInfoPopup');
+      const button = $('#mobileSchoolInfoBtn');
+
+      if (popup) {
+        popup.classList.remove('open');
+        popup.setAttribute('aria-hidden', 'true');
+      }
+
+      if (button) button.setAttribute('aria-expanded', 'false');
+    }
+
+    function toggleMobileSchoolInfo() {
+      if (!isPhoneHeaderLayout()) return;
+
+      const popup = $('#mobileSchoolInfoPopup');
+      const button = $('#mobileSchoolInfoBtn');
+      if (!popup || !button) return;
+
+      const open = !popup.classList.contains('open');
+      closeMobileSchoolInfo();
+      closeProfileMenu();
+
+      if (open) {
+        syncMobileSchoolInfo();
+        popup.classList.add('open');
+        popup.setAttribute('aria-hidden', 'false');
+        button.setAttribute('aria-expanded', 'true');
+      }
+    }
+
     function closeProfileMenu() {
       const popup = $('#profilePopup');
       const button = $('#profileMenuBtn');
@@ -12241,6 +12402,7 @@
 
       const open = !popup.classList.contains('open');
       closeProfileMenu();
+      closeMobileSchoolInfo();
 
       if (open) {
         popup.classList.add('open');
@@ -27148,7 +27310,7 @@
 
       const title = moduleTitle(section);
       $('#appPageTitle').textContent = title;
-      $('#appPageSubtitle').textContent = `${currentRoleScope()} · ${sessionSubtitle()}`;
+      syncAppPageSubtitle();
 
       if (section === 'dashboard') {
         const dashboardRestored = restoreDashboardSessionCache();
@@ -27472,6 +27634,11 @@
 
     $('#themeBtn').addEventListener('click', toggleTheme);
 
+    $('#mobileSchoolInfoBtn')?.addEventListener('click', event => {
+      event.stopPropagation();
+      toggleMobileSchoolInfo();
+    });
+
     $('#profileMenuBtn').addEventListener('click', event => {
       event.stopPropagation();
       toggleProfileMenu();
@@ -27484,23 +27651,50 @@
     $('#profileLogoutBtn').addEventListener('click', logoutCurrentSession);
 
     document.addEventListener('click', event => {
-      const wrap = $('#profileMenuWrap');
+      const profileWrap = $('#profileMenuWrap');
       if (
         $('#profilePopup')?.classList.contains('open') &&
-        wrap &&
-        !wrap.contains(event.target)
+        profileWrap &&
+        !profileWrap.contains(event.target)
       ) {
         closeProfileMenu();
+      }
+
+      const schoolWrap = $('#mobileSchoolInfoWrap');
+      if (
+        $('#mobileSchoolInfoPopup')?.classList.contains('open') &&
+        schoolWrap &&
+        !schoolWrap.contains(event.target)
+      ) {
+        closeMobileSchoolInfo();
       }
     });
 
     $('#loginBtn').addEventListener('click', openLogin);
     $('#closeLoginBtn').addEventListener('click', closeLogin);
     $('#refreshBtn').addEventListener('click', async () => {
-      if (state.sessionToken && state.user) {
-        await forceIncrementalRefresh('dashboard');
-      } else {
-        await loadDashboard(true, true);
+      const button = $('#refreshBtn');
+      if (!button || button.disabled) return;
+
+      const originalHtml = button.innerHTML;
+      button.disabled = true;
+      button.classList.add('is-loading');
+      button.setAttribute('aria-busy', 'true');
+      button.innerHTML = '<span class="mini-spinner" aria-hidden="true"></span>';
+
+      try {
+        if (state.sessionToken && state.user) {
+          await forceIncrementalRefresh('dashboard');
+        } else {
+          await loadDashboard(true, true);
+        }
+      } finally {
+        if (document.body.contains(button)) {
+          button.disabled = false;
+          button.classList.remove('is-loading');
+          button.removeAttribute('aria-busy');
+          button.innerHTML = originalHtml;
+        }
       }
     });
 
@@ -27574,6 +27768,10 @@
       if (event.key === 'Escape' && $('#profilePopup')?.classList.contains('open')) {
         closeProfileMenu();
       }
+
+      if (event.key === 'Escape' && $('#mobileSchoolInfoPopup')?.classList.contains('open')) {
+        closeMobileSchoolInfo();
+      }
     });
 
     // Klik area blur tidak menutup modal; hanya tombol X yang menutup.
@@ -27582,6 +27780,21 @@
         event.preventDefault();
       }
     });
+
+    const phoneHeaderMedia = window.matchMedia('(max-width: 720px)');
+    const handlePhoneHeaderLayoutChange = () => {
+      if (!state.user) return;
+      syncAppPageSubtitle();
+      if (!phoneHeaderMedia.matches) {
+        closeMobileSchoolInfo();
+      }
+    };
+
+    if (typeof phoneHeaderMedia.addEventListener === 'function') {
+      phoneHeaderMedia.addEventListener('change', handlePhoneHeaderLayoutChange);
+    } else if (typeof phoneHeaderMedia.addListener === 'function') {
+      phoneHeaderMedia.addListener(handlePhoneHeaderLayoutChange);
+    }
 
     (function initTheme() {
       const saved = localStorage.getItem('smp3-theme');
