@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#ffffff" />
-  <link rel="icon" type="image/svg+xml" href="logo.png" />
-  <title>Data Siswa Kelas 9 2026-2027</title>
-  <!-- CLASSOF2027 Revisi 042 · Login Ringkas + Landing Interaktif · Versi 1.69 -->
+  <meta name="theme-color" content="#f3f3f5" />
+  <link rel="icon" type="image/svg+xml" href="logo.svg" />
+  <title>Data Murid Kelas IX 2026-2027 · SMPN 3 Jayapura</title>
+  <!-- CLASSOF2027 Revisi 044 · Rombak Total UI Finexy Coral & Charcoal · Versi 2.1 -->
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -8869,6 +8869,1556 @@
         display: none;
       }
     }
+
+    /* ============================================================
+       CLASSOF2027 REVISI 044 · VERSI 2.1
+       ROMBAK TOTAL UI · REFERENSI FINEXY (CORAL ORANGE + CHARCOAL)
+       ============================================================ */
+    :root {
+      --bg: #f3f3f5;
+      --surface: #ffffff;
+      --surface-2: #f7f7f9;
+      --text: #141416;
+      --muted: #71717a;
+      --border: #e9e9ee;
+      --primary: #f2542d;
+      --primary-2: #ff7a48;
+      --primary-soft: rgba(242, 84, 45, 0.10);
+      --ink: #1a1a1d;
+      --ink-contrast: #ffffff;
+      --coral-grad: linear-gradient(135deg, #ff7c4c 0%, #f2542d 55%, #e23e18 100%);
+      --coral-hatch: repeating-linear-gradient(
+        -45deg,
+        #f2542d 0px,
+        #f2542d 4px,
+        #ff794d 4px,
+        #ff794d 7px
+      );
+      --track-hatch: repeating-linear-gradient(
+        -45deg,
+        #efeff2 0px,
+        #efeff2 4px,
+        #e4e4e9 4px,
+        #e4e4e9 7px
+      );
+      --success: #16a34a;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --shadow: 0 10px 30px rgba(17, 17, 23, 0.055), 0 1px 3px rgba(17, 17, 23, 0.03);
+      --shadow-sm: 0 4px 16px rgba(17, 17, 23, 0.04), 0 1px 2px rgba(17, 17, 23, 0.025);
+    }
+
+    html[data-theme="dark"] {
+      --bg: #0c0c0e;
+      --surface: #16161a;
+      --surface-2: #202026;
+      --text: #f4f4f6;
+      --muted: #9a9aa6;
+      --border: #27272f;
+      --primary: #ff6b3d;
+      --primary-2: #ff8c66;
+      --primary-soft: rgba(255, 107, 61, 0.16);
+      --ink: #f4f4f6;
+      --ink-contrast: #121215;
+      --coral-grad: linear-gradient(135deg, #ff7e4f 0%, #f2542d 58%, #d93c17 100%);
+      --coral-hatch: repeating-linear-gradient(
+        -45deg,
+        #f2542d 0px,
+        #f2542d 4px,
+        #ff8157 4px,
+        #ff8157 7px
+      );
+      --track-hatch: repeating-linear-gradient(
+        -45deg,
+        #222228 0px,
+        #222228 4px,
+        #2c2c34 4px,
+        #2c2c34 7px
+      );
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --shadow: 0 14px 36px rgba(0, 0, 0, 0.48);
+      --shadow-sm: 0 6px 20px rgba(0, 0, 0, 0.34);
+    }
+
+    body {
+      background: var(--bg) !important;
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    #publicView .landing-stat-value,
+    #publicView .landing-metric-value,
+    .app-stat-value,
+    .fx-balance-value,
+    .fx-mini-wallet strong,
+    .grade-summary-card strong,
+    .account-summary-card strong,
+    .account-capacity > strong,
+    .students-table td,
+    .grades-table td,
+    .mass-grade-table td {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Tombol & Input ala Finexy: kapsul bersih + charcoal / coral */
+    .icon-btn,
+    .fx-circle-btn {
+      border-radius: 50%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .icon-btn:hover {
+      background: var(--surface-2);
+      color: var(--primary);
+      border-color: color-mix(in srgb, var(--primary) 30%, var(--border));
+    }
+
+    .primary-btn,
+    .login-submit,
+    .fx-dark-cta {
+      border-radius: 999px;
+      background: var(--ink) !important;
+      color: var(--ink-contrast) !important;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.14);
+      font-weight: 720;
+    }
+
+    .primary-btn:hover,
+    .login-submit:hover,
+    .fx-dark-cta:hover {
+      opacity: 0.92;
+      transform: translateY(-1px);
+    }
+
+    .action-small {
+      border-radius: 999px;
+      padding: 0 15px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      font-weight: 680;
+    }
+
+    .action-small.primary {
+      background: var(--ink) !important;
+      color: var(--ink-contrast) !important;
+      border-color: var(--ink) !important;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+    }
+
+    .search-box .compact-input,
+    .compact-select {
+      border-radius: 999px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+
+    .search-box .compact-input:focus,
+    .compact-select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-soft);
+    }
+
+    .input-wrap input,
+    .student-form-input,
+    .student-form-select,
+    .account-input,
+    .account-select,
+    .profile-password-form input {
+      border-radius: 14px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+    }
+
+    /* ============================================================
+       LANDING PAGE PUBLIK (#publicView) · FINEXY BENTO
+       ============================================================ */
+    #publicView.landing-redesign {
+      font-family: var(--app-font-family);
+    }
+
+    #publicView .landing-shell {
+      width: min(1240px, calc(100% - 32px));
+    }
+
+    #publicView .fx-topbar {
+      padding: 16px 0 8px;
+      background: color-mix(in srgb, var(--bg) 86%, transparent);
+      backdrop-filter: blur(14px);
+    }
+
+    #publicView .fx-topbar-inner {
+      border-radius: 999px;
+      padding: 8px 10px 8px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .fx-center-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px;
+      border-radius: 999px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+    }
+
+    .fx-center-pill-active {
+      padding: 6px 16px;
+      border-radius: 999px;
+      background: var(--ink);
+      color: var(--ink-contrast);
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .fx-center-pill-tag {
+      padding: 6px 13px;
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 600;
+    }
+
+    #publicView .fx-hero-row {
+      min-height: auto;
+      padding: 20px 4px 18px;
+      flex-direction: row;
+      align-items: flex-end;
+      justify-content: space-between;
+      text-align: left;
+      gap: 16px;
+    }
+
+    .fx-hero-copy h1 {
+      font-size: clamp(1.55rem, 3vw, 2.35rem) !important;
+      letter-spacing: -0.035em !important;
+      font-weight: 780 !important;
+      white-space: normal !important;
+    }
+
+    .fx-hero-sub {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.5;
+    }
+
+    .fx-hero-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    #publicView .landing-hero-badge {
+      margin-top: 0;
+      min-height: 36px;
+      padding: 0 15px;
+      background: var(--coral-grad);
+      color: #ffffff;
+      border: 0;
+      box-shadow: 0 8px 18px rgba(242, 84, 45, 0.26);
+      font-size: 0.78rem;
+    }
+
+    .fx-updated-pill {
+      padding: 4px 6px 4px 12px;
+      border-radius: 999px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+
+    #publicView .landing-refresh-btn {
+      border-radius: 50%;
+      background: var(--surface-2);
+      border: 0;
+      color: var(--text);
+    }
+
+    /* Bento 2-kolom Landing */
+    .fx-landing-bento {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    #publicView .fx-bento-left {
+      padding: 16px;
+      border-radius: 26px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    #publicView .fx-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      height: 100%;
+    }
+
+    #publicView .landing-stat {
+      border-radius: 20px;
+      padding: 18px;
+      min-height: 132px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    #publicView .landing-stat::after {
+      display: none;
+    }
+
+    #publicView .landing-stat .landing-stat-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    /* Kartu Hero Oranye Coral (persis "Total Earnings" di Finexy) */
+    #publicView .fx-stat-hero-coral,
+    .fx-kpi-coral {
+      background: var(--coral-grad) !important;
+      border-color: transparent !important;
+      color: #ffffff !important;
+      box-shadow: 0 12px 26px rgba(242, 84, 45, 0.28) !important;
+    }
+
+    #publicView .fx-stat-hero-coral .landing-stat-label,
+    #publicView .fx-stat-hero-coral .landing-stat-note,
+    .fx-kpi-coral .app-stat-label,
+    .fx-kpi-coral .app-stat-note {
+      color: rgba(255, 255, 255, 0.88) !important;
+    }
+
+    #publicView .fx-stat-hero-coral .landing-stat-value,
+    .fx-kpi-coral .app-stat-value {
+      color: #ffffff !important;
+    }
+
+    #publicView .fx-stat-hero-coral .landing-stat-icon,
+    .fx-kpi-coral .app-stat-label i {
+      background: rgba(255, 255, 255, 0.20) !important;
+      border-color: transparent !important;
+      color: #ffffff !important;
+    }
+
+    /* Kartu Kontras Hitam Charcoal (persis kartu hitam di Finexy) */
+    #publicView .fx-stat-dark {
+      background: #1a1a1d !important;
+      border-color: #27272d !important;
+      color: #ffffff !important;
+    }
+
+    #publicView .fx-stat-dark .landing-stat-label,
+    #publicView .fx-stat-dark .landing-stat-note {
+      color: rgba(255, 255, 255, 0.72) !important;
+    }
+
+    #publicView .fx-stat-dark .landing-stat-value {
+      color: #ffffff !important;
+    }
+
+    #publicView .fx-stat-dark .landing-stat-icon {
+      background: rgba(255, 255, 255, 0.12) !important;
+      border-color: transparent !important;
+      color: #ff7c4c !important;
+    }
+
+    .fx-sem-pills-big {
+      margin-top: 12px;
+      gap: 6px !important;
+    }
+
+    #publicView .landing-semester-pill {
+      border-radius: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-weight: 800;
+    }
+
+    /* Grafik Batang Vertikal Arsir Diagonal (persis "Total Income" di Finexy) */
+    .fx-chart-card {
+      padding: 20px;
+      border-radius: 26px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .fx-chart-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .fx-chart-head h3,
+    .fx-chart-head h4 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 760;
+      letter-spacing: -0.02em;
+    }
+
+    .fx-chart-head p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.75rem;
+    }
+
+    .fx-vchart {
+      flex: 1 1 auto;
+      min-height: 220px;
+      display: flex;
+      align-items: stretch;
+      padding: 14px 12px 10px;
+      border-radius: 18px;
+      background: var(--surface-2);
+    }
+
+    .fx-vchart-grid {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 36px minmax(0, 1fr);
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .fx-vchart-yaxis {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding-bottom: 24px;
+      color: var(--muted);
+      font-size: 0.64rem;
+      font-weight: 600;
+      text-align: right;
+    }
+
+    .fx-vchart-cols {
+      display: grid;
+      grid-template-columns: repeat(10, minmax(0, 1fr));
+      gap: 8px;
+      align-items: end;
+    }
+
+    .fx-vchart-col {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .fx-vchart-bars {
+      width: 100%;
+      flex: 1 1 auto;
+      min-height: 165px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 3px;
+    }
+
+    .fx-vbar {
+      width: 44%;
+      max-width: 16px;
+      border-radius: 7px 7px 4px 4px;
+      transition: height 0.45s cubic-bezier(.22,1,.36,1), transform 0.18s ease;
+    }
+
+    .fx-vchart-col:hover .fx-vbar {
+      transform: translateY(-2px);
+    }
+
+    .fx-vbar-doc {
+      background: var(--coral-hatch);
+    }
+
+    .fx-vbar-grade {
+      background: #1d1d21;
+    }
+
+    html[data-theme="dark"] .fx-vbar-grade {
+      background: #e4e4e9;
+    }
+
+    .fx-vchart-label {
+      color: var(--muted);
+      font-size: 0.66rem;
+      font-weight: 700;
+    }
+
+    #publicView .landing-legend-dot.documents,
+    .landing-legend-dot.documents {
+      background: var(--primary);
+    }
+
+    #publicView .landing-legend-dot.grades,
+    .landing-legend-dot.grades {
+      background: #1d1d21;
+    }
+
+    html[data-theme="dark"] #publicView .landing-legend-dot.grades,
+    html[data-theme="dark"] .landing-legend-dot.grades {
+      background: #e4e4e9;
+    }
+
+    #publicView .fx-table-panel {
+      border-radius: 26px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    #publicView .landing-class-item {
+      border-radius: 18px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+    }
+
+    #publicView .landing-metric-track {
+      height: 10px;
+      border: 0;
+      background: var(--track-hatch);
+    }
+
+    #publicView .landing-metric-fill.documents {
+      background: var(--coral-hatch);
+    }
+
+    #publicView .landing-metric-fill.grades {
+      background: #1d1d21;
+    }
+
+    html[data-theme="dark"] #publicView .landing-metric-fill.grades {
+      background: #e4e4e9;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      #publicView .landing-stat:hover,
+      #publicView .landing-class-item:hover {
+        transform: translateY(-2px) scale(1.012);
+        border-color: color-mix(in srgb, var(--primary) 34%, var(--border));
+        box-shadow: var(--shadow);
+      }
+    }
+
+    /* ============================================================
+       APP SHELL SETELAH LOGIN · FINEXY RAIL + TOP PILL NAV
+       ============================================================ */
+    .fx-app {
+      background: var(--bg) !important;
+    }
+
+    @media (min-width: 821px) {
+      .fx-app-layout,
+      .fx-app-layout.sidebar-collapsed {
+        grid-template-columns: 88px minmax(0, 1fr) !important;
+      }
+
+      .fx-rail {
+        padding: 18px 14px !important;
+        border-right: 0 !important;
+        background: transparent !important;
+        align-items: center;
+        gap: 16px !important;
+      }
+
+      .fx-rail-brand {
+        padding: 4px 0 6px !important;
+        min-height: auto !important;
+        justify-content: center !important;
+      }
+
+      .fx-rail-brand > div {
+        display: none !important;
+      }
+
+      .fx-rail-theme-pill {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 5px;
+        border-radius: 999px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-sm);
+      }
+
+      .fx-rail-theme-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        font-size: 1.05rem;
+        transition: 0.18s ease;
+      }
+
+      .fx-rail-theme-btn.active {
+        background: var(--surface-2);
+        color: var(--text);
+        box-shadow: inset 0 0 0 1px var(--border);
+      }
+
+      .fx-rail-nav {
+        display: flex !important;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px !important;
+        padding: 7px 6px !important;
+        border-radius: 999px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-sm);
+      }
+
+      .fx-rail-nav .app-nav-btn {
+        width: 42px !important;
+        height: 42px !important;
+        min-height: 42px !important;
+        padding: 0 !important;
+        border-radius: 50% !important;
+        justify-content: center !important;
+        color: var(--muted);
+      }
+
+      .fx-rail-nav .app-nav-label {
+        display: none !important;
+      }
+
+      .fx-rail-nav .app-nav-btn:hover {
+        background: var(--surface-2);
+        color: var(--text);
+      }
+
+      .fx-rail-nav .app-nav-btn.active {
+        background: var(--ink) !important;
+        color: var(--ink-contrast) !important;
+        border-color: transparent !important;
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
+      }
+
+      .fx-rail-footer {
+        align-items: center;
+        justify-items: center;
+        gap: 10px;
+      }
+
+      .fx-rail-logout-btn {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--muted);
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        font-size: 1.1rem;
+        box-shadow: var(--shadow-sm);
+        transition: 0.18s ease;
+      }
+
+      .fx-rail-logout-btn:hover {
+        color: var(--danger);
+        border-color: color-mix(in srgb, var(--danger) 30%, var(--border));
+      }
+
+      .fx-rail-footer .sidebar-footer-copy small {
+        font-size: 0.58rem;
+      }
+    }
+
+    /* Header Atas + Pill Navigasi Tengah ala Finexy */
+    .fx-app-header {
+      background: color-mix(in srgb, var(--bg) 90%, transparent) !important;
+      backdrop-filter: blur(14px);
+      border-bottom: 0 !important;
+      padding: 16px 24px 10px !important;
+      gap: 16px;
+    }
+
+    .fx-header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .fx-top-pill-nav {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px;
+      border-radius: 999px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .fx-top-tab {
+      min-height: 36px;
+      padding: 0 16px;
+      border-radius: 999px;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 660;
+      cursor: pointer;
+      transition: 0.18s ease;
+      white-space: nowrap;
+    }
+
+    .fx-top-tab:hover {
+      color: var(--text);
+      background: var(--surface-2);
+    }
+
+    .fx-top-tab.active {
+      background: var(--ink);
+      color: var(--ink-contrast);
+      font-weight: 720;
+    }
+
+    /* Kapsul Profil Kanan Atas ala Finexy */
+    .fx-profile-pill {
+      width: auto !important;
+      height: 46px !important;
+      padding: 4px 12px 4px 5px !important;
+      display: inline-flex !important;
+      align-items: center;
+      gap: 9px;
+      border-radius: 999px !important;
+      background: var(--surface) !important;
+      border: 1px solid var(--border) !important;
+      box-shadow: var(--shadow-sm) !important;
+    }
+
+    .fx-profile-pill .user-avatar {
+      width: 36px !important;
+      height: 36px !important;
+      border-radius: 50% !important;
+      background: var(--coral-grad) !important;
+      color: #ffffff !important;
+      border: 0 !important;
+    }
+
+    .fx-profile-pill-meta {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: left;
+      max-width: 140px;
+    }
+
+    .fx-profile-pill-meta strong {
+      font-size: 0.76rem;
+      color: var(--text);
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+
+    .fx-profile-pill-meta small {
+      font-size: 0.64rem;
+      color: var(--muted);
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+
+    .fx-profile-chevron {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    /* ============================================================
+       DASHBOARD INTERNAL BENTO 3-KOLOM (ALA FINEXY)
+       ============================================================ */
+    .fx-greeting {
+      background: transparent !important;
+      border: 0 !important;
+      box-shadow: none !important;
+      padding: 4px 2px 14px !important;
+      margin-bottom: 6px !important;
+    }
+
+    .fx-greeting h3 {
+      font-size: clamp(1.45rem, 2.5vw, 2.05rem) !important;
+      font-weight: 780 !important;
+      letter-spacing: -0.035em !important;
+    }
+
+    .role-badge {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      box-shadow: var(--shadow-sm);
+      padding: 7px 14px;
+    }
+
+    .fx-dash-bento {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr) minmax(0, 1fr);
+      gap: 14px;
+      margin-bottom: 14px;
+      align-items: stretch;
+    }
+
+    .fx-dash-col-left {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .fx-balance-card {
+      padding: 20px !important;
+      border-radius: 24px !important;
+    }
+
+    .fx-balance-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .fx-balance-label {
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 640;
+    }
+
+    .fx-scope-pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      font-size: 0.66rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .fx-balance-value {
+      margin-top: 10px;
+      font-size: clamp(1.8rem, 2.6vw, 2.35rem);
+      font-weight: 820;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+    }
+
+    .fx-balance-actions {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .fx-btn-dark,
+    .fx-btn-light {
+      height: 40px;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      cursor: pointer;
+      transition: 0.18s ease;
+    }
+
+    .fx-btn-dark {
+      border: 0;
+      background: var(--ink);
+      color: var(--ink-contrast);
+    }
+
+    .fx-btn-light {
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--text);
+    }
+
+    .fx-btn-dark:hover,
+    .fx-btn-light:hover {
+      transform: translateY(-1px);
+    }
+
+    .fx-mini-wallets {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .fx-mini-wallet {
+      padding: 10px;
+      border-radius: 14px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      min-width: 0;
+    }
+
+    .fx-mini-wallet span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.62rem;
+      font-weight: 660;
+    }
+
+    .fx-mini-wallet strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 0.88rem;
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .fx-mini-wallet small {
+      display: block;
+      margin-top: 3px;
+      font-size: 0.58rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .fx-tag-green { color: var(--success) !important; font-weight: 700; }
+    .fx-tag-orange { color: var(--primary) !important; font-weight: 700; }
+
+    /* Progress Bar Arsir ("Monthly Spending Limit") */
+    .fx-limit-card {
+      padding: 18px 20px !important;
+      border-radius: 24px !important;
+    }
+
+    .fx-limit-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .fx-limit-head h4 {
+      margin: 0;
+      font-size: 0.88rem;
+      font-weight: 740;
+    }
+
+    .fx-limit-head span {
+      font-size: 0.68rem;
+      color: var(--muted);
+    }
+
+    .fx-hatched-track {
+      height: 11px;
+      border-radius: 999px;
+      background: var(--track-hatch);
+      overflow: hidden;
+    }
+
+    .fx-hatched-fill-coral {
+      height: 100%;
+      border-radius: 999px;
+      background: var(--coral-grad);
+      transition: width 0.45s ease;
+    }
+
+    .fx-hatched-fill-dark {
+      height: 100%;
+      border-radius: 999px;
+      background: var(--ink);
+      transition: width 0.45s ease;
+    }
+
+    .fx-hatched-meta {
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 0.68rem;
+      color: var(--muted);
+    }
+
+    .fx-hatched-meta strong {
+      color: var(--text);
+      font-weight: 780;
+    }
+
+    /* Kolom Tengah KPI 2x2 */
+    .fx-dash-kpi-grid {
+      display: grid !important;
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 12px !important;
+      margin-bottom: 0 !important;
+      padding: 14px;
+      border-radius: 26px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    .fx-dash-kpi-grid .app-stat {
+      border-radius: 20px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      box-shadow: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .fx-dash-kpi-grid .app-stat-label i {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: var(--surface);
+      display: grid;
+      place-items: center;
+      color: var(--text);
+      font-size: 0.92rem;
+    }
+
+    .fx-dash-chart {
+      margin: 0 !important;
+      height: 100%;
+    }
+
+    /* Kartu & Tabel Modul Internal ("Recent Activities" Finexy style) */
+    .app-card,
+    .settings-card,
+    .grade-summary-card,
+    .account-summary-card,
+    .doc-card,
+    .document-student-card,
+    .modal-card,
+    .dialog-card {
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .table-wrap,
+    .grades-table-wrap,
+    .accounts-table-wrap {
+      border-radius: 18px;
+      border: 1px solid var(--border);
+    }
+
+    .students-table th,
+    .accounts-table th,
+    .grades-table th {
+      background: var(--surface-2);
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .lock-item {
+      border-radius: 14px;
+      background: var(--surface-2);
+      border: 1px solid transparent;
+    }
+
+    .quick-card {
+      border-radius: 16px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+    }
+
+    .quick-card:hover {
+      border-color: var(--primary);
+      background: var(--surface);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .semester-tab {
+      border-radius: 999px;
+    }
+
+    .semester-lock-toggle.is-open {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .account-capacity-bar > .account-capacity-fill,
+    .loader-bar::before {
+      background: var(--coral-grad);
+    }
+
+    .settings-number {
+      border-radius: 50%;
+      background: var(--ink);
+      color: var(--ink-contrast);
+      border: 0;
+    }
+
+    .toast {
+      border-radius: 999px;
+      padding: 12px 18px;
+      background: var(--ink);
+      color: var(--ink-contrast);
+      border: 0;
+      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.24);
+    }
+
+    .toast i {
+      color: var(--primary-2);
+    }
+
+    /* ============================================================
+       RESPONSIVE BREAKPOINTS FINEXY
+       ============================================================ */
+    @media (max-width: 1120px) {
+      .fx-dash-bento {
+        grid-template-columns: 1fr 1fr;
+      }
+      .fx-dash-chart {
+        grid-column: 1 / -1;
+      }
+      .fx-top-pill-nav {
+        display: none;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .fx-landing-bento {
+        grid-template-columns: 1fr;
+      }
+      .fx-center-pill {
+        display: none;
+      }
+      #publicView .fx-hero-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .fx-hero-meta {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 820px) {
+      .fx-dash-bento {
+        grid-template-columns: 1fr;
+      }
+      .fx-profile-pill-meta,
+      .fx-profile-chevron {
+        display: none;
+      }
+      .fx-profile-pill {
+        padding: 3px !important;
+        width: 42px !important;
+        height: 42px !important;
+      }
+      .mobile-app-nav {
+        border-radius: 22px 22px 0 0;
+        background: var(--surface);
+      }
+      .mobile-nav-scroll-track .app-nav-btn.active {
+        background: var(--ink);
+        color: var(--ink-contrast);
+      }
+    }
+
+    @media (max-width: 560px) {
+      #publicView .fx-kpi-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      #publicView .landing-stat {
+        padding: 13px 12px;
+        min-height: 112px;
+      }
+      .fx-vchart-cols {
+        gap: 4px;
+      }
+      .fx-mini-wallets {
+        grid-template-columns: 1fr;
+      }
+    }
+
+
+    /* ============================================================
+       REVISI 7 POIN FINEXY · SLIDERS, OVERLAY RAIL, TOOLTIP, CHART 0%
+       ============================================================ */
+
+    /* Poin 7: Header tengah halaman publik yang bersih & jelas non-tombol */
+    .fx-public-identity {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 560;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .fx-public-identity strong {
+      color: var(--text);
+      font-weight: 760;
+    }
+
+    .fx-live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-soft);
+      flex: 0 0 auto;
+    }
+
+    .fx-id-sep {
+      opacity: 0.45;
+    }
+
+    @media (max-width: 900px) {
+      .fx-public-identity {
+        display: none;
+      }
+    }
+
+    /* Poin 1 & 3: Top Pill Nav dengan slider hitam charcoal + hover oranye transparan */
+    .fx-top-pill-nav {
+      position: relative;
+      isolation: isolate;
+    }
+
+    .fx-top-slider {
+      position: absolute;
+      top: 5px;
+      left: 0;
+      height: calc(100% - 10px);
+      border-radius: 999px;
+      background: var(--ink);
+      z-index: 0;
+      opacity: 0;
+      pointer-events: none;
+      will-change: transform, width;
+      transition:
+        transform 0.34s cubic-bezier(0.32, 0.72, 0, 1),
+        width 0.34s cubic-bezier(0.32, 0.72, 0, 1),
+        opacity 0.18s ease;
+    }
+
+    .fx-top-tab {
+      position: relative;
+      z-index: 1;
+      background: transparent !important;
+      color: var(--muted);
+      transition: color 0.22s ease, background 0.2s ease;
+    }
+
+    .fx-top-tab:not(.active):hover {
+      background: rgba(242, 84, 45, 0.11) !important;
+      color: var(--primary) !important;
+    }
+
+    .fx-top-tab.active {
+      background: transparent !important;
+      color: var(--ink-contrast) !important;
+    }
+
+    /* Poin 1, 2 & 3: Sidebar Rail Oranye Aktif + Expand Overlay Halus + Hover Abu/Hitam Tipis */
+    @media (min-width: 821px) {
+      .fx-rail {
+        z-index: 260 !important;
+        overflow: visible !important;
+      }
+
+      .fx-rail-nav-slot {
+        position: relative;
+        width: 56px;
+        flex: 0 0 auto;
+        align-self: center;
+      }
+
+      .fx-rail-nav {
+        position: relative;
+        left: 0;
+        width: 56px;
+        align-items: stretch !important;
+        padding: 7px 6px !important;
+        border-radius: 28px !important;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden !important;
+        z-index: 270;
+        transition:
+          width 0.28s cubic-bezier(0.32, 0.72, 0, 1),
+          box-shadow 0.26s ease,
+          border-color 0.26s ease;
+      }
+
+      .fx-rail-nav:hover,
+      .fx-rail-nav:has(:focus-visible) {
+        width: 214px;
+        box-shadow: 0 18px 44px rgba(15, 15, 22, 0.16);
+        border-color: color-mix(in srgb, var(--primary) 24%, var(--border));
+      }
+
+      html[data-theme="dark"] .fx-rail-nav:hover,
+      html[data-theme="dark"] .fx-rail-nav:has(:focus-visible) {
+        box-shadow: 0 18px 46px rgba(0, 0, 0, 0.58);
+      }
+
+      /* Slider oranye vertikal melayang yang otomatis melebar penuh dari ikon sampai tulisan */
+      .fx-rail-slider {
+        position: absolute;
+        top: 0;
+        left: 6px;
+        right: 6px;
+        height: 42px;
+        border-radius: 999px;
+        background: var(--coral-grad);
+        box-shadow: 0 6px 16px rgba(242, 84, 45, 0.30);
+        z-index: 0;
+        opacity: 0;
+        pointer-events: none;
+        will-change: transform;
+        transition:
+          transform 0.34s cubic-bezier(0.32, 0.72, 0, 1),
+          opacity 0.18s ease;
+      }
+
+      .fx-rail-nav .app-nav-btn {
+        position: relative !important;
+        z-index: 1;
+        width: 100% !important;
+        height: 42px !important;
+        min-height: 42px !important;
+        padding: 0 10px !important;
+        border-radius: 999px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 11px !important;
+        background: transparent !important;
+        border: 0 !important;
+        box-shadow: none !important;
+        color: var(--muted);
+        transition: color 0.2s ease, background 0.2s ease;
+      }
+
+      .fx-rail-nav .app-nav-icon {
+        width: 24px !important;
+        min-width: 24px !important;
+        height: 24px !important;
+        flex: 0 0 24px !important;
+        display: grid !important;
+        place-items: center !important;
+      }
+
+      .fx-rail-nav .app-nav-label {
+        display: block !important;
+        opacity: 0;
+        transform: translateX(-6px);
+        white-space: nowrap;
+        font-size: 0.8rem;
+        font-weight: 680;
+        pointer-events: none;
+        transition: opacity 0.2s ease, transform 0.24s ease;
+      }
+
+      .fx-rail-nav:hover .app-nav-label,
+      .fx-rail-nav:has(:focus-visible) .app-nav-label {
+        opacity: 1;
+        transform: translateX(0);
+      }
+
+      /* Hover item tidak aktif di sidebar = hitam/abu transparan tipis (melengkapi atas) */
+      .fx-rail-nav .app-nav-btn:not(.active):hover {
+        background: rgba(26, 26, 29, 0.08) !important;
+        color: var(--text) !important;
+      }
+
+      html[data-theme="dark"] .fx-rail-nav .app-nav-btn:not(.active):hover {
+        background: rgba(255, 255, 255, 0.10) !important;
+        color: var(--text) !important;
+      }
+
+      /* Item aktif di sidebar = ikon & teks putih penuh di atas slider oranye */
+      .fx-rail-nav .app-nav-btn.active {
+        background: transparent !important;
+        color: #ffffff !important;
+        box-shadow: none !important;
+      }
+
+      .fx-rail-nav .app-nav-btn.active i {
+        color: #ffffff !important;
+      }
+
+      /* Matikan tooltip CSS lama pada sidebar karena hover sudah membuka teks penuh */
+      .fx-rail-nav .app-nav-btn::before,
+      .fx-rail-nav .app-nav-btn::after {
+        display: none !important;
+      }
+    }
+
+    /* Poin 4: Batang grafik 0% benar-benar kosong & Legend tampil di Landing + Dashboard */
+    .fx-vbar {
+      min-height: 3px;
+    }
+
+    .fx-vbar.is-zero {
+      height: 0% !important;
+      min-height: 0 !important;
+      opacity: 0 !important;
+      pointer-events: none;
+    }
+
+    .landing-comparison-legend {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .landing-legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    .landing-legend-dot {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      flex: 0 0 auto;
+    }
+
+    /* Poin 5: Footer Kredit & Versi di Bawah Konten Utama */
+    .fx-app-footer {
+      width: min(1280px, calc(100% - 36px));
+      margin: 10px auto 0;
+      padding: 16px 6px 6px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 0.72rem;
+      text-align: center;
+    }
+
+    .fx-app-footer strong {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .fx-footer-dot {
+      opacity: 0.45;
+    }
+
+    .fx-app-footer .global-font-credit {
+      margin-top: 0;
+      font-size: 0.72rem;
+    }
+
+    @media (max-width: 820px) {
+      .fx-app-footer {
+        width: min(calc(100% - 18px), 1280px);
+        padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px));
+        font-size: 0.66rem;
+      }
+    }
+
+    /* Poin 6: Custom Tooltip Global Bertema Finexy */
+    .fx-tooltip {
+      position: fixed;
+      z-index: 2000;
+      max-width: min(320px, calc(100vw - 24px));
+      padding: 7px 12px;
+      border-radius: 10px;
+      background: #1a1a1d;
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+      font-family: var(--app-font-family);
+      font-size: 0.72rem;
+      font-weight: 620;
+      line-height: 1.38;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(4px) scale(0.97);
+      transition: opacity 0.14s ease, transform 0.16s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .fx-tooltip.visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .fx-tooltip[data-place="bottom"] {
+      transform: translateY(-4px) scale(0.97);
+    }
+
+    .fx-tooltip[data-place="bottom"].visible {
+      transform: translateY(0) scale(1);
+    }
+
+    .fx-tooltip[data-place="right"] {
+      transform: translateX(-5px) scale(0.97);
+    }
+
+    .fx-tooltip[data-place="right"].visible {
+      transform: translateX(0) scale(1);
+    }
+
+    html[data-theme="dark"] .fx-tooltip {
+      background: #f4f4f6;
+      color: #141416;
+      border-color: rgba(0, 0, 0, 0.08);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+    }
+
   </style>
 </head>
 <body>
@@ -8880,26 +10430,35 @@
     </div>
   </div>
 
-  <div id="publicView" class="landing-redesign">
-    <header class="topbar landing-topbar">
+  <div id="publicView" class="landing-redesign fx-public">
+    <header class="topbar landing-topbar fx-topbar">
       <div class="landing-shell">
-        <div class="topbar-inner">
+        <div class="topbar-inner fx-topbar-inner">
           <div class="brand">
             <img
               class="brand-school-logo"
               src="https://i.imgur.com/uJw5HNF.png"
               alt="Logo SMP Negeri 3 Jayapura">
             <div class="brand-text">
-              <strong>SMP NEGERI 3 JAYAPURA</strong>
-              <span>Sistem Pendataan Terpadu Murid &amp; Nilai</span>
+              <strong>SMPN 3 Jayapura</strong>
+              <span>Sistem Pendataan Terpadu</span>
             </div>
           </div>
 
+          <div class="fx-public-identity" aria-label="Identitas halaman publik">
+            <span class="fx-live-dot" aria-hidden="true"></span>
+            <span>Portal Publik</span>
+            <span class="fx-id-sep" aria-hidden="true">·</span>
+            <strong>Class of 2027</strong>
+            <span class="fx-id-sep" aria-hidden="true">·</span>
+            <span>Kelas 9A–9J</span>
+          </div>
+
           <div class="actions">
-            <button class="icon-btn" id="themeBtn" type="button" aria-label="Ganti tema" title="Ganti tema">
+            <button class="icon-btn fx-circle-btn" id="themeBtn" type="button" aria-label="Ganti tema" title="Ganti tema">
               <i class="ti ti-moon" id="themeIcon"></i>
             </button>
-            <button class="primary-btn" id="loginBtn" type="button">
+            <button class="primary-btn fx-dark-cta" id="loginBtn" type="button">
               <i class="ti ti-login-2"></i>
               <span class="btn-label">Masuk</span>
             </button>
@@ -8908,55 +10467,15 @@
       </div>
     </header>
 
-    <main class="landing-shell">
-      <section class="landing-hero">
-        <h1>Ringkasan Data Kelas IX</h1>
-        <div class="landing-hero-badge">Class of 2027</div>
-      </section>
-
-      <section class="landing-summary-card" aria-label="Ringkasan sekolah">
-        <div class="landing-stats">
-          <article class="landing-stat">
-            <div class="landing-stat-head">
-              <span class="landing-stat-label">Total Murid</span>
-              <span class="landing-stat-icon" aria-hidden="true"><i class="ti ti-users"></i></span>
-            </div>
-            <div class="landing-stat-value" id="statStudents"><span class="sk sk-value-lg"></span></div>
-            <div class="landing-stat-note">Kelas 9A–9J</div>
-          </article>
-
-          <article class="landing-stat">
-            <div class="landing-stat-head">
-              <span class="landing-stat-label">Kelengkapan Dokumen</span>
-              <span class="landing-stat-icon" aria-hidden="true"><i class="ti ti-files"></i></span>
-            </div>
-            <div class="landing-stat-value" id="statDocuments"><span class="sk sk-value-lg"></span></div>
-            <div class="landing-stat-note" id="statDocumentsNote">Memuat kelengkapan dokumen…</div>
-          </article>
-
-          <article class="landing-stat">
-            <div class="landing-stat-head">
-              <span class="landing-stat-label">Kelengkapan Nilai</span>
-              <span class="landing-stat-icon" aria-hidden="true"><i class="ti ti-chart-bar"></i></span>
-            </div>
-            <div class="landing-stat-value" id="statGrades"><span class="sk sk-value-lg"></span></div>
-            <div class="landing-stat-note" id="statGradesNote">Memuat semester…</div>
-          </article>
+    <main class="landing-shell fx-public-main">
+      <section class="landing-hero fx-hero-row">
+        <div class="fx-hero-copy">
+          <h1>Ringkasan Data Kelas IX</h1>
+          <p class="fx-hero-sub">Pantau progres kelengkapan murid, dokumen, dan nilai SMP Negeri 3 Jayapura secara terpusat.</p>
         </div>
-
-        <div class="landing-summary-meta">
-          <div class="landing-semester-line">
-            <i class="ti ti-calendar-stats landing-summary-meta-icon" aria-hidden="true"></i>
-            <span class="landing-meta-label">Semester:</span>
-            <div class="landing-semester-pills" id="semesterPills" aria-label="Semester yang ditampilkan">
-              <span class="sk sk-pill-sm"></span>
-              <span class="sk sk-pill-sm"></span>
-              <span class="sk sk-pill-sm"></span>
-              <span class="sk sk-pill-sm"></span>
-            </div>
-          </div>
-
-          <div class="landing-updated-line">
+        <div class="fx-hero-meta">
+          <div class="landing-hero-badge">Class of 2027</div>
+          <div class="landing-updated-line fx-updated-pill">
             <i class="ti ti-clock landing-summary-meta-icon" aria-hidden="true"></i>
             <span id="updatedAt"><span class="sk sk-line-md"></span></span>
             <button class="landing-refresh-btn" id="refreshBtn" type="button" aria-label="Perbarui data" title="Perbarui">
@@ -8966,11 +10485,74 @@
         </div>
       </section>
 
+      <section class="fx-landing-bento" aria-label="Ringkasan sekolah">
+        <div class="landing-summary-card fx-bento-left">
+          <div class="landing-stats fx-kpi-grid">
+            <article class="landing-stat fx-stat-hero-coral">
+              <div class="landing-stat-head">
+                <span class="landing-stat-label">Kelengkapan Dokumen</span>
+                <span class="landing-stat-icon" aria-hidden="true"><i class="ti ti-files"></i></span>
+              </div>
+              <div class="landing-stat-value" id="statDocuments"><span class="sk sk-value-lg"></span></div>
+              <div class="landing-stat-note" id="statDocumentsNote">Memuat kelengkapan dokumen…</div>
+            </article>
+
+            <article class="landing-stat fx-stat-light">
+              <div class="landing-stat-head">
+                <span class="landing-stat-label">Kelengkapan Nilai</span>
+                <span class="landing-stat-icon" aria-hidden="true"><i class="ti ti-chart-bar"></i></span>
+              </div>
+              <div class="landing-stat-value" id="statGrades"><span class="sk sk-value-lg"></span></div>
+              <div class="landing-stat-note" id="statGradesNote">Memuat semester…</div>
+            </article>
+
+            <article class="landing-stat fx-stat-dark">
+              <div class="landing-stat-head">
+                <span class="landing-stat-label">Total Murid</span>
+                <span class="landing-stat-icon" aria-hidden="true"><i class="ti ti-users"></i></span>
+              </div>
+              <div class="landing-stat-value" id="statStudents"><span class="sk sk-value-lg"></span></div>
+              <div class="landing-stat-note">Kelas 9A–9J · Aktif</div>
+            </article>
+
+            <article class="landing-stat fx-stat-light fx-stat-semesters">
+              <div class="landing-stat-head">
+                <span class="landing-stat-label">Semester Aktif</span>
+                <span class="landing-stat-icon" aria-hidden="true"><i class="ti ti-calendar-stats"></i></span>
+              </div>
+              <div class="landing-semester-pills fx-sem-pills-big" id="semesterPills" aria-label="Semester yang ditampilkan">
+                <span class="sk sk-pill-sm"></span>
+                <span class="sk sk-pill-sm"></span>
+                <span class="sk sk-pill-sm"></span>
+                <span class="sk sk-pill-sm"></span>
+              </div>
+              <div class="landing-stat-note">Dasar perhitungan nilai publik</div>
+            </article>
+          </div>
+        </div>
+
+        <article class="fx-chart-card" aria-label="Grafik perbandingan kelas">
+          <div class="fx-chart-head">
+            <div>
+              <h3>Grafik Progres Kelas</h3>
+              <p>Perbandingan persentase Dokumen &amp; Nilai kelas 9A–9J</p>
+            </div>
+            <div class="landing-comparison-legend" aria-label="Keterangan grafik">
+              <span class="landing-legend-item"><span class="landing-legend-dot documents"></span>Dokumen</span>
+              <span class="landing-legend-item"><span class="landing-legend-dot grades"></span>Nilai</span>
+            </div>
+          </div>
+          <div class="fx-vchart" id="publicVerticalChart">
+            <div class="landing-empty"><div><span class="mini-spinner"></span><br>Memuat grafik…</div></div>
+          </div>
+        </article>
+      </section>
+
       <section class="landing-section">
-        <article class="landing-comparison-panel" aria-label="Perbandingan dokumen dan nilai seluruh kelas">
+        <article class="landing-comparison-panel fx-table-panel" aria-label="Perbandingan dokumen dan nilai seluruh kelas">
           <div class="landing-comparison-panel-head">
             <div>
-              <h3 class="landing-comparison-title">Dokumen &amp; Nilai per Kelas</h3>
+              <h3 class="landing-comparison-title">Rincian Dokumen &amp; Nilai per Kelas</h3>
             </div>
 
             <div class="landing-comparison-head-actions">
@@ -9007,10 +10589,10 @@
   </div>
 
 
-  <div id="appView" class="app-view view-hidden">
-    <div class="app-layout">
-      <aside class="app-sidebar">
-        <div class="app-brand">
+  <div id="appView" class="app-view view-hidden fx-app">
+    <div class="app-layout fx-app-layout">
+      <aside class="app-sidebar fx-rail">
+        <div class="app-brand fx-rail-brand">
           <img
             class="app-brand-school-logo"
             src="https://i.imgur.com/uJw5HNF.png"
@@ -9021,55 +10603,68 @@
           </div>
         </div>
 
-        <nav class="app-nav" id="appNav"></nav>
+        <div class="fx-rail-theme-pill" aria-label="Pilih mode tampilan">
+          <button type="button" class="fx-rail-theme-btn" id="railLightBtn" title="Mode Terang" aria-label="Mode Terang">
+            <i class="ti ti-sun"></i>
+          </button>
+          <button type="button" class="fx-rail-theme-btn" id="railDarkBtn" title="Mode Gelap" aria-label="Mode Gelap">
+            <i class="ti ti-moon"></i>
+          </button>
+        </div>
 
-        <div class="sidebar-footer">
-          <div class="sidebar-footer-copy">
-            <small>Dikembangkan oleh gurukemarinsore</small>
-            <small class="app-version-label">Versi</small>
-          </div>
-          <small class="global-font-credit">Aplikasi ini menggunakan font MiSans dari Xiaomi.</small>
+        <div class="fx-rail-nav-slot">
+          <nav class="app-nav fx-rail-nav" id="appNav"></nav>
+        </div>
+
+        <div class="sidebar-footer fx-rail-footer">
+          <button type="button" class="fx-rail-logout-btn" id="railLogoutBtn" data-fx-tip="Keluar dari aplikasi" aria-label="Keluar">
+            <i class="ti ti-logout"></i>
+          </button>
         </div>
       </aside>
 
       <div class="app-main">
-        <header class="app-header">
-          <div class="mobile-school-info-wrap" id="mobileSchoolInfoWrap">
-            <button
-              class="mobile-school-info-trigger"
-              id="mobileSchoolInfoBtn"
-              type="button"
-              aria-haspopup="dialog"
-              aria-expanded="false"
-              aria-label="Informasi aplikasi"
-              title="Informasi aplikasi">
-              <img
-                class="mobile-app-school-logo"
-                src="https://i.imgur.com/uJw5HNF.png"
-                alt="Logo SMP Negeri 3 Jayapura">
-            </button>
+        <header class="app-header fx-app-header">
+          <div class="fx-header-left">
+            <div class="mobile-school-info-wrap" id="mobileSchoolInfoWrap">
+              <button
+                class="mobile-school-info-trigger"
+                id="mobileSchoolInfoBtn"
+                type="button"
+                aria-haspopup="dialog"
+                aria-expanded="false"
+                aria-label="Informasi aplikasi"
+                title="Informasi aplikasi">
+                <img
+                  class="mobile-app-school-logo"
+                  src="https://i.imgur.com/uJw5HNF.png"
+                  alt="Logo SMP Negeri 3 Jayapura">
+              </button>
 
-            <div
-              class="mobile-school-info-popup"
-              id="mobileSchoolInfoPopup"
-              role="dialog"
-              aria-label="Informasi aplikasi"
-              aria-hidden="true">
-              <strong class="mobile-school-info-title">Ringkasan Data Kelas IX</strong>
-              <span class="mobile-school-info-line" id="mobileSchoolSessionText">Sesi sedang berlangsung</span>
-              <span class="mobile-school-info-line" id="mobileSchoolVersionText">Class of 2027 · Versi</span>
+              <div
+                class="mobile-school-info-popup"
+                id="mobileSchoolInfoPopup"
+                role="dialog"
+                aria-label="Informasi aplikasi"
+                aria-hidden="true">
+                <strong class="mobile-school-info-title">Ringkasan Data Kelas IX</strong>
+                <span class="mobile-school-info-line" id="mobileSchoolSessionText">Sesi sedang berlangsung</span>
+                <span class="mobile-school-info-line" id="mobileSchoolVersionText">Class of 2027 · Versi</span>
+              </div>
+            </div>
+
+            <div class="app-header-title">
+              <h2 id="appPageTitle">Dashboard</h2>
+              <p id="appPageSubtitle"><span class="sk sk-line-xl"></span></p>
             </div>
           </div>
 
-          <div class="app-header-title">
-            <h2 id="appPageTitle">Dashboard</h2>
-            <p id="appPageSubtitle"><span class="sk sk-line-xl"></span></p>
-          </div>
+          <nav class="fx-top-pill-nav" id="finexyTopNav" aria-label="Navigasi utama"></nav>
 
           <div class="app-header-actions">
             <div class="profile-menu-wrap" id="profileMenuWrap">
               <button
-                class="profile-avatar-trigger"
+                class="profile-avatar-trigger fx-profile-pill"
                 id="profileMenuBtn"
                 type="button"
                 aria-haspopup="menu"
@@ -9077,6 +10672,11 @@
                 aria-label="Buka profil pengguna"
                 title="Profil pengguna">
                 <span class="user-avatar" id="headerAvatar">A</span>
+                <span class="fx-profile-pill-meta">
+                  <strong id="headerUserName">Pengguna</strong>
+                  <small id="headerUserRole">Class of 2027</small>
+                </span>
+                <i class="ti ti-chevron-down fx-profile-chevron" aria-hidden="true"></i>
               </button>
 
               <div
@@ -9126,6 +10726,15 @@
         </header>
 
         <main class="app-content" id="appContent"></main>
+
+        <footer class="fx-app-footer" aria-label="Informasi pengembang dan versi">
+          <span>Dikembangkan oleh <strong>gurukemarinsore</strong></span>
+          <span class="fx-footer-dot" aria-hidden="true">·</span>
+          <span>Class of 2027</span>
+          <span class="fx-footer-dot" aria-hidden="true">·</span>
+          <span class="app-version-label">Versi 2.1</span>
+          <span class="global-font-credit">· Menggunakan font MiSans dari Xiaomi</span>
+        </footer>
 
         <nav class="mobile-app-nav" id="mobileAppNav"></nav>
       </div>
@@ -9191,7 +10800,7 @@
 
   <script>
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbwbXIVdM4PcLxQFvCn5d5N1OU6BGE1pp54KXcFVbT8DvEcucqc4YgRiatfovy9278Pd/exec';
-    const APP_VERSION = '1.69';
+    const APP_VERSION = '2.1';
 
     function detectChatGPTPreviewEnvironment() {
       const values = [];
@@ -9269,7 +10878,7 @@
           fontKey: 'GOOGLE_SANS_FLEX',
           fontLabel: 'Google Sans Flex',
           fontSource: 'Pratinjau lokal',
-          appVersion: '1.35',
+          appVersion: '2.1',
           backendRevision: 'MASTER_003',
           schemaVersion: 2
         },
@@ -11964,11 +13573,58 @@
       }
     }
 
+    function buildFinexyVerticalChartHtml(classes) {
+      if (!classes || !classes.length) {
+        return '<div class="landing-empty"><div><i class="ti ti-chart-bar-off"></i>Belum ada data kelas.</div></div>';
+      }
+
+      return `
+        <div class="fx-vchart-grid">
+          <div class="fx-vchart-yaxis" aria-hidden="true">
+            <span>100%</span>
+            <span>75%</span>
+            <span>50%</span>
+            <span>25%</span>
+            <span>0%</span>
+          </div>
+          <div class="fx-vchart-cols">
+            ${classes.map(item => {
+              const docPct = safePercent(item.dokumen);
+              const grdPct = safePercent(item.nilai);
+              const docZero = docPct === null || docPct <= 0;
+              const grdZero = grdPct === null || grdPct <= 0;
+              const docH = docZero ? 0 : Math.min(100, docPct);
+              const grdH = grdZero ? 0 : Math.min(100, grdPct);
+              const docTxt = docPct === null ? '0%' : `${docPct.toLocaleString('id-ID', { maximumFractionDigits: 1 })}%`;
+              const grdTxt = grdPct === null ? '0%' : `${grdPct.toLocaleString('id-ID', { maximumFractionDigits: 1 })}%`;
+              const kelas = escapeHtml(String(item.kelas || '—'));
+              const murid = Number(item.jumlahMurid || 0).toLocaleString('id-ID');
+
+              return `
+                <div class="fx-vchart-col" data-fx-tip="Kelas ${kelas} (${murid} murid) · Dokumen ${docTxt} · Nilai ${grdTxt}">
+                  <div class="fx-vchart-bars">
+                    <div class="fx-vbar fx-vbar-doc ${docZero ? 'is-zero' : ''}" style="height:${docH}%"></div>
+                    <div class="fx-vbar fx-vbar-grade ${grdZero ? 'is-zero' : ''}" style="height:${grdH}%"></div>
+                  </div>
+                  <span class="fx-vchart-label">${kelas}</span>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
     function renderBars() {
       const container = $('#classComparisonList');
-      if (!container) return;
-
+      const vChart = $('#publicVerticalChart');
       const classes = state.dashboard?.perKelas || [];
+
+      if (vChart) {
+        vChart.innerHTML = buildFinexyVerticalChartHtml(classes);
+      }
+
+      if (!container) return;
 
       if (!classes.length) {
         container.innerHTML = `
@@ -12201,6 +13857,12 @@
 
     function syncThemeIcons() {
       const dark = document.documentElement.dataset.theme === 'dark';
+      const themeMeta = document.querySelector('meta[name="theme-color"]');
+      if (themeMeta) {
+        themeMeta.setAttribute('content', dark ? '#0c0c0e' : '#f3f3f5');
+      }
+      $('#railLightBtn')?.classList.toggle('active', !dark);
+      $('#railDarkBtn')?.classList.toggle('active', dark);
 
       if ($('#themeIcon')) {
         $('#themeIcon').className = dark ? 'ti ti-sun' : 'ti ti-moon';
@@ -12215,12 +13877,16 @@
       }
     }
 
-    function toggleTheme() {
-      const htmlEl = document.documentElement;
-      const next = htmlEl.dataset.theme === 'dark' ? 'light' : 'dark';
-      htmlEl.dataset.theme = next;
-      localStorage.setItem('smp3-theme', next);
+    function setAppTheme(mode) {
+      const next = mode === 'dark' ? 'dark' : 'light';
+      document.documentElement.dataset.theme = next;
+      try { localStorage.setItem('smp3-theme', next); } catch (_) {}
       syncThemeIcons();
+    }
+
+    function toggleTheme() {
+      const dark = document.documentElement.dataset.theme === 'dark';
+      setAppTheme(dark ? 'light' : 'dark');
     }
 
     function paintUserAvatar(target, initial) {
@@ -12257,9 +13923,18 @@
 
       renderUserAvatars();
 
+      const displayName = state.user.nama || state.user.username || 'Pengguna';
       if ($('#profilePopupName')) {
-        $('#profilePopupName').textContent =
-          state.user.nama || state.user.username || 'Pengguna';
+        $('#profilePopupName').textContent = displayName;
+      }
+      if ($('#headerUserName')) {
+        $('#headerUserName').textContent = displayName;
+      }
+      if ($('#headerUserRole')) {
+        $('#headerUserRole').textContent =
+          state.user.role === 'WALI_KELAS'
+            ? `Wali Kelas ${state.user.kelasPerwalian || '—'}`
+            : meta.label;
       }
 
       const profileRole = $('#profilePopupRole');
@@ -13284,17 +14959,79 @@
       if (text) text.textContent = label;
     }
 
+    function syncFinexyNavSliders(animate = true) {
+      const topNav = $('#finexyTopNav');
+      if (topNav) {
+        const slider = topNav.querySelector('.fx-top-slider');
+        const activeBtn = topNav.querySelector('.fx-top-tab.active');
+        if (slider && activeBtn && activeBtn.offsetWidth > 0) {
+          if (!animate) slider.style.transition = 'none';
+          slider.style.width = `${activeBtn.offsetWidth}px`;
+          slider.style.transform = `translate3d(${activeBtn.offsetLeft}px, 0, 0)`;
+          slider.style.opacity = '1';
+          if (!animate) {
+            void slider.offsetWidth;
+            slider.style.transition = '';
+          }
+        }
+      }
+
+      const railNav = $('#appNav');
+      if (railNav) {
+        const slider = railNav.querySelector('.fx-rail-slider');
+        const activeBtn = railNav.querySelector('.app-nav-btn.active');
+        if (slider && activeBtn && activeBtn.offsetHeight > 0) {
+          if (!animate) slider.style.transition = 'none';
+          slider.style.height = `${activeBtn.offsetHeight}px`;
+          slider.style.transform = `translate3d(0, ${activeBtn.offsetTop}px, 0)`;
+          slider.style.opacity = '1';
+          if (!animate) {
+            void slider.offsetWidth;
+            slider.style.transition = '';
+          }
+        }
+      }
+    }
+
     function renderAppNav() {
       const items = allowedNavItems();
+      const signature = items.map(item => item.key).join('|');
       const desktopNav = $('#appNav');
+      const topPillNav = $('#finexyTopNav');
       const mobileNav = $('#mobileAppNav');
+      const alreadyBuilt =
+        desktopNav?.dataset.navSignature === signature &&
+        (!topPillNav || topPillNav.dataset.navSignature === signature);
 
-      // Desktop: menu role + Buka/Tutup Sidebar sebagai item terakhir.
+      if (alreadyBuilt) {
+        $$('[data-app-section]').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.appSection === state.appSection);
+        });
+        requestAnimationFrame(() => syncFinexyNavSliders(true));
+        return;
+      }
+
+      // Rail kiri: kapsul ikon + indikator slider vertikal melayang
       desktopNav.innerHTML =
-        items.map(navButtonHtml).join('') +
-        sidebarToggleNavButtonHtml();
+        '<span class="fx-rail-slider" aria-hidden="true"></span>' +
+        items.map(navButtonHtml).join('');
+      desktopNav.dataset.navSignature = signature;
 
-      // Mobile: menu role saja. Toggle sidebar TIDAK ikut navbar HP.
+      // Pill navigasi atas tengah + indikator slider horizontal melayang
+      if (topPillNav) {
+        topPillNav.innerHTML =
+          '<span class="fx-top-slider" aria-hidden="true"></span>' +
+          items.map(item => `
+            <button type="button"
+              class="fx-top-tab ${state.appSection === item.key ? 'active' : ''}"
+              data-app-section="${item.key}">
+              ${escapeHtml(item.label)}
+            </button>
+          `).join('');
+        topPillNav.dataset.navSignature = signature;
+      }
+
+      // Mobile: menu role saja.
       mobileNav.innerHTML = `
         <div class="mobile-nav-scroll-viewport">
           <div class="mobile-nav-scroll-track">
@@ -13306,15 +15043,12 @@
 
       $$('[data-app-section]').forEach(btn => {
         btn.addEventListener('click', () => {
+          if (btn.closest('.fx-rail-nav')) btn.blur();
           switchAppSection(btn.dataset.appSection);
         });
       });
 
-      $('#sidebarNavToggleBtn')?.addEventListener('click', () => {
-        setSidebarCollapsed(!state.sidebarCollapsed);
-      });
-
-      updateSidebarToggleNavItem();
+      requestAnimationFrame(() => syncFinexyNavSliders(false));
     }
 
     function roleDashboardSource() {
@@ -13391,50 +15125,147 @@
 
       const quickItems = allowedNavItems().filter(item => item.key !== 'dashboard').slice(0, 4);
 
+      const witHour = Number(new Intl.DateTimeFormat('en-GB', {
+        hour: '2-digit',
+        hour12: false,
+        timeZone: 'Asia/Jayapura'
+      }).format(new Date()));
+      const timeGreeting =
+        witHour < 11 ? 'Selamat pagi'
+        : witHour < 15 ? 'Selamat siang'
+        : witHour < 18 ? 'Selamat sore'
+        : 'Selamat malam';
+
+      const docPctNum = unifiedReady ? safePercent(source?.dokumen) : null;
+      const grdPctNum = unifiedReady ? safePercent(source?.nilai) : null;
+      const docBarW = docPctNum === null ? 0 : docPctNum;
+      const grdBarW = grdPctNum === null ? 0 : grdPctNum;
+      const dashClasses = unifiedReady ? (state.dashboard?.perKelas || []) : [];
+
       $('#appContent').innerHTML = `
-        <section class="app-welcome">
+        <section class="app-welcome fx-greeting">
           <div>
-            <h3>Selamat datang, ${escapeHtml(user?.nama || user?.username || 'Pengguna')}</h3>
-            <p>${escapeHtml(classLabel)} · Data dan menu mengikuti hak akses akun Anda.</p>
+            <h3>${timeGreeting}, ${escapeHtml(user?.nama || user?.username || 'Pengguna')}</h3>
+            <p>${escapeHtml(classLabel)} · Pantau progres data murid, dokumen, dan nilai secara terpusat.</p>
           </div>
           <span class="role-badge">${escapeHtml(meta.label)}</span>
         </section>
 
-        <section class="app-stat-grid">
-          <article class="app-stat">
-            <div class="app-stat-label">
-              <span>Jumlah Murid</span><i class="ti ti-users"></i>
-            </div>
-            <div class="app-stat-value">${studentValueHtml}</div>
-            <div class="app-stat-note">${escapeHtml(classLabel)}</div>
-          </article>
+        <section class="fx-dash-bento">
+          <div class="fx-dash-col-left">
+            <article class="app-card fx-balance-card">
+              <div class="fx-balance-head">
+                <span class="fx-balance-label">Total Murid Terdata</span>
+                <span class="fx-scope-pill">${escapeHtml(classLabel)}</span>
+              </div>
+              <div class="fx-balance-value">${studentValueHtml}</div>
+              <div class="fx-balance-actions">
+                <button type="button" class="fx-btn-dark" data-quick-section="students">
+                  <i class="ti ti-users-group"></i> Data Murid
+                </button>
+                <button type="button" class="fx-btn-light" data-quick-section="grades">
+                  <i class="ti ti-report-analytics"></i> ${user?.role === 'ADMIN_TU' ? 'Lihat Nilai' : 'Input Nilai'}
+                </button>
+              </div>
+              <div class="fx-mini-wallets">
+                <div class="fx-mini-wallet">
+                  <span>Dokumen</span>
+                  <strong>${documentValueHtml}</strong>
+                  <small class="fx-tag-green">KK · Akte · Ijazah</small>
+                </div>
+                <div class="fx-mini-wallet">
+                  <span>Nilai</span>
+                  <strong>${gradeValueHtml}</strong>
+                  <small class="fx-tag-orange">Smt ${activeSemesters.length ? activeSemesters.join(',') : '—'}</small>
+                </div>
+                <div class="fx-mini-wallet">
+                  <span>${escapeHtml(fourthLabel)}</span>
+                  <strong>${fourthValueHtml}</strong>
+                  <small>${escapeHtml(meta.label)}</small>
+                </div>
+              </div>
+            </article>
 
-          <article class="app-stat">
-            <div class="app-stat-label">
-              <span>Dokumen</span><i class="ti ti-files"></i>
-            </div>
-            <div class="app-stat-value">${documentValueHtml}</div>
-            <div class="app-stat-note">${escapeHtml(documentNote)}</div>
-          </article>
+            <article class="app-card fx-limit-card">
+              <div class="fx-limit-head">
+                <h4>Progres Kelengkapan</h4>
+                <span>Dokumen &amp; Nilai</span>
+              </div>
+              <div class="fx-hatched-row">
+                <div class="fx-hatched-track">
+                  <div class="fx-hatched-fill-coral" style="width:${docBarW}%"></div>
+                </div>
+                <div class="fx-hatched-meta">
+                  <strong>${documentValueHtml}</strong>
+                  <span>${escapeHtml(documentNote)}</span>
+                </div>
+              </div>
+              <div class="fx-hatched-row" style="margin-top:10px">
+                <div class="fx-hatched-track">
+                  <div class="fx-hatched-fill-dark" style="width:${grdBarW}%"></div>
+                </div>
+                <div class="fx-hatched-meta">
+                  <strong>${gradeValueHtml}</strong>
+                  <span>${escapeHtml(gradeNote)}</span>
+                </div>
+              </div>
+            </article>
+          </div>
 
-          <article class="app-stat">
-            <div class="app-stat-label">
-              <span>Nilai</span><i class="ti ti-report-analytics"></i>
-            </div>
-            <div class="app-stat-value">${gradeValueHtml}</div>
-            <div class="app-stat-note">${escapeHtml(gradeNote)}</div>
-          </article>
+          <div class="app-stat-grid fx-dash-kpi-grid">
+            <article class="app-stat fx-kpi-coral">
+              <div class="app-stat-label">
+                <span>Dokumen</span><i class="ti ti-files"></i>
+              </div>
+              <div class="app-stat-value">${documentValueHtml}</div>
+              <div class="app-stat-note">${escapeHtml(documentNote)}</div>
+            </article>
 
-          <article class="app-stat">
-            <div class="app-stat-label">
-              <span>${escapeHtml(fourthLabel)}</span><i class="ti ti-shield-check"></i>
+            <article class="app-stat">
+              <div class="app-stat-label">
+                <span>Nilai</span><i class="ti ti-report-analytics"></i>
+              </div>
+              <div class="app-stat-value">${gradeValueHtml}</div>
+              <div class="app-stat-note">${escapeHtml(gradeNote)}</div>
+            </article>
+
+            <article class="app-stat">
+              <div class="app-stat-label">
+                <span>Jumlah Murid</span><i class="ti ti-users"></i>
+              </div>
+              <div class="app-stat-value">${studentValueHtml}</div>
+              <div class="app-stat-note">${escapeHtml(classLabel)}</div>
+            </article>
+
+            <article class="app-stat">
+              <div class="app-stat-label">
+                <span>${escapeHtml(fourthLabel)}</span><i class="ti ti-shield-check"></i>
+              </div>
+              <div class="app-stat-value">${fourthValueHtml}</div>
+              <div class="app-stat-note">${escapeHtml(fourthNote)}</div>
+            </article>
+          </div>
+
+          <article class="app-card fx-chart-card fx-dash-chart">
+            <div class="fx-chart-head">
+              <div>
+                <h4>Progres per Kelas</h4>
+                <p>Dokumen &amp; Nilai kelas 9A–9J</p>
+              </div>
+              <div class="landing-comparison-legend">
+                <span class="landing-legend-item"><span class="landing-legend-dot documents"></span>Dokumen</span>
+                <span class="landing-legend-item"><span class="landing-legend-dot grades"></span>Nilai</span>
+              </div>
             </div>
-            <div class="app-stat-value">${fourthValueHtml}</div>
-            <div class="app-stat-note">${escapeHtml(fourthNote)}</div>
+            <div class="fx-vchart">
+              ${unifiedReady
+                ? buildFinexyVerticalChartHtml(dashClasses)
+                : '<div class="landing-empty"><div><span class="mini-spinner"></span><br>Memuat grafik…</div></div>'}
+            </div>
           </article>
         </section>
 
-        <section class="app-two-col">
+        <section class="app-two-col fx-dash-bottom">
           <article class="app-card">
             <div class="app-card-head">
               <h4>Status Kunci Semester</h4>
@@ -27633,6 +29464,9 @@
     }
 
     $('#themeBtn').addEventListener('click', toggleTheme);
+    $('#railLightBtn')?.addEventListener('click', () => setAppTheme('light'));
+    $('#railDarkBtn')?.addEventListener('click', () => setAppTheme('dark'));
+    $('#railLogoutBtn')?.addEventListener('click', logoutCurrentSession);
 
     $('#mobileSchoolInfoBtn')?.addEventListener('click', event => {
       event.stopPropagation();
@@ -27797,11 +29631,131 @@
     }
 
     (function initTheme() {
-      const saved = localStorage.getItem('smp3-theme');
+      let saved = null;
+      try { saved = localStorage.getItem('smp3-theme'); } catch (_) {}
       const preferredDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
       const theme = saved || (preferredDark ? 'dark' : 'light');
       document.documentElement.dataset.theme = theme;
       syncThemeIcons();
+    })();
+
+    (function initFinexyCustomTooltips() {
+      const tip = document.createElement('div');
+      tip.id = 'fxTooltip';
+      tip.className = 'fx-tooltip';
+      tip.setAttribute('role', 'tooltip');
+      tip.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(tip);
+
+      let activeTarget = null;
+
+      function harvestTipText(el) {
+        if (!el || el.nodeType !== 1) return '';
+        const nativeTitle = el.getAttribute('title');
+        if (nativeTitle && nativeTitle.trim()) {
+          el.setAttribute('data-fx-tip', nativeTitle.trim());
+          el.removeAttribute('title');
+        }
+        return el.getAttribute('data-fx-tip') || '';
+      }
+
+      function findTipHost(node) {
+        let cur = node && node.nodeType === 1 ? node : node?.parentElement;
+        while (cur && cur !== document.body) {
+          if (cur.hasAttribute('title') || cur.hasAttribute('data-fx-tip')) {
+            // Jangan tampilkan tooltip pada menu rail yang sudah melebar penuh saat hover
+            if (cur.closest('.fx-rail-nav') && window.innerWidth > 820) {
+              harvestTipText(cur);
+              return null;
+            }
+            const text = harvestTipText(cur);
+            if (text) return cur;
+          }
+          cur = cur.parentElement;
+        }
+        return null;
+      }
+
+      function positionTooltip(target) {
+        const rect = target.getBoundingClientRect();
+        const pad = 10;
+        tip.style.left = '0px';
+        tip.style.top = '0px';
+        const tipRect = tip.getBoundingClientRect();
+
+        const preferRight = Boolean(target.closest('.fx-rail'));
+        let top;
+        let left;
+        let place;
+
+        if (preferRight) {
+          place = 'right';
+          left = rect.right + 10;
+          if (left + tipRect.width > window.innerWidth - pad) {
+            left = window.innerWidth - tipRect.width - pad;
+          }
+          top = rect.top + (rect.height - tipRect.height) / 2;
+          top = Math.max(pad, Math.min(window.innerHeight - tipRect.height - pad, top));
+        } else {
+          top = rect.top - tipRect.height - 9;
+          place = 'top';
+          if (top < pad) {
+            top = rect.bottom + 9;
+            place = 'bottom';
+          }
+          left = rect.left + (rect.width - tipRect.width) / 2;
+          left = Math.max(pad, Math.min(window.innerWidth - tipRect.width - pad, left));
+        }
+
+        tip.dataset.place = place;
+        tip.style.left = `${Math.round(left)}px`;
+        tip.style.top = `${Math.round(top)}px`;
+      }
+
+      function showTip(target) {
+        const text = harvestTipText(target);
+        if (!text) return hideTip();
+        activeTarget = target;
+        tip.textContent = text;
+        tip.setAttribute('aria-hidden', 'false');
+        tip.classList.add('visible');
+        positionTooltip(target);
+      }
+
+      function hideTip() {
+        activeTarget = null;
+        tip.classList.remove('visible');
+        tip.setAttribute('aria-hidden', 'true');
+      }
+
+      document.addEventListener('mouseover', event => {
+        const host = findTipHost(event.target);
+        if (host) {
+          if (host !== activeTarget) showTip(host);
+        } else if (activeTarget) {
+          hideTip();
+        }
+      });
+
+      document.addEventListener('mouseout', event => {
+        if (!activeTarget) return;
+        const related = event.relatedTarget;
+        if (related && activeTarget.contains(related)) return;
+        hideTip();
+      });
+
+      document.addEventListener('focusin', event => {
+        const host = findTipHost(event.target);
+        if (host) showTip(host);
+      });
+
+      document.addEventListener('focusout', hideTip);
+      document.addEventListener('mousedown', hideTip);
+      window.addEventListener('scroll', hideTip, true);
+      window.addEventListener('resize', () => {
+        hideTip();
+        syncFinexyNavSliders(false);
+      });
     })();
 
     (async function bootstrap() {
