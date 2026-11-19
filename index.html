@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#f3f3f5" />
   <link rel="icon" type="image/svg+xml" href="logo.svg" />
   <title>Data Murid Kelas IX 2026-2027 · SMPN 3 Jayapura</title>
-  <!-- CLASSOF2027 Revisi 049 · Finexy Coral & Charcoal · Konsistensi Warna, Footer Bawah & Dual-Trail Toast · Versi 2.6 -->
+  <!-- CLASSOF2027 Revisi 051 · Finexy Coral & Charcoal · Smooth Feathered Constant-Speed Toast Orbit · Versi 2.8 -->
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11434,6 +11434,203 @@
       }
     }
 
+
+    /* ============================================================
+       REVISI 050 · TOAST DUAL-TRAIL ORANYE MURNI KECEPATAN KONSTAN
+       ============================================================ */
+    @keyframes fxToastPathRun {
+      from { stroke-dashoffset: 0; }
+      to { stroke-dashoffset: -100; }
+    }
+
+    .toast {
+      background: var(--ink) !important;
+      overflow: visible !important;
+      box-shadow:
+        0 14px 34px rgba(0, 0, 0, 0.24),
+        0 0 18px rgba(242, 84, 45, 0.30) !important;
+    }
+
+    .toast::before,
+    .toast::after {
+      content: none !important;
+      display: none !important;
+    }
+
+    .toast-orbit-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    .toast-orbit-track {
+      fill: none;
+      stroke: #4a1c10;
+      stroke-width: 2;
+    }
+
+    html[data-theme="dark"] .toast-orbit-track {
+      stroke: rgba(242, 84, 45, 0.34);
+    }
+
+    .toast-orbit-trail {
+      fill: none;
+      stroke-linecap: round;
+      stroke-dashoffset: 0;
+    }
+
+    .toast-orbit-trail.trail-glow {
+      stroke: #f2542d;
+      stroke-width: 4;
+      stroke-dasharray: 18 32;
+      opacity: 0.72;
+      filter: blur(2.2px);
+    }
+
+    .toast-orbit-trail.trail-core {
+      stroke: #ff7c4c;
+      stroke-width: 2.2;
+      stroke-dasharray: 14 36;
+      opacity: 1;
+    }
+
+    .toast.show .toast-orbit-trail {
+      animation: fxToastPathRun 1.5s linear infinite;
+    }
+
+
+    /* ============================================================
+       REVISI 050 · TOAST FULL ORANGE OUTLINE + KILAU ORBIT HALUS (OPSI 2)
+       ============================================================ */
+    .toast-orbit-svg {
+      display: block !important;
+    }
+
+    .toast {
+      background: var(--ink) !important;
+      color: var(--ink-contrast) !important;
+      border: 0 !important;
+      box-shadow:
+        0 12px 28px rgba(0, 0, 0, 0.20),
+        0 0 12px rgba(242, 84, 45, 0.22) !important;
+      animation: none !important;
+    }
+
+    .toast-orbit-track {
+      stroke: var(--primary) !important;
+      stroke-width: 2 !important;
+      opacity: 1 !important;
+    }
+
+    html[data-theme="dark"] .toast-orbit-track {
+      stroke: var(--primary) !important;
+    }
+
+    .toast-orbit-trail.trail-glow {
+      stroke: #ff7a48 !important;
+      stroke-width: 3.6 !important;
+      stroke-dasharray: 14 36 !important;
+      opacity: 0.55 !important;
+      filter: blur(2px) !important;
+    }
+
+    .toast-orbit-trail.trail-core {
+      stroke: #ffb08a !important;
+      stroke-width: 2.1 !important;
+      stroke-dasharray: 10 40 !important;
+      opacity: 0.95 !important;
+    }
+
+    .toast.show .toast-orbit-trail {
+      animation: fxToastPathRun 2.2s linear infinite !important;
+    }
+
+
+    /* ============================================================
+       REVISI 051 · TOAST FULL ORANGE OUTLINE + KILAU FADE-OUT HALUS
+       ============================================================ */
+    @keyframes fxToastOrbMoveA {
+      from { offset-distance: 0%; }
+      to { offset-distance: 100%; }
+    }
+
+    @keyframes fxToastOrbMoveB {
+      from { offset-distance: 50%; }
+      to { offset-distance: 150%; }
+    }
+
+    .toast {
+      background: transparent !important;
+      color: var(--ink-contrast) !important;
+      border: 0 !important;
+      overflow: hidden !important;
+      box-shadow:
+        0 12px 28px rgba(0, 0, 0, 0.20),
+        0 0 14px rgba(242, 84, 45, 0.24) !important;
+    }
+
+    .toast-ring-clip {
+      position: absolute;
+      inset: 0;
+      border-radius: 999px;
+      background: var(--primary);
+      overflow: hidden;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .toast-orb {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 84px;
+      height: 18px;
+      border-radius: 999px;
+      background: radial-gradient(
+        ellipse at center,
+        rgba(255, 198, 168, 0.98) 0%,
+        rgba(255, 148, 102, 0.72) 32%,
+        rgba(242, 84, 45, 0) 74%
+      );
+      filter: blur(1.2px);
+      offset-path: inset(0 round 999px);
+      offset-rotate: auto;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .toast.show .toast-orb {
+      opacity: 1;
+    }
+
+    .toast.show .toast-orb.orb-a {
+      animation: fxToastOrbMoveA 2.6s linear infinite;
+    }
+
+    .toast.show .toast-orb.orb-b {
+      animation: fxToastOrbMoveB 2.6s linear infinite;
+    }
+
+    .toast-inner-bg {
+      position: absolute;
+      inset: 2px;
+      border-radius: 999px;
+      background: var(--ink);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .toast > i,
+    .toast > #toastText {
+      position: relative;
+      z-index: 2;
+    }
+
   </style>
 </head>
 <body>
@@ -11738,7 +11935,7 @@
           <span class="fx-footer-dot" aria-hidden="true">·</span>
           <span>Class of 2027</span>
           <span class="fx-footer-dot" aria-hidden="true">·</span>
-          <span class="app-version-label">Versi 2.6</span>
+          <span class="app-version-label">Versi 2.8</span>
           <span class="global-font-credit">· Menggunakan font MiSans dari Xiaomi</span>
         </footer>
 
@@ -11800,13 +11997,18 @@
   </div>
 
   <div class="toast" id="toast">
+    <span class="toast-ring-clip" aria-hidden="true">
+      <span class="toast-orb orb-a"></span>
+      <span class="toast-orb orb-b"></span>
+    </span>
+    <span class="toast-inner-bg" aria-hidden="true"></span>
     <i class="ti ti-info-circle"></i>
     <div id="toastText"></div>
   </div>
 
   <script>
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbwbXIVdM4PcLxQFvCn5d5N1OU6BGE1pp54KXcFVbT8DvEcucqc4YgRiatfovy9278Pd/exec';
-    const APP_VERSION = '2.6';
+    const APP_VERSION = '2.8';
 
     function detectChatGPTPreviewEnvironment() {
       const values = [];
@@ -11884,7 +12086,7 @@
           fontKey: 'GOOGLE_SANS_FLEX',
           fontLabel: 'Google Sans Flex',
           fontSource: 'Pratinjau lokal',
-          appVersion: '2.6',
+          appVersion: '2.8',
           backendRevision: 'MASTER_003',
           schemaVersion: 2
         },
@@ -14320,9 +14522,10 @@
 
     function showToast(message) {
       $('#toastText').textContent = message;
-      $('#toast').classList.add('show');
+      const toast = $('#toast');
+      toast.classList.add('show');
       clearTimeout(showToast.timer);
-      showToast.timer = setTimeout(() => $('#toast').classList.remove('show'), 2800);
+      showToast.timer = setTimeout(() => toast.classList.remove('show'), 2800);
     }
 
     function setLoading(show, text = 'Memuat data…') {
