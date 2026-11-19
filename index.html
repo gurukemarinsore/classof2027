@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#f3f3f5" />
   <link rel="icon" type="image/svg+xml" href="logo.svg" />
   <title>Data Murid Kelas IX 2026-2027 · SMPN 3 Jayapura</title>
-  <!-- CLASSOF2027 Revisi 044 · Rombak Total UI Finexy Coral & Charcoal · Versi 2.1 -->
+  <!-- CLASSOF2027 Revisi 047 · Finexy Coral & Charcoal · Disabled Cursor & Final Polish · Versi 2.4 -->
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -10419,6 +10419,740 @@
       box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
     }
 
+
+    /* ============================================================
+       REVISI 5 POIN · SCROLLBAR ANTI-GESER, TAB SEMESTER OPSI 1,
+       HEADER SPREADSHEET FINEXY, TOOLBAR ATAS & HOVER RAIL TERANG
+       ============================================================ */
+
+    /* Poin 1: Custom Scrollbar Finexy + Anti Layout Shift */
+    html {
+      scrollbar-gutter: stable;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(26, 26, 29, 0.24) transparent;
+    }
+
+    html[data-theme="dark"] {
+      scrollbar-color: rgba(244, 244, 246, 0.24) transparent;
+    }
+
+    .grades-table-wrap,
+    .mass-grade-grid-wrap,
+    .bulk-student-grid-wrap,
+    .dialog-card {
+      scrollbar-gutter: stable;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-button {
+      display: none;
+      width: 0;
+      height: 0;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background-color: rgba(26, 26, 29, 0.24);
+      border-radius: 999px;
+      border: 2px solid transparent;
+      background-clip: content-box;
+      transition: background-color 0.18s ease;
+    }
+
+    ::-webkit-scrollbar-thumb:hover,
+    ::-webkit-scrollbar-thumb:active {
+      background-color: var(--primary);
+      border: 1.5px solid transparent;
+      background-clip: content-box;
+    }
+
+    html[data-theme="dark"] ::-webkit-scrollbar-thumb {
+      background-color: rgba(244, 244, 246, 0.24);
+    }
+
+    html[data-theme="dark"] ::-webkit-scrollbar-thumb:hover,
+    html[data-theme="dark"] ::-webkit-scrollbar-thumb:active {
+      background-color: var(--primary);
+    }
+
+    /* Poin 2: Tab Semester 1-6 (Opsi 1 — Slider Hitam Charcoal + Titik & Ikon) */
+    .fx-semester-tabs {
+      position: relative;
+      isolation: isolate;
+      padding: 4px !important;
+      border-radius: 999px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      gap: 4px !important;
+    }
+
+    .fx-semester-slider {
+      position: absolute;
+      top: 0;
+      left: 0;
+      border-radius: 999px;
+      background: var(--ink);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.14);
+      z-index: 0;
+      opacity: 0;
+      pointer-events: none;
+      will-change: transform, width, height;
+      transition:
+        transform 0.32s cubic-bezier(0.32, 0.72, 0, 1),
+        width 0.32s cubic-bezier(0.32, 0.72, 0, 1),
+        height 0.32s cubic-bezier(0.32, 0.72, 0, 1),
+        opacity 0.18s ease;
+    }
+
+    .fx-semester-tabs .semester-tab {
+      position: relative;
+      z-index: 1;
+      height: 36px;
+      border: 0 !important;
+      border-radius: 999px !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      color: var(--muted) !important;
+      font-weight: 680;
+      gap: 6px;
+      transition: color 0.2s ease, background 0.2s ease;
+    }
+
+    .fx-semester-tabs .semester-tab.semester-open {
+      color: var(--text) !important;
+    }
+
+    .fx-semester-tabs .semester-tab.semester-locked {
+      color: var(--muted) !important;
+    }
+
+    .fx-semester-tabs .semester-tab:not(.active):hover {
+      background: rgba(242, 84, 45, 0.10) !important;
+      color: var(--primary) !important;
+    }
+
+    .fx-semester-tabs .semester-tab.active {
+      color: var(--ink-contrast) !important;
+      font-weight: 760;
+    }
+
+    .semester-status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex: 0 0 auto;
+      background: var(--muted);
+      transition: background 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .fx-semester-tabs .semester-tab.semester-open .semester-status-dot {
+      background: #16a34a;
+      box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.16);
+    }
+
+    .fx-semester-tabs .semester-tab.semester-locked .semester-status-dot {
+      background: #ef4444;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+    }
+
+    .fx-semester-tabs .semester-tab.active.semester-open .semester-status-dot {
+      background: #4ade80;
+      box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.25);
+    }
+
+    .fx-semester-tabs .semester-tab.active.semester-locked .semester-status-dot {
+      background: #fb7185;
+      box-shadow: 0 0 0 3px rgba(251, 113, 133, 0.25);
+    }
+
+    .fx-semester-tabs .semester-tab.semester-open .semester-access-icon {
+      color: #16a34a;
+    }
+
+    .fx-semester-tabs .semester-tab.semester-locked .semester-access-icon {
+      color: #ef4444;
+    }
+
+    .fx-semester-tabs .semester-tab.active.semester-open .semester-access-icon {
+      color: #4ade80;
+    }
+
+    .fx-semester-tabs .semester-tab.active.semester-locked .semester-access-icon {
+      color: #fb7185;
+    }
+
+    html[data-theme="dark"] .fx-semester-tabs .semester-tab.active.semester-open .semester-status-dot,
+    html[data-theme="dark"] .fx-semester-tabs .semester-tab.active.semester-open .semester-access-icon {
+      color: #15803d;
+    }
+
+    html[data-theme="dark"] .fx-semester-tabs .semester-tab.active.semester-open .semester-status-dot {
+      background: #15803d;
+    }
+
+    html[data-theme="dark"] .fx-semester-tabs .semester-tab.active.semester-locked .semester-status-dot,
+    html[data-theme="dark"] .fx-semester-tabs .semester-tab.active.semester-locked .semester-access-icon {
+      color: #dc2626;
+    }
+
+    html[data-theme="dark"] .fx-semester-tabs .semester-tab.active.semester-locked .semester-status-dot {
+      background: #dc2626;
+    }
+
+    @media (max-width: 760px) {
+      .fx-semester-tabs {
+        border-radius: 18px;
+      }
+      .fx-semester-slider,
+      .fx-semester-tabs .semester-tab {
+        border-radius: 14px !important;
+      }
+    }
+
+    /* Poin 3: Penyeragaman Header Spreadsheet (Edit Semua Nilai & Edit Massal/Tambah Murid) */
+    .mass-grade-table th,
+    .mass-grade-table th.mass-col-no,
+    .mass-grade-table th.mass-col-nisn,
+    .mass-grade-table th.mass-col-name,
+    .bulk-student-table th {
+      background: #f5f5f7 !important;
+      color: #141416 !important;
+      border-bottom-color: #e4e4ea !important;
+    }
+
+    .mass-grade-table th.mass-average-col {
+      background: #fff0eb !important;
+      color: #b83214 !important;
+    }
+
+    html[data-theme="dark"] .mass-grade-table th,
+    html[data-theme="dark"] .mass-grade-table th.mass-col-no,
+    html[data-theme="dark"] .mass-grade-table th.mass-col-nisn,
+    html[data-theme="dark"] .mass-grade-table th.mass-col-name,
+    html[data-theme="dark"] .bulk-student-table th {
+      background: #202026 !important;
+      color: #f4f4f6 !important;
+      border-bottom-color: #2f2f38 !important;
+    }
+
+    html[data-theme="dark"] .mass-grade-table th.mass-average-col {
+      background: rgba(255, 107, 61, 0.16) !important;
+      color: #ff9a76 !important;
+    }
+
+    /* Poin 4: Toolbar Atas Edit Semua Nilai + Kontras Sel Berubah */
+    .fx-mass-toolbar {
+      display: flex !important;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .fx-mass-toolbar-title {
+      min-width: 0;
+      flex: 1 1 240px;
+    }
+
+    .fx-mass-toolbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .fx-mass-toolbar-meta {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      text-align: right;
+      margin-right: 4px;
+    }
+
+    .fx-mass-toolbar-meta .mass-grade-summary {
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      font-size: 0.72rem;
+      font-weight: 640;
+      white-space: nowrap;
+    }
+
+    .fx-mass-status {
+      min-height: 0 !important;
+      margin-top: 2px !important;
+      font-size: 0.66rem;
+    }
+
+    .fx-mass-close-btn {
+      border-radius: 50% !important;
+      width: 38px !important;
+      height: 38px !important;
+      padding: 0 !important;
+    }
+
+    /* Penanda sel yang berubah: latar oranye coral kontras + garis kiri 3px + segitiga sudut */
+    .mass-grade-cell.changed:not(.invalid) {
+      background: rgba(242, 84, 45, 0.15) !important;
+      box-shadow: inset 3px 0 0 var(--primary);
+    }
+
+    .mass-grade-cell.changed:not(.invalid)::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 0;
+      height: 0;
+      border-top: 7px solid var(--primary);
+      border-left: 7px solid transparent;
+      pointer-events: none;
+    }
+
+    .mass-grade-cell.changed:not(.invalid) .mass-grade-input {
+      color: #b83214;
+      font-weight: 780;
+    }
+
+    .mass-grade-cell.changed.active:not(.invalid) {
+      box-shadow: inset 0 0 0 2px var(--primary) !important;
+    }
+
+    html[data-theme="dark"] .mass-grade-cell.changed:not(.invalid) {
+      background: rgba(255, 107, 61, 0.22) !important;
+    }
+
+    html[data-theme="dark"] .mass-grade-cell.changed:not(.invalid) .mass-grade-input {
+      color: #ffa07d;
+    }
+
+    /* Poin 5: Hover Menyala Terang pada Tombol Light & Dark Rail Kiri (Mengikuti Tombol Keluar) */
+    @media (min-width: 821px) {
+      .fx-rail-theme-btn:hover {
+        color: var(--primary) !important;
+        background: rgba(242, 84, 45, 0.12) !important;
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 42%, transparent) !important;
+      }
+
+      .fx-rail-logout-btn:hover {
+        color: var(--danger) !important;
+        background: rgba(220, 38, 38, 0.10) !important;
+        border-color: color-mix(in srgb, var(--danger) 42%, var(--border)) !important;
+      }
+    }
+
+
+    /* ============================================================
+       PERBAIKAN TOOLBAR, SEL 100% DIAM, UNDO/REDO & SPINNER TAJAM
+       ============================================================ */
+
+    /* 1A. Perataan vertikal pil X cell berubah sejajar Batal/Simpan */
+    .fx-mass-toolbar-actions {
+      align-items: center !important;
+    }
+
+    .fx-mass-toolbar-meta {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: center;
+      margin-right: 4px;
+    }
+
+    .fx-mass-toolbar-meta .mass-grade-summary {
+      display: inline-flex;
+      align-items: center;
+      min-height: 38px;
+      padding: 0 14px;
+      line-height: 1;
+    }
+
+    .fx-mass-status:empty {
+      display: none !important;
+    }
+
+    /* 1B. Kunci tinggi sel & ganti seleksi range dari border ke inset box-shadow (0px shift!) */
+    .mass-grade-table tbody td,
+    .bulk-student-table tbody td {
+      height: 36px !important;
+      min-height: 36px !important;
+      max-height: 36px !important;
+      box-sizing: border-box !important;
+    }
+
+    .mass-grade-input,
+    .bulk-student-input {
+      height: 35px !important;
+      line-height: 35px !important;
+    }
+
+    .mass-grade-cell.range-top,
+    .mass-grade-cell.range-bottom,
+    .mass-grade-cell.range-left,
+    .mass-grade-cell.range-right,
+    .bulk-student-cell.range-top,
+    .bulk-student-cell.range-bottom,
+    .bulk-student-cell.range-left,
+    .bulk-student-cell.range-right {
+      border-top: 0 !important;
+      border-left: 0 !important;
+      border-right: 1px solid color-mix(in srgb, var(--border) 88%, #718096) !important;
+      border-bottom: 1px solid color-mix(in srgb, var(--border) 88%, #718096) !important;
+    }
+
+    .mass-grade-cell,
+    .bulk-student-cell {
+      --sel-top: 0 0 0 0 transparent;
+      --sel-bottom: 0 0 0 0 transparent;
+      --sel-left: 0 0 0 0 transparent;
+      --sel-right: 0 0 0 0 transparent;
+      --chg-bar: 0 0 0 0 transparent;
+    }
+
+    .mass-grade-cell.range-top,
+    .bulk-student-cell.range-top {
+      --sel-top: inset 0 2px 0 0 var(--primary);
+    }
+
+    .mass-grade-cell.range-bottom,
+    .bulk-student-cell.range-bottom {
+      --sel-bottom: inset 0 -2px 0 0 var(--primary);
+    }
+
+    .mass-grade-cell.range-left,
+    .bulk-student-cell.range-left {
+      --sel-left: inset 2px 0 0 0 var(--primary);
+    }
+
+    .mass-grade-cell.range-right,
+    .bulk-student-cell.range-right {
+      --sel-right: inset -2px 0 0 0 var(--primary);
+    }
+
+    .mass-grade-cell.changed:not(.invalid) {
+      --chg-bar: inset 3px 0 0 0 var(--primary);
+    }
+
+    .mass-grade-cell.selected,
+    .mass-grade-cell.changed:not(.invalid),
+    .bulk-student-cell.selected {
+      box-shadow: var(--sel-top), var(--sel-bottom), var(--sel-left), var(--sel-right), var(--chg-bar) !important;
+    }
+
+    .mass-grade-cell.active,
+    .bulk-student-cell.active {
+      box-shadow: inset 0 0 0 2px var(--primary) !important;
+    }
+
+    .mass-grade-cell.invalid.active,
+    .bulk-student-cell.invalid.active {
+      box-shadow: inset 0 0 0 2px var(--danger) !important;
+    }
+
+    /* 2. Tombol Undo & Redo (4 kondisi: tidak aktif, aktif, hover, klik) */
+    .fx-undo-redo-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px;
+      border-radius: 999px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+    }
+
+    .fx-history-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      display: inline-grid;
+      place-items: center;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease, transform 0.12s ease, opacity 0.16s ease;
+    }
+
+    .fx-history-btn:not(:disabled):hover {
+      background: rgba(242, 84, 45, 0.13);
+      color: var(--primary);
+      border-color: color-mix(in srgb, var(--primary) 45%, var(--border));
+    }
+
+    .fx-history-btn:not(:disabled):active {
+      transform: scale(0.91);
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
+
+    .fx-history-btn:disabled {
+      opacity: 0.34;
+      background: transparent;
+      border-color: transparent;
+      color: var(--muted);
+      cursor: default;
+      pointer-events: none;
+    }
+
+    /* 3. Spinner Melingkar Tajam (Opsi 1 — Cincin Busur Ganda Finexy · Light & Dark Mode) */
+    .mini-spinner {
+      --spinner-size: 14px;
+      --spinner-stroke: 2px;
+      width: var(--spinner-size);
+      height: var(--spinner-size);
+      flex: 0 0 var(--spinner-size);
+      display: inline-block;
+      vertical-align: middle;
+      border-radius: 50%;
+      background: none !important;
+      -webkit-mask: none !important;
+      mask: none !important;
+      border: var(--spinner-stroke) solid color-mix(in srgb, var(--ink) 14%, transparent);
+      border-top-color: var(--primary);
+      border-bottom-color: var(--ink);
+      box-sizing: border-box;
+      animation: appCircleSpinner 0.72s cubic-bezier(0.55, 0.18, 0.45, 0.82) infinite;
+    }
+
+    .action-small.primary .mini-spinner,
+    .primary-btn .mini-spinner,
+    .login-submit .mini-spinner,
+    .grade-row-action-btn.editing .mini-spinner {
+      border-color: color-mix(in srgb, currentColor 24%, transparent);
+      border-top-color: var(--primary-2);
+      border-bottom-color: currentColor;
+    }
+
+
+    /* Revisi 045: Perataan sempurna pil X cell berubah + spasi presisi */
+    .fx-mass-toolbar {
+      align-items: center !important;
+    }
+
+    .fx-mass-toolbar-actions {
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px;
+    }
+
+    .fx-mass-summary-pill {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center;
+      gap: 5px;
+      height: 40px;
+      margin: 0 !important;
+      padding: 0 14px;
+      border-radius: 999px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 640;
+      line-height: 1 !important;
+      white-space: nowrap;
+      flex: 0 0 auto;
+    }
+
+    .fx-mass-summary-pill strong {
+      color: var(--text);
+      font-weight: 780;
+    }
+
+    .fx-mass-toolbar-title .fx-mass-status {
+      min-height: 0 !important;
+      margin: 3px 0 0 !important;
+      font-size: 0.68rem;
+      line-height: 1.3;
+    }
+
+    .fx-mass-toolbar-title .fx-mass-status:empty {
+      display: none !important;
+    }
+
+
+    /* ============================================================
+       REVISI 045 PATCH · FULL-WIDTH TOOLBAR, LOCKED 64PX, CROSSHAIR
+       ============================================================ */
+
+    /* 1. Fullscreen overlay selalu penuh 100vw sampai tepi kanan (tutup scrollbar-gutter) */
+    .fullscreen-mass-grade,
+    .fullscreen-bulk-student,
+    .fullscreen-doc-preview {
+      width: 100vw !important;
+      max-width: 100vw !important;
+      left: 0 !important;
+      right: 0 !important;
+      scrollbar-gutter: auto !important;
+    }
+
+    /* 2. Kunci tinggi toolbar putih atas agar 100% diam saat sel diedit */
+    @media (min-width: 761px) {
+      .fx-mass-toolbar {
+        height: 64px !important;
+        min-height: 64px !important;
+        max-height: 64px !important;
+        flex-wrap: nowrap !important;
+        overflow: hidden !important;
+        padding: 0 18px !important;
+        box-sizing: border-box !important;
+      }
+
+      .fx-mass-toolbar-title {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        overflow: hidden;
+      }
+
+      .fx-mass-toolbar-actions {
+        flex-wrap: nowrap !important;
+        flex: 0 0 auto;
+      }
+
+      .fx-mass-toolbar-actions .action-small,
+      .fx-mass-summary-pill {
+        height: 38px !important;
+        min-height: 38px !important;
+        max-height: 38px !important;
+        box-sizing: border-box !important;
+      }
+    }
+
+    /* 3. Crosshair highlight Oranye Coral pada No., Nama, dan Header Mapel */
+    .mass-grade-table th.is-crosshair {
+      background: #ffe7de !important;
+      color: #b83214 !important;
+      box-shadow: inset 0 -2.5px 0 0 var(--primary) !important;
+    }
+
+    .mass-grade-table tbody tr.is-crosshair-row > td.mass-col-no,
+    .mass-grade-table tbody tr.is-crosshair-row > td.mass-col-name {
+      background: #ffece5 !important;
+      color: #b83214 !important;
+    }
+
+    .mass-grade-table tbody tr.is-crosshair-row > td.mass-col-no {
+      font-weight: 780;
+      box-shadow: inset 3px 0 0 0 var(--primary) !important;
+    }
+
+    .mass-grade-table tbody tr.is-crosshair-row > td.mass-col-name .mass-grade-student-name {
+      color: #b83214 !important;
+      font-weight: 760;
+    }
+
+    html[data-theme="dark"] .mass-grade-table th.is-crosshair {
+      background: #35211b !important;
+      color: #ffa07d !important;
+      box-shadow: inset 0 -2.5px 0 0 var(--primary) !important;
+    }
+
+    html[data-theme="dark"] .mass-grade-table tbody tr.is-crosshair-row > td.mass-col-no,
+    html[data-theme="dark"] .mass-grade-table tbody tr.is-crosshair-row > td.mass-col-name {
+      background: #2f1f1a !important;
+      color: #ffa07d !important;
+    }
+
+    html[data-theme="dark"] .mass-grade-table tbody tr.is-crosshair-row > td.mass-col-name .mass-grade-student-name {
+      color: #ffa07d !important;
+    }
+
+
+    /* ============================================================
+       REVISI 046 · FULLSCREEN GUTTER OFF & LOCKED PASTE STATUS
+       ============================================================ */
+    html.fullscreen-overlay-open {
+      scrollbar-gutter: auto !important;
+      overflow: hidden !important;
+    }
+
+    #pasteGradeStatus {
+      margin: 0 !important;
+      padding: 6px 12px;
+      border-radius: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      font-size: 0.72rem;
+      min-height: 0 !important;
+    }
+
+    #pasteGradeStatus:empty {
+      display: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      min-height: 0 !important;
+    }
+
+
+    /* ============================================================
+       REVISI 046 POLISH · GARIS MAPEL ATAS, CLEAN CHANGED CELL, LOCKED FONT
+       ============================================================ */
+
+    /* 1. Garis tegas oranye header Mapel dipindah ke sisi paling atas (ujung luar) */
+    .mass-grade-table th.is-crosshair,
+    html[data-theme="dark"] .mass-grade-table th.is-crosshair {
+      box-shadow: inset 0 3px 0 0 var(--primary) !important;
+    }
+
+    /* 2. Hilangkan garis tegas kiri 3px pada sel berubah (pertahankan segitiga sudut kanan atas saja) */
+    .mass-grade-cell.changed:not(.invalid) {
+      --chg-bar: 0 0 0 0 transparent !important;
+    }
+
+    /* 3. Warna & ketebalan teks sel berubah tetap normal (hitam Light / putih Dark); merah khusus error */
+    .mass-grade-cell.changed:not(.invalid) .mass-grade-input,
+    html[data-theme="dark"] .mass-grade-cell.changed:not(.invalid) .mass-grade-input {
+      color: var(--text) !important;
+      font-weight: 650 !important;
+    }
+
+    /* 4. Kunci font-weight No. & Nama saat disorot agar 100% diam tidak bergeser/melebar */
+    .mass-grade-table tbody tr.is-crosshair-row > td.mass-col-no {
+      font-weight: 400 !important;
+    }
+
+    .mass-grade-table tbody tr.is-crosshair-row > td.mass-col-name .mass-grade-student-name {
+      font-weight: 680 !important;
+    }
+
+
+    /* ============================================================
+       REVISI 047 · KURSOR NORMAL UNTUK SELURUH TOMBOL NONAKTIF
+       ============================================================ */
+    button:disabled,
+    .action-small:disabled,
+    .primary-btn:disabled,
+    .ghost-btn:disabled,
+    .icon-btn:disabled,
+    .login-submit:disabled,
+    .semester-lock-toggle:disabled,
+    .doc-action:disabled,
+    .preview-tool-btn:disabled,
+    .grade-row-action-btn:disabled,
+    .avatar-manage-action:disabled,
+    .fx-history-btn:disabled {
+      cursor: default !important;
+    }
+
+    button[aria-busy="true"],
+    button.is-loading,
+    button.is-saving,
+    .semester-lock-toggle.is-saving {
+      cursor: wait !important;
+    }
+
   </style>
 </head>
 <body>
@@ -10732,7 +11466,7 @@
           <span class="fx-footer-dot" aria-hidden="true">·</span>
           <span>Class of 2027</span>
           <span class="fx-footer-dot" aria-hidden="true">·</span>
-          <span class="app-version-label">Versi 2.1</span>
+          <span class="app-version-label">Versi 2.4</span>
           <span class="global-font-credit">· Menggunakan font MiSans dari Xiaomi</span>
         </footer>
 
@@ -10800,7 +11534,7 @@
 
   <script>
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbwbXIVdM4PcLxQFvCn5d5N1OU6BGE1pp54KXcFVbT8DvEcucqc4YgRiatfovy9278Pd/exec';
-    const APP_VERSION = '2.1';
+    const APP_VERSION = '2.4';
 
     function detectChatGPTPreviewEnvironment() {
       const values = [];
@@ -10878,7 +11612,7 @@
           fontKey: 'GOOGLE_SANS_FLEX',
           fontLabel: 'Google Sans Flex',
           fontSource: 'Pratinjau lokal',
-          appVersion: '2.1',
+          appVersion: '2.4',
           backendRevision: 'MASTER_003',
           schemaVersion: 2
         },
@@ -17594,6 +18328,7 @@
           bulkStudentFullscreenEscapeHandler
         );
 
+        document.documentElement.classList.remove('fullscreen-overlay-open');
         if (bulkStudentFullscreenBodyOverflow !== null) {
           document.body.style.overflow =
             bulkStudentFullscreenBodyOverflow;
@@ -17875,6 +18610,7 @@
 
         bulkStudentFullscreenBodyOverflow =
           document.body.style.overflow;
+        document.documentElement.classList.add('fullscreen-overlay-open');
         document.body.style.overflow = 'hidden';
 
         overlay = document.createElement('div');
@@ -18447,11 +19183,13 @@
                 }
               </div>
 
-              <div class="semester-tabs" id="gradeSemesterTabs">
+              <div class="semester-tabs fx-semester-tabs" id="gradeSemesterTabs">
+                <span class="fx-semester-slider" aria-hidden="true"></span>
                 ${[1,2,3,4,5,6].map(semester => `
                   <button type="button"
                     class="semester-tab ${state.grades.semester === semester ? 'active' : ''}"
                     data-grade-semester="${semester}">
+                    <span class="semester-status-dot" aria-hidden="true"></span>
                     <span>Semester ${semester}</span>
                     <i class="ti ti-eye semester-access-icon"
                       aria-hidden="true"></i>
@@ -18676,8 +19414,10 @@
           );
 
         if (icon) {
-          icon.className =
-            `ti ${canEdit ? 'ti-edit' : 'ti-eye'} semester-access-icon`;
+          const iconName = canEdit
+            ? 'ti-edit'
+            : (lockMeta.known && lockMeta.locked ? 'ti-lock' : 'ti-eye');
+          icon.className = `ti ${iconName} semester-access-icon`;
         }
 
         const lockLabel =
@@ -18692,9 +19432,32 @@
             ? 'Dapat mengedit'
             : 'Lihat saja';
 
-        button.title =
-          `Semester ${semester} · ${lockLabel} · ${accessLabel}`;
+        button.removeAttribute('title');
+        button.setAttribute(
+          'data-fx-tip',
+          `Semester ${semester} · ${lockLabel} · ${accessLabel}`
+        );
       });
+
+      requestAnimationFrame(() => syncGradeSemesterSlider(true));
+    }
+
+    function syncGradeSemesterSlider(animate = true) {
+      const container = $('#gradeSemesterTabs');
+      if (!container) return;
+      const slider = container.querySelector('.fx-semester-slider');
+      const activeBtn = container.querySelector('.semester-tab.active');
+      if (!slider || !activeBtn || !activeBtn.offsetWidth) return;
+
+      if (!animate) slider.style.transition = 'none';
+      slider.style.width = `${activeBtn.offsetWidth}px`;
+      slider.style.height = `${activeBtn.offsetHeight}px`;
+      slider.style.transform = `translate3d(${activeBtn.offsetLeft}px, ${activeBtn.offsetTop}px, 0)`;
+      slider.style.opacity = '1';
+      if (!animate) {
+        void slider.offsetWidth;
+        slider.style.transition = '';
+      }
     }
 
 
@@ -20080,8 +20843,8 @@
               <tr>
                 <th class="mass-col-no">No.</th>
                 <th class="mass-col-name">Nama</th>
-                ${subjects.map(subject => `
-                  <th title="${escapeHtml(subject)}">
+                ${subjects.map((subject, colIndex) => `
+                  <th data-mass-head-col="${colIndex}" title="${escapeHtml(subject)}">
                     ${escapeHtml(subject)}
                   </th>
                 `).join('')}
@@ -20098,7 +20861,7 @@
 
             <tbody>
               ${students.map((student, rowIndex) => `
-                <tr>
+                <tr data-mass-row-tr="${rowIndex}">
                   <td class="mass-col-no">${rowIndex + 1}</td>
                   <td class="mass-col-name">
                     <span class="mass-grade-student-name"
@@ -20255,6 +21018,16 @@
           'range-right',
           selected && col === bounds.colEnd
         );
+      });
+
+      $$('[data-mass-head-col]').forEach(th => {
+        const col = Number(th.dataset.massHeadCol);
+        th.classList.toggle('is-crosshair', col >= bounds.colStart && col <= bounds.colEnd);
+      });
+
+      $$('[data-mass-row-tr]').forEach(tr => {
+        const row = Number(tr.dataset.massRowTr);
+        tr.classList.toggle('is-crosshair-row', row >= bounds.rowStart && row <= bounds.rowEnd);
       });
 
       const size = massGradeSelectionSize();
@@ -20576,6 +21349,10 @@
       massGradeSheet.editing =
         null;
 
+      if (!cancel) {
+        pushMassGradeHistory();
+      }
+
       renderMassGradeSelection();
     }
 
@@ -20889,6 +21666,7 @@
       renderAllMassGradeAverages();
       hideMassGradeWarning();
       renderMassGradeSummary();
+      pushMassGradeHistory();
 
       const active = massGradeSheet.focus;
       findMassGradeInput(active.row, active.col)?.focus();
@@ -20943,6 +21721,7 @@
       renderMassGradeSelection();
       hideMassGradeWarning();
       renderMassGradeSummary();
+      pushMassGradeHistory();
     }
 
     function handleMassGradePaste(event) {
@@ -21169,6 +21948,19 @@
         return;
       }
 
+      if (ctrl && String(event.key || '').toLowerCase() === 'z') {
+        event.preventDefault();
+        if (event.shiftKey) redoMassGrade();
+        else undoMassGrade();
+        return;
+      }
+
+      if (ctrl && String(event.key || '').toLowerCase() === 'y') {
+        event.preventDefault();
+        redoMassGrade();
+        return;
+      }
+
       if (
         ctrl &&
         ['c', 'x', 'v'].includes(
@@ -21313,7 +22105,9 @@
       massGradeSheet = {
         anchor: { row: 0, col: 0 },
         focus: { row: 0, col: 0 },
-        dragging: false
+        dragging: false,
+        history: [],
+        historyIndex: -1
       };
 
       getMassGradeCells().forEach(cell => {
@@ -21475,12 +22269,94 @@
       renderMassGradeSelection();
       renderAllMassGradeAverages();
 
+      // Snapshot awal untuk riwayat Undo/Redo
+      massGradeSheet.history = [captureMassGradeSnapshot()];
+      massGradeSheet.historyIndex = 0;
+      updateMassGradeHistoryButtons();
+
+      $('#massGradeUndoBtn')?.addEventListener('click', () => undoMassGrade());
+      $('#massGradeRedoBtn')?.addEventListener('click', () => redoMassGrade());
+
       requestAnimationFrame(() => {
         setMassGradeSelection(0, 0, {
           selectText: false,
           scroll: false
         });
       });
+    }
+
+    function captureMassGradeSnapshot() {
+      return $$('[data-mass-grade-input]').map(input => input.value);
+    }
+
+    function massGradeSnapshotsEqual(a, b) {
+      if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
+      for (let i = 0; i < a.length; i++) {
+        if (a[i] !== b[i]) return false;
+      }
+      return true;
+    }
+
+    function updateMassGradeHistoryButtons() {
+      const undoBtn = $('#massGradeUndoBtn');
+      const redoBtn = $('#massGradeRedoBtn');
+      if (!massGradeSheet) return;
+      const canUndo = massGradeSheet.historyIndex > 0;
+      const canRedo = massGradeSheet.historyIndex < (massGradeSheet.history.length - 1);
+      if (undoBtn) undoBtn.disabled = !canUndo;
+      if (redoBtn) redoBtn.disabled = !canRedo;
+    }
+
+    function pushMassGradeHistory() {
+      if (!massGradeSheet) return;
+      const snap = captureMassGradeSnapshot();
+      const current = massGradeSheet.history[massGradeSheet.historyIndex];
+      if (massGradeSnapshotsEqual(snap, current)) {
+        updateMassGradeHistoryButtons();
+        return;
+      }
+      massGradeSheet.history = massGradeSheet.history.slice(0, massGradeSheet.historyIndex + 1);
+      massGradeSheet.history.push(snap);
+      if (massGradeSheet.history.length > 60) {
+        massGradeSheet.history.shift();
+      }
+      massGradeSheet.historyIndex = massGradeSheet.history.length - 1;
+      updateMassGradeHistoryButtons();
+    }
+
+    function applyMassGradeHistorySnapshot(snap) {
+      if (!Array.isArray(snap)) return;
+      const inputs = $$('[data-mass-grade-input]');
+      inputs.forEach((input, idx) => {
+        if (idx < snap.length) {
+          input.value = snap[idx];
+          refreshMassGradeCell(input);
+        }
+      });
+      renderAllMassGradeAverages();
+      hideMassGradeWarning();
+      renderMassGradeSummary();
+      updateMassGradeHistoryButtons();
+    }
+
+    function undoMassGrade() {
+      if (!massGradeSheet) return;
+      if (massGradeSheet.editing) {
+        exitMassGradeEdit(false);
+      }
+      if (massGradeSheet.historyIndex <= 0) return;
+      massGradeSheet.historyIndex--;
+      applyMassGradeHistorySnapshot(massGradeSheet.history[massGradeSheet.historyIndex]);
+    }
+
+    function redoMassGrade() {
+      if (!massGradeSheet) return;
+      if (massGradeSheet.editing) {
+        exitMassGradeEdit(false);
+      }
+      if (massGradeSheet.historyIndex >= massGradeSheet.history.length - 1) return;
+      massGradeSheet.historyIndex++;
+      applyMassGradeHistorySnapshot(massGradeSheet.history[massGradeSheet.historyIndex]);
     }
 
     function endMassGradeDrag() {
@@ -21577,6 +22453,9 @@
             : '';
 
         destroyMassGradeSpreadsheetEvents();
+        $('#fullscreenMassGradeEditor')?.remove();
+        document.documentElement.classList.remove('fullscreen-overlay-open');
+        document.body.style.overflow = '';
         closeAppDialog();
 
         state.grades.lastSavedAt = new Date().toISOString();
@@ -21636,6 +22515,7 @@
       const previousBodyOverflow =
         document.body.style.overflow;
 
+      document.documentElement.classList.add('fullscreen-overlay-open');
       document.body.style.overflow = 'hidden';
 
       const overlay =
@@ -21648,41 +22528,40 @@
         'fullscreen-mass-grade';
 
       overlay.innerHTML = `
-        <div class="mass-grade-fullscreen-toolbar">
-          <div>
+        <div class="mass-grade-fullscreen-toolbar fx-mass-toolbar">
+          <div class="fx-mass-toolbar-title">
             <h3>Edit Semua Nilai</h3>
             <p>
               Kelas ${escapeHtml(state.grades.kelas)} ·
-              Semester ${state.grades.semester}.
-              Edit seluruh nilai dalam satu grid seperti spreadsheet sederhana.
+              Semester ${state.grades.semester} ·
+              Edit seluruh nilai dalam satu grid spreadsheet.
             </p>
           </div>
 
-          <button class="preview-tool-btn"
-            id="closePasteGradeDialog"
-            type="button"
-            aria-label="Tutup Edit Semua"
-            title="Tutup">
-            <i class="ti ti-x"></i>
-          </button>
-        </div>
-
-        <div class="mass-grade-fullscreen-body">
-        ${buildMassGradeTableHtml()}
-
-        <div class="mass-grade-footer">
-          <div>
-            <div id="massGradeSummary"
-              class="mass-grade-summary">
+          <div class="fx-mass-toolbar-actions">
+            <div id="massGradeSummary" class="mass-grade-summary fx-mass-summary-pill">
               Belum ada perubahan nilai.
             </div>
 
-            <div id="pasteGradeStatus"
-              class="dialog-status"
-              style="margin-top:4px"></div>
-          </div>
+            <div class="fx-undo-redo-group" role="group" aria-label="Riwayat perubahan nilai">
+              <button id="massGradeUndoBtn"
+                class="fx-history-btn"
+                type="button"
+                disabled
+                aria-label="Undo (Ctrl+Z)"
+                data-fx-tip="Undo (Ctrl+Z)">
+                <i class="ti ti-arrow-back-up"></i>
+              </button>
+              <button id="massGradeRedoBtn"
+                class="fx-history-btn"
+                type="button"
+                disabled
+                aria-label="Redo (Ctrl+Y)"
+                data-fx-tip="Redo (Ctrl+Y)">
+                <i class="ti ti-arrow-forward-up"></i>
+              </button>
+            </div>
 
-          <div class="dialog-actions">
             <button id="cancelPasteGrades"
               class="action-small"
               type="button">
@@ -21696,8 +22575,19 @@
               <i class="ti ti-device-floppy"></i>
               Simpan
             </button>
-          </div>
 
+            <button class="preview-tool-btn fx-mass-close-btn"
+              id="closePasteGradeDialog"
+              type="button"
+              aria-label="Tutup Edit Semua"
+              data-fx-tip="Tutup">
+              <i class="ti ti-x"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="mass-grade-fullscreen-body">
+          <div id="pasteGradeStatus" class="dialog-status"></div>
           <div id="massGradeWarning"
             class="mass-grade-warning view-hidden">
             <div id="massGradeWarningCopy"></div>
@@ -21716,7 +22606,8 @@
               </button>
             </div>
           </div>
-        </div>
+
+          ${buildMassGradeTableHtml()}
         </div>
       `;
 
@@ -21732,6 +22623,7 @@
 
         overlay.remove();
 
+        document.documentElement.classList.remove('fullscreen-overlay-open');
         document.body.style.overflow =
           previousBodyOverflow;
       };
@@ -22620,6 +23512,7 @@
         fullscreenPreviewResizeHandler
       );
 
+      document.documentElement.classList.remove('fullscreen-overlay-open');
       document.body.style.overflow =
         stateBeforeClose?.previousBodyOverflow || '';
 
@@ -22681,6 +23574,7 @@
         previousBodyOverflow: document.body.style.overflow
       };
 
+      document.documentElement.classList.add('fullscreen-overlay-open');
       document.body.style.overflow = 'hidden';
 
       const overlay = document.createElement('div');
@@ -29755,6 +30649,7 @@
       window.addEventListener('resize', () => {
         hideTip();
         syncFinexyNavSliders(false);
+        syncGradeSemesterSlider(false);
       });
     })();
 
