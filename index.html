@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#f3f3f5" />
   <link rel="icon" type="image/svg+xml" href="logo.svg" />
   <title>Data Murid Kelas IX 2026-2027 · SMPN 3 Jayapura</title>
-  <!-- CLASSOF2027 Revisi 052 · Finexy Coral & Charcoal · Mobile Header, Bottom Sheet & Smooth Nav Polish · Versi 2.9 -->
+  <!-- CLASSOF2027 Revisi 054 · Finexy Coral & Charcoal · Compact Action Spinner & Versi 2.11 -->
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -491,11 +491,18 @@
       .modal {
         align-items: end;
         padding: 0;
+        transition: opacity .34s cubic-bezier(.22, 1, .36, 1), visibility .34s;
       }
       .modal-card {
         width: 100%;
         border-radius: 26px 26px 0 0;
         padding: 22px 18px 26px;
+        transform: translate3d(0, 100%, 0);
+        transition: transform .38s cubic-bezier(.22, 1, .36, 1);
+        will-change: transform;
+      }
+      .modal.open .modal-card {
+        transform: translate3d(0, 0, 0);
       }
     }
 
@@ -11864,6 +11871,12 @@
       }
     }
 
+
+    input[type="search"]::-webkit-search-cancel-button,
+    input[type="search"]::-webkit-search-decoration {
+      -webkit-appearance: none;
+      appearance: none;
+    }
   </style>
 </head>
 <body>
@@ -12168,7 +12181,7 @@
           <span class="fx-footer-dot" aria-hidden="true">·</span>
           <span>Class of 2027</span>
           <span class="fx-footer-dot" aria-hidden="true">·</span>
-          <span class="app-version-label">Versi 2.9</span>
+          <span class="app-version-label">Versi 2.11</span>
           <span class="global-font-credit">· Menggunakan font MiSans dari Xiaomi</span>
         </footer>
 
@@ -12241,7 +12254,7 @@
 
   <script>
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbwbXIVdM4PcLxQFvCn5d5N1OU6BGE1pp54KXcFVbT8DvEcucqc4YgRiatfovy9278Pd/exec';
-    const APP_VERSION = '2.9';
+    const APP_VERSION = '2.11';
 
     function detectChatGPTPreviewEnvironment() {
       const values = [];
@@ -12319,7 +12332,7 @@
           fontKey: 'GOOGLE_SANS_FLEX',
           fontLabel: 'Google Sans Flex',
           fontSource: 'Pratinjau lokal',
-          appVersion: '2.9',
+          appVersion: '2.11',
           backendRevision: 'MASTER_003',
           schemaVersion: 2
         },
@@ -12786,10 +12799,70 @@
       return normalized;
     }
 
+    function filterStudentDirectoryLocally(source) {
+      const cacheMap = state.sessionCache?.studentDirectory;
+      if (!cacheMap || typeof cacheMap.values !== 'function') return null;
+
+      const targetKelas = String(source?.kelas || 'SEMUA').toUpperCase();
+      const rawQuery = String(source?.query || '').trim();
+      const q = rawQuery.toLowerCase();
+      const page = Math.max(1, Number(source?.page || 1));
+      const limit = Math.max(1, Number(source?.limit || 20));
+
+      let bestBase = null;
+      for (const item of cacheMap.values()) {
+        if (!item) continue;
+        if (String(item.kelas || 'SEMUA').toUpperCase() !== targetKelas) continue;
+
+        const rows = Array.isArray(item.students) ? item.students : [];
+        const total = Number(item.total || 0);
+        if (total > rows.length) continue;
+
+        const baseQ = String(item.query || '').trim().toLowerCase();
+        if (baseQ === '' || (q && q.startsWith(baseQ))) {
+          if (!bestBase || baseQ.length > String(bestBase.query || '').trim().length) {
+            bestBase = item;
+          }
+        }
+      }
+
+      if (!bestBase) return null;
+
+      const baseRows = Array.isArray(bestBase.students) ? bestBase.students : [];
+      const filtered = q
+        ? baseRows.filter(student => {
+            const nama = String(student?.namaLengkap || student?.nama || '').toLowerCase();
+            const nis = String(student?.nis || '').toLowerCase();
+            const nisn = String(student?.nisn || '').toLowerCase();
+            const kelas = String(student?.kelas || '').toLowerCase();
+            return nama.includes(q) || nis.includes(q) || nisn.includes(q) || kelas.includes(q);
+          })
+        : baseRows;
+
+      const total = filtered.length;
+      const totalPages = total ? Math.ceil(total / limit) : 0;
+      const safePage = totalPages ? Math.min(page, totalPages) : 1;
+      const start = (safePage - 1) * limit;
+      const sliced = filtered.slice(start, start + limit);
+
+      return {
+        cachedAt: Number(bestBase.cachedAt || Date.now()),
+        kelas: targetKelas,
+        query: rawQuery,
+        page: safePage,
+        limit,
+        total,
+        totalPages,
+        students: plainClone(sliced),
+        activeSemesters: plainClone(bestBase.activeSemesters || [])
+      };
+    }
+
     function sharedStudentDirectorySnapshot(source) {
       const key = studentDirectorySessionCacheKey(source);
       const snapshot = state.sessionCache?.studentDirectory?.get?.(key);
-      return snapshot ? plainClone(snapshot) : null;
+      if (snapshot) return plainClone(snapshot);
+      return filterStudentDirectoryLocally(source);
     }
 
     async function requestStudentDirectorySnapshot(request, requestToken) {
@@ -14454,7 +14527,7 @@
       if (button) {
         button.disabled = true;
         button.setAttribute('aria-busy', 'true');
-        button.innerHTML = '<span class="mini-spinner"></span> Perbarui';
+        button.innerHTML = '<span class="mini-spinner"></span> <span class="grade-action-label">Perbarui</span>';
       }
 
       try {
@@ -15188,7 +15261,12 @@
       resetLoginForm();
       $('#loginModal').classList.add('open');
       $('#loginModal').setAttribute('aria-hidden', 'false');
-      setTimeout(() => $('#username').focus(), 80);
+      const focusDelay = window.matchMedia('(max-width: 640px)').matches ? 380 : 80;
+      setTimeout(() => {
+        if ($('#loginModal')?.classList.contains('open')) {
+          $('#username')?.focus();
+        }
+      }, focusDelay);
     }
 
     function closeLogin() {
@@ -17077,6 +17155,14 @@
       if (search) {
         search.addEventListener('input', () => {
           clearTimeout(bindStudentsModuleEvents.searchTimer);
+          const nextQuery = search.value.trim();
+          const probe = { ...state.students, query: nextQuery, page: 1 };
+          if (state.sessionCache.students.has(studentSessionCacheKey(probe)) || sharedStudentDirectorySnapshot(probe)) {
+            state.students.query = nextQuery;
+            state.students.page = 1;
+            showStudentsCachedOrLoad();
+            return;
+          }
           bindStudentsModuleEvents.searchTimer = setTimeout(() => {
             state.students.query = search.value.trim();
             state.students.page = 1;
@@ -21548,7 +21634,7 @@
       const original = saveBtn?.innerHTML;
 
       if (saveBtn) {
-        saveBtn.innerHTML = '<span class="mini-spinner"></span> Menyimpan';
+        saveBtn.innerHTML = '<span class="mini-spinner"></span> <span class="grade-action-label">Menyimpan</span>';
       }
 
       try {
@@ -23653,6 +23739,14 @@
     function bindDocumentsModuleEvents() {
       $('#documentStudentSearch')?.addEventListener('input', event => {
         clearTimeout(bindDocumentsModuleEvents.searchTimer);
+        const nextQuery = event.target.value.trim();
+        const probe = { ...state.documents, query: nextQuery, page: 1 };
+        if (state.sessionCache.documents.has(documentSessionCacheKey(probe)) || sharedStudentDirectorySnapshot(probe)) {
+          state.documents.query = nextQuery;
+          state.documents.page = 1;
+          showDocumentsCachedOrLoad();
+          return;
+        }
 
         bindDocumentsModuleEvents.searchTimer = setTimeout(() => {
           state.documents.query = event.target.value.trim();
